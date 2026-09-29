@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RESTOia - Suite Gastronómica Inteligente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- BARRA LATERAL DE NAVEGACIÓN -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🍷</div>
+        <div class="brand-text">
+          <h2>RESTO<span>ia</span></h2>
+          <small>Intelligent Gastronomy Suite</small>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="tab-pos">
+          <span class="icon">🗺️</span>
+          <span>Salón & Mesas (POS)</span>
+        </button>
+        <button class="nav-item" data-tab="tab-kds">
+          <span class="icon">👨‍🍳</span>
+          <span>Cocina KDS en Vivo</span>
+          <span class="badge" id="kds-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="tab-menu">
+          <span class="icon">📋</span>
+          <span>Carta & Comanda</span>
+        </button>
+        <button class="nav-item" data-tab="tab-reservations">
+          <span class="icon">📅</span>
+          <span>Reservas</span>
+        </button>
+        <button class="nav-item" data-tab="tab-copilot">
+          <span class="icon">🤖</span>
+          <span>Copilot IA Gastronómico</span>
+        </button>
+        <button class="nav-item" data-tab="tab-analytics">
+          <span class="icon">📊</span>
+          <span>Métricas & Ventas</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="avatar">FM</div>
+          <div class="user-meta">
+            <strong>Facundo M.</strong>
+            <span>Jefe de Sala</span>
+          </div>
+        </div>
+        <div class="system-status">
+          <span class="status-dot"></span> Servidor REST Activo (3000)
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL DE CONTENIDO -->
+    <main class="main-content">
+      <!-- HEADER SUPERIOR -->
+      <header class="top-header">
+        <div class="header-titles">
+          <h1 id="view-title">Mapa de Salón y Mesas (POS)</h1>
+          <p id="view-desc">Supervisión en tiempo real de ocupación, comandas y cuentas.</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="btn-refresh">🔄 Sincronizar</button>
+          <button class="btn btn-primary" id="btn-quick-order">➕ Nueva Comanda</button>
+        </div>
+      </header>
+
+      <!-- TAB 1: SALÓN Y MESAS (POS) -->
+      <section id="tab-pos" class="tab-pane active">
+        <div class="stats-bar">
+          <div class="stat-card">
+            <span class="stat-label">Total Mesas</span>
+            <strong class="stat-value" id="stat-total-tables">8</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ocupadas</span>
+            <strong class="stat-value text-accent" id="stat-occupied-tables">3</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Disponibles</span>
+            <strong class="stat-value text-success" id="stat-free-tables">4</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Facturación Activa</span>
+            <strong class="stat-value" id="stat-active-sales">$0</strong>
+          </div>
+        </div>
+
+        <div class="area-filter-tabs">
+          <button class="area-pill active" data-area="all">Todas las Áreas</button>
+          <button class="area-pill" data-area="Salón Principal">Salón Principal</button>
+          <button class="area-pill" data-area="Terraza">Terraza</button>
+          <button class="area-pill" data-area="Barra & Coctelería">Barra</button>
+        </div>
+
+        <div class="tables-grid" id="tables-grid">
+          <!-- Renderizado dinámico de mesas -->
+        </div>
+      </section>
+
+      <!-- TAB 2: COCINA KDS EN VIVO -->
+      <section id="tab-kds" class="tab-pane">
+        <div class="kds-header">
+          <div>
+            <h3>Kitchen Display System (KDS)</h3>
+            <p>Visualización y flujo de preparación por tiempos de espera.</p>
+          </div>
+          <div class="kds-filter">
+            <span class="live-indicator"><span class="blink-dot"></span> EN VIVO</span>
+          </div>
+        </div>
+
+        <div class="kds-columns">
+          <div class="kds-col" id="col-pendiente">
+            <div class="col-head">
+              <h4>⏳ Pendientes</h4>
+              <span class="count-tag" id="count-pending">0</span>
+            </div>
+            <div class="orders-list" id="kds-list-pendiente"></div>
+          </div>
+
+          <div class="kds-col" id="col-cocina">
+            <div class="col-head">
+              <h4>🔥 En Cocina</h4>
+              <span class="count-tag" id="count-cooking">0</span>
+            </div>
+            <div class="orders-list" id="kds-list-cocina"></div>
+          </div>
+
+          <div class="kds-col" id="col-listo">
+            <div class="col-head">
+              <h4>🛎️ Para Servir / Listas</h4>
+              <span class="count-tag" id="count-ready">0</span>
+            </div>
+            <div class="orders-list" id="kds-list-listo"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: CARTA Y TOMA DE COMANDAS -->
+      <section id="tab-menu" class="tab-pane">
+        <div class="order-creator-layout">
+          <!-- Columna izquierda: Menú -->
+          <div class="menu-browser">
+            <div class="menu-categories" id="menu-categories">
+              <button class="cat-pill active" data-cat="all">Todos</button>
+              <button class="cat-pill" data-cat="Entradas">Entradas</button>
+              <button class="cat-pill" data-cat="Principales">Principales</button>
+              <button class="cat-pill" data-cat="Pastas">Pastas</button>
+              <button class="cat-pill" data-cat="Postres">Postres</button>
+              <button class="cat-pill" data-cat="Vinos">Vinos</button>
+              <button class="cat-pill" data-cat="Bebidas">Bebidas</button>
+            </div>
+            <div class="menu-grid" id="menu-grid">
+              <!-- Platos inyectados vía JS -->
+            </div>
+          </div>
+
+          <!-- Columna derecha: Comanda actual -->
+          <div class="order-tray">
+            <div class="tray-header">
+              <h3>Comanda en Curso</h3>
+              <select id="select-target-table" class="input-select">
+                <!-- Mesas cargadas dinámicamente -->
+              </select>
+            </div>
+            <div class="tray-items" id="tray-items">
+              <div class="empty-tray">Selecciona ítems de la carta para agregarlos a la comanda</div>
+            </div>
+            <div class="tray-summary">
+              <div class="summary-line">
+                <span>Subtotal</span>
+                <span id="tray-subtotal">$0</span>
+              </div>
+              <div class="summary-line">
+                <span>Servicio (10%)</span>
+                <span id="tray-service">$0</span>
+              </div>
+              <div class="summary-line total">
+                <span>Total Estimado</span>
+                <span id="tray-total">$0</span>
+              </div>
+              <button class="btn btn-primary btn-block" id="btn-send-to-kitchen">🚀 Enviar a Cocina (KDS)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: RESERVAS -->
+      <section id="tab-reservations" class="tab-pane">
+        <div class="reservations-layout">
+          <div class="res-list-container">
+            <h3>Reservas del Turno Noche</h3>
+            <div class="table-card-list" id="reservations-list">
+              <!-- Inyectado vía JS -->
+            </div>
+          </div>
+
+          <div class="res-form-container">
+            <div class="glass-box">
+              <h3>Nueva Reserva</h3>
+              <form id="form-new-reservation">
+                <div class="form-group">
+                  <label>Nombre del Comensal</label>
+                  <input type="text" id="res-name" class="input-text" placeholder="Ej: Hernán Crespo" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="res-phone" class="input-text" placeholder="+54 9 11..." required>
+                  </div>
+                  <div class="form-group">
+                    <label>Comensales</label>
+                    <input type="number" id="res-guests" class="input-text" value="2" min="1" max="12">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="res-date" class="input-text" value="2026-09-29">
+                  </div>
+                  <div class="form-group">
+                    <label>Hora</label>
+                    <input type="time" id="res-time" class="input-text" value="21:00">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Mesa Asignada</label>
+                  <select id="res-table" class="input-select">
+                    <option value="">Asignación Automática / Al Llegar</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Notas Especiales (Alergias, Ocasión)</label>
+                  <textarea id="res-notes" class="input-text" rows="2" placeholder="Cumpleaños, mesa cerca de la ventana..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Confirmar Reserva</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: COPILOT IA GASTRONÓMICO -->
+      <section id="tab-copilot" class="tab-pane">
+        <div class="copilot-container">
+          <div class="copilot-header">
+            <div class="copilot-badge">✨ AI RESTOIA COPILOT v2.5</div>
+            <h2>Asistente Inteligente de Sala, Sommelier & Negocio</h2>
+            <p>Pregúntale maridajes, control de alérgenos, optimización de despacho o sugerencias culinarias.</p>
+          </div>
+
+          <div class="quick-prompts">
+            <button class="quick-chip" data-prompt="¿Qué vino recomiendas para el bife madurado y carnes rojas?">🍷 Maridaje para Carnes</button>
+            <button class="quick-chip" data-prompt="¿Qué platos del menú son aptos para celíacos sin TACC o sin lácteos?">🛡️ Control de Alérgenos</button>
+            <button class="quick-chip" data-prompt="Analizar operaciones y rentabilidad del salón hoy con sugerencias de upselling">📈 Análisis de Rentabilidad</button>
+            <button class="quick-chip" data-prompt="Sugerir una experiencia gastronómica completa para 2 personas">⭐ Recomendación del Chef</button>
+          </div>
+
+          <div class="chat-box" id="ai-chat-box">
+            <div class="chat-message bot">
+              <div class="msg-avatar">🤖</div>
+              <div class="msg-content">
+                <strong>RESTOia Sommelier & Gerencia</strong>
+                <p>¡Hola! Estoy listo para asistirte en tiempo real. Selecciona una sugerencia arriba o escribe cualquier duda sobre la carta, alérgenos, vinos o métricas del restaurante.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="ai-input" placeholder="Pregunta a la IA sobre maridaje, comandas, platos o negocio..." />
+            <button class="btn btn-primary" id="btn-send-ai">Consultar IA ⚡</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: ANALÍTICAS Y REPORTES -->
+      <section id="tab-analytics" class="tab-pane">
+        <div class="analytics-grid">
+          <div class="analytics-card metric-hero">
+            <h3>Facturación Acumulada Hoy</h3>
+            <div class="hero-number">$1.720.000</div>
+            <span class="trend-badge">+18.4% vs semana anterior</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Ticket Promedio por Mesa</h3>
+            <div class="hero-number">$68.500</div>
+            <span class="sub-label">Tiempo promedio por turno: 62 min</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Top Platos Más Vendidos</h3>
+            <ul class="top-list">
+              <li><span>1. Bife de Chorizo Madurado</span> <strong>42 pedidos</strong></li>
+              <li><span>2. Salmón Rosado en Costra</span> <strong>31 pedidos</strong></li>
+              <li><span>3. Risotto de Hongos Silvestres</span> <strong>28 pedidos</strong></li>
+              <li><span>4. Smoked Negroni</span> <strong>25 tragos</strong></li>
+            </ul>
+          </div>
+
+          <div class="analytics-card full-width">
+            <h3>Historial de Rendimiento Semanal</h3>
+            <div class="mock-chart">
+              <div class="chart-bar" style="height: 60%"><span>Jue</span><strong>$450k</strong></div>
+              <div class="chart-bar" style="height: 85%"><span>Vie</span><strong>$680k</strong></div>
+              <div class="chart-bar" style="height: 75%"><span>Sáb</span><strong>$590k</strong></div>
+              <div class="chart-bar highlight" style="height: 100%"><span>Dom (Hoy)</span><strong>$1.72M</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL DE COBRO / DETALLE DE MESA -->
+  <div class="modal-overlay" id="modal-table-detail">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-table-title">Detalle de Mesa M-01</h3>
+        <button class="close-btn" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-table-body">
+        <!-- Contenido dinámico -->
+      </div>
+      <div class="modal-footer" id="modal-table-footer">
+        <!-- Acciones: Cobrar cuenta, Liberar mesa, etc. -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

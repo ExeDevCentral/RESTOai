@@ -1,0 +1,19 @@
+{
+  "name": "restoia",
+  "version": "1.0.0",
+  "description": "Suite integral de gestión gastronómica con IA para restaurantes",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "keywords": ["restaurant", "pos", "kds", "ai", "gastronomy"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

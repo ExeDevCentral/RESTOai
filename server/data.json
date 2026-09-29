@@ -1,0 +1,389 @@
+{
+  "tables": [
+    {
+      "id": 1,
+      "number": "M-01",
+      "area": "Salón Principal",
+      "capacity": 4,
+      "status": "ocupada",
+      "currentOrderId": 101
+    },
+    {
+      "id": 2,
+      "number": "M-02",
+      "area": "Salón Principal",
+      "capacity": 2,
+      "status": "libre",
+      "currentOrderId": null
+    },
+    {
+      "id": 3,
+      "number": "M-03",
+      "area": "Salón Principal",
+      "capacity": 6,
+      "status": "cuenta_pedida",
+      "currentOrderId": 102
+    },
+    {
+      "id": 4,
+      "number": "M-04",
+      "area": "Terraza",
+      "capacity": 4,
+      "status": "ocupada",
+      "currentOrderId": 103
+    },
+    {
+      "id": 5,
+      "number": "M-05",
+      "area": "Terraza",
+      "capacity": 4,
+      "status": "reservada",
+      "currentOrderId": null
+    },
+    {
+      "id": 6,
+      "number": "M-06",
+      "area": "Terraza",
+      "capacity": 2,
+      "status": "libre",
+      "currentOrderId": null
+    },
+    {
+      "id": 7,
+      "number": "B-01",
+      "area": "Barra & Coctelería",
+      "capacity": 2,
+      "status": "libre",
+      "currentOrderId": null
+    },
+    {
+      "id": 8,
+      "number": "B-02",
+      "area": "Barra & Coctelería",
+      "capacity": 2,
+      "status": "ocupada",
+      "currentOrderId": 104
+    }
+  ],
+  "menu": [
+    {
+      "id": 1,
+      "name": "Bife de Chorizo Madurado 400g",
+      "category": "Principales",
+      "price": 24500,
+      "description": "Corte premium con 35 días de maduración en seco, vegetales asados al Josper y chimichurri trufado.",
+      "allergens": [],
+      "available": true,
+      "timeMinutes": 20
+    },
+    {
+      "id": 2,
+      "name": "Ojo de Bife con Puré Ahumado",
+      "category": "Principales",
+      "price": 26000,
+      "description": "Servido con manteca de hierbas y papas rústicas al romero.",
+      "allergens": [
+        "Lácteos"
+      ],
+      "available": true,
+      "timeMinutes": 18
+    },
+    {
+      "id": 3,
+      "name": "Salmón Rosado en Costra de Almendras",
+      "category": "Principales",
+      "price": 27500,
+      "description": "Acompañado de risotto al azafrán y emulsión de cítricos.",
+      "allergens": [
+        "Pescado",
+        "Frutos secos",
+        "Lácteos"
+      ],
+      "available": true,
+      "timeMinutes": 15
+    },
+    {
+      "id": 4,
+      "name": "Raviolones de Cordero Patagónico",
+      "category": "Pastas",
+      "price": 19800,
+      "description": "Masa fresca al huevo con ragú de cocción lenta de 8 horas y demi-glace.",
+      "allergens": [
+        "Gluten",
+        "Huevo",
+        "Lácteos"
+      ],
+      "available": true,
+      "timeMinutes": 14
+    },
+    {
+      "id": 5,
+      "name": "Risotto de Hongos Silvestres & Trufa",
+      "category": "Pastas",
+      "price": 18500,
+      "description": "Arroz Carnaroli, portobellos, gírgolas, manteca emulsionada y lluvia de trufa negra.",
+      "allergens": [
+        "Lácteos"
+      ],
+      "available": true,
+      "timeMinutes": 16
+    },
+    {
+      "id": 6,
+      "name": "Provoleta Especial de la Casa",
+      "category": "Entradas",
+      "price": 11500,
+      "description": "Queso hilado fundido con tomates confitados, pesto genovés y orégano fresco.",
+      "allergens": [
+        "Lácteos"
+      ],
+      "available": true,
+      "timeMinutes": 10
+    },
+    {
+      "id": 7,
+      "name": "Carpaccio de Lomo con Alcaparras",
+      "category": "Entradas",
+      "price": 13200,
+      "description": "Finas láminas de lomo vacuno, rúcula selvática, parmesano Reggiano y vinagreta dijon.",
+      "allergens": [
+        "Lácteos",
+        "Mostaza"
+      ],
+      "available": true,
+      "timeMinutes": 8
+    },
+    {
+      "id": 8,
+      "name": "Empanadas Criollas de Carne Cortada a Cuchillo",
+      "category": "Entradas",
+      "price": 7800,
+      "description": "Porción de 2 unidades con masa casera al horno de leña.",
+      "allergens": [
+        "Gluten",
+        "Huevo"
+      ],
+      "available": true,
+      "timeMinutes": 8
+    },
+    {
+      "id": 9,
+      "name": "Volcán de Chocolate Belga 70%",
+      "category": "Postres",
+      "price": 9500,
+      "description": "Corazón fundido caliente con helado artesanal de crema americana y frutos rojos.",
+      "allergens": [
+        "Gluten",
+        "Huevo",
+        "Lácteos"
+      ],
+      "available": true,
+      "timeMinutes": 12
+    },
+    {
+      "id": 10,
+      "name": "Flan Casero Tradicional",
+      "category": "Postres",
+      "price": 7200,
+      "description": "Acompañado de dulce de leche colonial y crema montada.",
+      "allergens": [
+        "Huevo",
+        "Lácteos"
+      ],
+      "available": true,
+      "timeMinutes": 5
+    },
+    {
+      "id": 11,
+      "name": "Vino Malbec Gran Reserva 750ml",
+      "category": "Vinos",
+      "price": 22000,
+      "description": "Notas a ciruela madura, vainilla y paso de 14 meses por roble francés.",
+      "allergens": [
+        "Sulfitos"
+      ],
+      "available": true,
+      "timeMinutes": 2
+    },
+    {
+      "id": 12,
+      "name": "Trago de Autor: Smoked Negroni",
+      "category": "Bebidas",
+      "price": 8500,
+      "description": "Gin macerado en especias, Campari ahumado y vermut rosso artesanal.",
+      "allergens": [],
+      "available": true,
+      "timeMinutes": 4
+    }
+  ],
+  "orders": [
+    {
+      "id": 101,
+      "tableNumber": "M-01",
+      "tableId": 1,
+      "waiter": "Facundo M.",
+      "status": "en_cocina",
+      "createdAt": "2026-09-29T19:08:25.758Z",
+      "items": [
+        {
+          "menuItemId": 1,
+          "name": "Bife de Chorizo Madurado 400g",
+          "quantity": 2,
+          "price": 24500,
+          "notes": "Punto: jugoso",
+          "status": "cocinando"
+        },
+        {
+          "menuItemId": 6,
+          "name": "Provoleta Especial de la Casa",
+          "quantity": 1,
+          "price": 11500,
+          "notes": "",
+          "status": "listo"
+        },
+        {
+          "menuItemId": 11,
+          "name": "Vino Malbec Gran Reserva 750ml",
+          "quantity": 1,
+          "price": 22000,
+          "notes": "",
+          "status": "entregado"
+        }
+      ],
+      "total": 82500
+    },
+    {
+      "id": 102,
+      "tableNumber": "M-03",
+      "tableId": 3,
+      "waiter": "Camila R.",
+      "status": "cuenta_pedida",
+      "createdAt": "2026-09-29T18:28:25.759Z",
+      "items": [
+        {
+          "menuItemId": 3,
+          "name": "Salmón Rosado en Costra de Almendras",
+          "quantity": 2,
+          "price": 27500,
+          "notes": "",
+          "status": "entregado"
+        },
+        {
+          "menuItemId": 5,
+          "name": "Risotto de Hongos Silvestres & Trufa",
+          "quantity": 2,
+          "price": 18500,
+          "notes": "Sin pimienta",
+          "status": "entregado"
+        },
+        {
+          "menuItemId": 9,
+          "name": "Volcán de Chocolate Belga 70%",
+          "quantity": 3,
+          "price": 9500,
+          "notes": "",
+          "status": "entregado"
+        }
+      ],
+      "total": 120500
+    },
+    {
+      "id": 103,
+      "tableNumber": "M-04",
+      "tableId": 4,
+      "waiter": "Lucas G.",
+      "status": "pendiente",
+      "createdAt": "2026-09-29T19:18:25.759Z",
+      "items": [
+        {
+          "menuItemId": 4,
+          "name": "Raviolones de Cordero Patagónico",
+          "quantity": 2,
+          "price": 19800,
+          "notes": "",
+          "status": "pendiente"
+        },
+        {
+          "menuItemId": 7,
+          "name": "Carpaccio de Lomo con Alcaparras",
+          "quantity": 1,
+          "price": 13200,
+          "notes": "Poco queso",
+          "status": "pendiente"
+        }
+      ],
+      "total": 52800
+    },
+    {
+      "id": 104,
+      "tableNumber": "B-02",
+      "tableId": 8,
+      "waiter": "Barra Central",
+      "status": "listo",
+      "createdAt": "2026-09-29T19:15:25.759Z",
+      "items": [
+        {
+          "menuItemId": 12,
+          "name": "Trago de Autor: Smoked Negroni",
+          "quantity": 2,
+          "price": 8500,
+          "notes": "Extra hielo",
+          "status": "listo"
+        },
+        {
+          "menuItemId": 8,
+          "name": "Empanadas Criollas de Carne Cortada a Cuchillo",
+          "quantity": 1,
+          "price": 7800,
+          "notes": "",
+          "status": "listo"
+        }
+      ],
+      "total": 24800
+    }
+  ],
+  "reservations": [
+    {
+      "id": 1,
+      "customerName": "Martín Palermo",
+      "phone": "+54 9 11 4455-8899",
+      "date": "2026-09-29",
+      "time": "21:30",
+      "guests": 4,
+      "tableId": 5,
+      "notes": "Aniversario de bodas, ubicación preferencial",
+      "status": "confirmada"
+    },
+    {
+      "id": 2,
+      "customerName": "Valeria Mazza",
+      "phone": "+54 9 11 5566-7788",
+      "date": "2026-09-29",
+      "time": "22:00",
+      "guests": 2,
+      "tableId": null,
+      "notes": "Mesa tranquila, lejos de la puerta",
+      "status": "pendiente"
+    }
+  ],
+  "salesHistory": [
+    {
+      "date": "2026-09-28",
+      "totalSales": 450000,
+      "orderCount": 22,
+      "topDish": "Bife de Chorizo Madurado"
+    },
+    {
+      "date": "2026-09-27",
+      "totalSales": 680000,
+      "orderCount": 35,
+      "topDish": "Salmón Rosado"
+    },
+    {
+      "date": "2026-09-26",
+      "totalSales": 590000,
+      "orderCount": 29,
+      "topDish": "Risotto de Hongos"
+    }
+  ]
+}
