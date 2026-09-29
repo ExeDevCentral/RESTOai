@@ -6,7 +6,7 @@
       "area": "Salón Principal",
       "capacity": 4,
       "status": "ocupada",
-      "currentOrderId": 101
+      "currentOrderId": 1790715085175
     },
     {
       "id": 2,
@@ -222,7 +222,7 @@
       "tableNumber": "M-01",
       "tableId": 1,
       "waiter": "Facundo M.",
-      "status": "en_cocina",
+      "status": "listo",
       "createdAt": "2026-09-29T19:08:25.758Z",
       "items": [
         {
@@ -292,7 +292,7 @@
       "tableNumber": "M-04",
       "tableId": 4,
       "waiter": "Lucas G.",
-      "status": "pendiente",
+      "status": "listo",
       "createdAt": "2026-09-29T19:18:25.759Z",
       "items": [
         {
@@ -340,6 +340,25 @@
         }
       ],
       "total": 24800
+    },
+    {
+      "id": 1790715085175,
+      "tableId": 1,
+      "tableNumber": "M-01",
+      "waiter": "Facundo M.",
+      "status": "en_cocina",
+      "createdAt": "2026-09-29T20:51:25.175Z",
+      "items": [
+        {
+          "menuItemId": 1,
+          "name": "Bife de Chorizo Madurado 400g",
+          "price": 24500,
+          "quantity": 1,
+          "notes": "",
+          "status": "pendiente"
+        }
+      ],
+      "total": 24500
     }
   ],
   "reservations": [
