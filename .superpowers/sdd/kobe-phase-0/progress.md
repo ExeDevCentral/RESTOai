@@ -12,3 +12,4 @@ Pre-flight: all interfaces coherent.
 - Task 1: complete (commits b53ecef..7cb7b54, tests: npx vitest run -> 2/2 pass)
 - Task 2: complete (commits 7cb7b54..fca560b, tests: npx vitest run -> 5/5 pass)
 - Task 3: complete (commits fca560b..c3ab4ba, tests: npx vitest run -> 7/7 pass)
+- Task 4: complete (commits c3ab4ba..c62c102, tests: npx vitest run -> 9/9 pass)
