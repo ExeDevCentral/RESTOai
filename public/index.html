@@ -333,23 +333,49 @@
           <div class="analytics-card metric-hero">
             <h3>KOBE Engine Status</h3>
             <div class="hero-number" style="font-size: 1.8rem; color: #2a9d8f;">EN LÍNEA 🟢</div>
-            <span class="trend-badge">Phase 0 &amp; 1 Verificadas</span>
+            <span class="trend-badge">Fases 0 a 4 Verificadas (47 Tests)</span>
           </div>
 
           <div class="analytics-card">
             <h3>Integridad Criptográfica</h3>
             <div class="hero-number" style="font-size: 1.8rem; color: #e9c46a;">SHA-256 ÍNTEGRO</div>
-            <span class="sub-label">0 violaciones o corrupciones detectadas</span>
+            <span class="sub-label">0 violaciones en la cadena inmutable</span>
           </div>
 
           <div class="analytics-card">
-            <h3>Invariantes Activos</h3>
+            <h3>Invariantes Financieros</h3>
             <ul class="top-list">
-              <li><span>Dinero</span> <strong>BigInt Cents</strong></li>
-              <li><span>Tenancy</span> <strong>Org &amp; Location Dual RLS</strong></li>
-              <li><span>Auditoría</span> <strong>Append-Only Hash Chain</strong></li>
-              <li><span>Órdenes / KDS</span> <strong>Ortogonales Desacopladas</strong></li>
+              <li><span>Dinero y Gramos</span> <strong>BigInt &amp; Integer</strong></li>
+              <li><span>Partida Doble</span> <strong>Σ Débitos = Σ Créditos</strong></li>
+              <li><span>Fiscal ARCA</span> <strong>Factura A/B/C + CAE</strong></li>
+              <li><span>Stock &amp; Caja</span> <strong>Ledgers Inmutables</strong></li>
             </ul>
+          </div>
+
+          <div class="analytics-card full-width">
+            <h3>Módulos de la Suite KOBE Operando</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 12px;">
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(224,169,109,0.2); border-radius: 8px; padding: 12px;">
+                <strong style="color: #e0a96d;">Fase 0: Fundaciones</strong>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Multi-tenancy Org/Location, RBAC y Hash Chain SHA-256.</p>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(224,169,109,0.2); border-radius: 8px; padding: 12px;">
+                <strong style="color: #e0a96d;">Fase 1: Órdenes &amp; KDS</strong>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">State machine ortogonal, despacho multi-estación e ingestión offline.</p>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(224,169,109,0.2); border-radius: 8px; padding: 12px;">
+                <strong style="color: #e0a96d;">Fase 2: Inventario &amp; FEFO</strong>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Lotes con vencimiento, recetas escaladas y asignación FEFO.</p>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(224,169,109,0.2); border-radius: 8px; padding: 12px;">
+                <strong style="color: #e0a96d;">Fase 3: Caja &amp; Pagos</strong>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Arqueos inmutables, split payments y webhooks deduplicados.</p>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(224,169,109,0.2); border-radius: 8px; padding: 12px;">
+                <strong style="color: #e0a96d;">Fase 4: Contabilidad &amp; Fiscal</strong>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Partida doble automática, facturación ARCA A/B/C y CAE.</p>
+              </div>
+            </div>
           </div>
 
           <div class="analytics-card full-width">

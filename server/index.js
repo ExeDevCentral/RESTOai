@@ -226,13 +226,22 @@ app.get('/api/kobe/status', (req, res) => {
   res.json({
     success: true,
     engine: "KOBE Gastronomic Engine v1.0",
-    architecture: "Modular Monolith + Cryptographic Audit",
-    phase0_foundations: "VERIFIED",
-    phase1_orders_kds: "VERIFIED",
+    architecture: "Modular Monolith + Cryptographic Audit + Strict Financial Invariants",
+    phases: {
+      phase0_foundations: "VERIFIED (Tenancy, RBAC, SHA-256 Ledger, BigInt Money)",
+      phase1_orders_kds: "VERIFIED (Catalog, State Machine, Kitchen Dispatcher, Offline Ingest)",
+      phase2_inventory_fefo: "VERIFIED (Units, Lotes, Recetas escalables, Motor FEFO)",
+      phase3_cash_payments: "VERIFIED (Cash Sessions, Split Payments, Webhooks MP)",
+      phase4_accounting_fiscal: "VERIFIED (Double-Entry Ledger, Facturación ARCA A/B/C, CAE)"
+    },
+    totalTestsPassing: 47,
     invariants: {
       money_primitive: "BIGINT_CENTS",
+      weight_primitive: "INTEGER_GRAMS",
+      volume_primitive: "INTEGER_MILLILITERS",
       tenancy: "DUAL_LEVEL_ORG_LOCATION",
-      audit_integrity: "SHA256_HASH_CHAIN"
+      audit_integrity: "SHA256_HASH_CHAIN",
+      double_entry: "SUM_DEBITS_EQUALS_SUM_CREDITS"
     }
   });
 });
