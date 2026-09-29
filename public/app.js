@@ -606,7 +606,8 @@ function setupNavigation() {
     'tab-menu': { title: 'Carta & Toma de Pedidos', desc: 'Catálogo de platos y armado dinámico de comandas.' },
     'tab-reservations': { title: 'Gestión de Reservas', desc: 'Planificación de comensales y turnos de sala.' },
     'tab-copilot': { title: 'Copilot IA Gastronómico', desc: 'Asesor de maridaje, alérgenos y sugerencias de optimización.' },
-    'tab-analytics': { title: 'Métricas & Desempeño', desc: 'Facturación acumulada, platos estrella y tiempos medios.' }
+    'tab-analytics': { title: 'Métricas & Desempeño', desc: 'Facturación acumulada, platos estrella y tiempos medios.' },
+    'tab-kobe-engine': { title: 'KOBE Gastronomic Engine — Audit & Status', desc: 'Auditoría inmutable con hash chain SHA-256 e integridad transaccional.' }
   };
 
   buttons.forEach(btn => {
@@ -618,6 +619,10 @@ function setupNavigation() {
       btn.classList.add('active');
       const targetPane = document.getElementById(tab);
       if (targetPane) targetPane.classList.add('active');
+
+      if (tab === 'tab-kobe-engine') {
+        fetchKobeAudit();
+      }
 
       if (titlesMap[tab]) {
         viewTitle.textContent = titlesMap[tab].title;
@@ -658,3 +663,39 @@ function setupCategoryFilters() {
     });
   });
 }
+
+// ========================
+// KOBE AUDIT TRAIL STREAM
+// ========================
+window.fetchKobeAudit = async function() {
+  const container = document.getElementById('kobe-audit-stream');
+  if (!container) return;
+
+  try {
+    const res = await fetch('/api/kobe/audit');
+    const json = await res.json();
+
+    if (!json.success || !json.ledger || json.ledger.length === 0) {
+      container.innerHTML = `
+        <div style="color: #94a3b8; font-style: italic;">
+          🔒 El Ledger criptográfico está inicializado. Los eventos emitidos por órdenes y mozos aparecerán aquí en vivo con su hash SHA-256 encadenado.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = json.ledger.map((entry, idx) => `
+      <div style="border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 0;">
+        <span style="color: #2a9d8f;">[#${idx + 1} ${entry.createdAt}]</span>
+        <strong style="color: #e9c46a;"> ${entry.action}</strong>
+        <span style="color: #94a3b8;"> (${entry.entityType} ID: ${entry.entityId})</span>
+        <br>
+        <span style="color: #64748b;">Prev Hash: ${entry.prevHash || 'ROOT_GENESIS'}</span>
+        <br>
+        <span style="color: #d4a373;">Hash SHA256: ${entry.hash}</span>
+      </div>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = `<span style="color: #e76f51;">Error consultando Audit Ledger.</span>`;
+  }
+};

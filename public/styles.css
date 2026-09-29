@@ -17,7 +17,8 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --font-main: 'Plus Jakarta Sans', sans-serif;
-  --font-title: 'Playfair Display', serif;
+  --font-title: 'Outfit', sans-serif;
+  --font-brand: 'Syne', sans-serif;
   --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   --glass-bg: rgba(24, 27, 36, 0.75);
   --glass-border: 1px solid rgba(255, 255, 255, 0.08);
@@ -78,22 +79,25 @@ body {
 }
 
 .brand-text h2 {
-  font-family: var(--font-title);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-family: var(--font-brand);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .brand-text h2 span {
   color: var(--primary);
-  font-style: italic;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: lowercase;
 }
 
 .brand-text small {
   color: var(--text-muted);
-  font-size: 0.72rem;
+  font-size: 0.70rem;
+  letter-spacing: 1.2px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 .nav-menu {
@@ -221,14 +225,17 @@ body {
 
 .header-titles h1 {
   font-family: var(--font-title);
-  font-size: 1.85rem;
+  font-size: 2.1rem;
   font-weight: 700;
+  letter-spacing: -0.8px;
+  color: #ffffff;
 }
 
 .header-titles p {
   color: var(--text-muted);
-  font-size: 0.9rem;
-  margin-top: 4px;
+  font-size: 0.92rem;
+  margin-top: 3px;
+  font-weight: 400;
 }
 
 .header-actions {

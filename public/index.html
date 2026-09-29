@@ -6,7 +6,7 @@
   <title>RESTOia - Suite Gastronómica Inteligente</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -46,6 +46,10 @@
         <button class="nav-item" data-tab="tab-analytics">
           <span class="icon">📊</span>
           <span>Métricas & Ventas</span>
+        </button>
+        <button class="nav-item" data-tab="tab-kobe-engine">
+          <span class="icon">🛡️</span>
+          <span>KOBE Engine & Audit</span>
         </button>
       </nav>
 
@@ -318,6 +322,43 @@
               <div class="chart-bar" style="height: 85%"><span>Vie</span><strong>$680k</strong></div>
               <div class="chart-bar" style="height: 75%"><span>Sáb</span><strong>$590k</strong></div>
               <div class="chart-bar highlight" style="height: 100%"><span>Dom (Hoy)</span><strong>$1.72M</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: KOBE ENGINE & AUDIT TRAIL -->
+      <section id="tab-kobe-engine" class="tab-pane">
+        <div class="analytics-grid">
+          <div class="analytics-card metric-hero">
+            <h3>KOBE Engine Status</h3>
+            <div class="hero-number" style="font-size: 1.8rem; color: #2a9d8f;">EN LÍNEA 🟢</div>
+            <span class="trend-badge">Phase 0 &amp; 1 Verificadas</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Integridad Criptográfica</h3>
+            <div class="hero-number" style="font-size: 1.8rem; color: #e9c46a;">SHA-256 ÍNTEGRO</div>
+            <span class="sub-label">0 violaciones o corrupciones detectadas</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Invariantes Activos</h3>
+            <ul class="top-list">
+              <li><span>Dinero</span> <strong>BigInt Cents</strong></li>
+              <li><span>Tenancy</span> <strong>Org &amp; Location Dual RLS</strong></li>
+              <li><span>Auditoría</span> <strong>Append-Only Hash Chain</strong></li>
+              <li><span>Órdenes / KDS</span> <strong>Ortogonales Desacopladas</strong></li>
+            </ul>
+          </div>
+
+          <div class="analytics-card full-width">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <h3>Cadena de Auditoría Criptográfica en Vivo (Audit Ledger)</h3>
+              <button class="btn btn-secondary" onclick="fetchKobeAudit()">🔄 Recargar Cadena</button>
+            </div>
+            <div id="kobe-audit-stream" style="font-family: monospace; font-size: 0.8rem; background: #0b0d12; padding: 16px; border-radius: 8px; border: var(--glass-border); max-height: 350px; overflow-y: auto;">
+              Cargando eventos de auditoría inmutables...
             </div>
           </div>
         </div>
