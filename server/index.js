@@ -57,6 +57,59 @@ app.get('/api/menu', (req, res) => {
   res.json({ success: true, data: menu });
 });
 
+app.post('/api/menu', (req, res) => {
+  const { name, category, price, description, allergens, timeMinutes } = req.body;
+  if (!name || !price) {
+    return res.status(400).json({ success: false, message: 'Nombre y precio son requeridos' });
+  }
+  const data = db.getData();
+  const newItem = {
+    id: Date.now(),
+    name,
+    category: category || 'Principales',
+    price: Number(price),
+    description: description || '',
+    allergens: Array.isArray(allergens) ? allergens : (allergens ? allergens.split(',').map(s => s.trim()) : []),
+    available: true,
+    timeMinutes: Number(timeMinutes) || 15
+  };
+  data.menu.push(newItem);
+  db.saveData(data);
+  res.status(201).json({ success: true, data: newItem });
+});
+
+app.put('/api/menu/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, category, price, description, allergens, timeMinutes, available } = req.body;
+  const data = db.getData();
+  const item = data.menu.find(m => m.id === parseInt(id));
+  if (!item) return res.status(404).json({ success: false, message: 'Plato no encontrado' });
+
+  if (name !== undefined) item.name = name;
+  if (category !== undefined) item.category = category;
+  if (price !== undefined) item.price = Number(price);
+  if (description !== undefined) item.description = description;
+  if (allergens !== undefined) {
+    item.allergens = Array.isArray(allergens) ? allergens : allergens.split(',').map(s => s.trim());
+  }
+  if (timeMinutes !== undefined) item.timeMinutes = Number(timeMinutes);
+  if (available !== undefined) item.available = Boolean(available);
+
+  db.saveData(data);
+  res.json({ success: true, data: item });
+});
+
+app.delete('/api/menu/:id', (req, res) => {
+  const { id } = req.params;
+  const data = db.getData();
+  const index = data.menu.findIndex(m => m.id === parseInt(id));
+  if (index === -1) return res.status(404).json({ success: false, message: 'Plato no encontrado' });
+
+  data.menu.splice(index, 1);
+  db.saveData(data);
+  res.json({ success: true, message: 'Plato eliminado' });
+});
+
 app.patch('/api/menu/:id/toggle', (req, res) => {
   const { id } = req.params;
   const data = db.getData();
@@ -66,6 +119,93 @@ app.patch('/api/menu/:id/toggle', (req, res) => {
   item.available = !item.available;
   db.saveData(data);
   res.json({ success: true, data: item });
+});
+
+// ========================
+// 2.1 INVENTARIO, LOTES & ESCÁNER
+// ========================
+app.get('/api/inventory', (req, res) => {
+  const data = db.getData();
+  res.json({ success: true, data: data.inventory || [] });
+});
+
+app.post('/api/inventory', (req, res) => {
+  const { name, category, barcode, currentQuantity, unit, minStock, expiryDate, supplierId, costPerUnit } = req.body;
+  const data = db.getData();
+  if (!data.inventory) data.inventory = [];
+
+  const supplier = (data.suppliers || []).find(s => s.id === parseInt(supplierId));
+  const newLot = {
+    id: `lot-${Date.now().toString(36)}`,
+    name,
+    category: category || 'Generales',
+    lotCode: `LOT-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+    barcode: barcode || `${Date.now()}`.slice(-13),
+    currentQuantity: Number(currentQuantity) || 0,
+    unit: unit || 'g',
+    minStock: Number(minStock) || 1000,
+    expiryDate: expiryDate || '2026-12-31',
+    supplierId: supplier ? supplier.id : null,
+    supplierName: supplier ? supplier.name : 'Proveedor General',
+    costPerUnit: Number(costPerUnit) || 0
+  };
+
+  data.inventory.push(newLot);
+  db.saveData(data);
+  res.status(201).json({ success: true, data: newLot });
+});
+
+app.patch('/api/inventory/:id/adjust', (req, res) => {
+  const { id } = req.params;
+  const { delta, reason } = req.body;
+  const data = db.getData();
+  const lot = (data.inventory || []).find(l => l.id === id);
+  if (!lot) return res.status(404).json({ success: false, message: 'Lote no encontrado' });
+
+  lot.currentQuantity = Math.max(0, lot.currentQuantity + Number(delta));
+  db.saveData(data);
+  res.json({ success: true, data: lot, reason: reason || 'Ajuste manual' });
+});
+
+app.get('/api/inventory/scan/:barcode', (req, res) => {
+  const { barcode } = req.params;
+  const data = db.getData();
+  const item = (data.inventory || []).find(l => l.barcode === barcode);
+  if (!item) {
+    return res.status(404).json({ success: false, message: `Código ${barcode} no registrado` });
+  }
+  res.json({ success: true, data: item });
+});
+
+// ========================
+// 2.2 PROVEEDORES
+// ========================
+app.get('/api/suppliers', (req, res) => {
+  const data = db.getData();
+  res.json({ success: true, data: data.suppliers || [] });
+});
+
+app.post('/api/suppliers', (req, res) => {
+  const { name, cuit, category, contact, phone, email, deliveryDays } = req.body;
+  const data = db.getData();
+  if (!data.suppliers) data.suppliers = [];
+
+  const newSupplier = {
+    id: Date.now(),
+    name,
+    cuit: cuit || '30-00000000-0',
+    category: category || 'Insumos Generales',
+    contact: contact || '',
+    phone: phone || '',
+    email: email || '',
+    deliveryDays: deliveryDays || 'A coordinar',
+    rating: 5.0,
+    activeOrders: 0
+  };
+
+  data.suppliers.push(newSupplier);
+  db.saveData(data);
+  res.status(201).json({ success: true, data: newSupplier });
 });
 
 // ========================

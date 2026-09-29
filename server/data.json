@@ -404,5 +404,139 @@
       "orderCount": 29,
       "topDish": "Risotto de Hongos"
     }
+  ],
+  "inventory": [
+    {
+      "id": "lot-carne-001",
+      "name": "Bife de Chorizo Premium Envasado al Vacío",
+      "category": "Carnes Rojas",
+      "lotCode": "LOT-2026-BIF-089",
+      "barcode": "7791234567890",
+      "currentQuantity": 18500,
+      "unit": "g",
+      "minStock": 5000,
+      "expiryDate": "2026-10-15",
+      "supplierId": 1,
+      "supplierName": "Frigorífico La Pampa Gourmet",
+      "costPerUnit": 14.5
+    },
+    {
+      "id": "lot-salmon-002",
+      "name": "Salmón Rosado Fresco del Atlántico Sur",
+      "category": "Pescados & Mariscos",
+      "lotCode": "LOT-2026-SAL-044",
+      "barcode": "7799876543210",
+      "currentQuantity": 8200,
+      "unit": "g",
+      "minStock": 3000,
+      "expiryDate": "2026-10-04",
+      "supplierId": 2,
+      "supplierName": "Pescadería Central Mar Adentro",
+      "costPerUnit": 22.0
+    },
+    {
+      "id": "lot-hongos-003",
+      "name": "Hongos Silvestres & Portobellos Frescos",
+      "category": "Vegetales & Hongos",
+      "lotCode": "LOT-2026-HNG-112",
+      "barcode": "7795556667778",
+      "currentQuantity": 4600,
+      "unit": "g",
+      "minStock": 2000,
+      "expiryDate": "2026-10-05",
+      "supplierId": 3,
+      "supplierName": "Huerta Orgánica Los Arrayanes",
+      "costPerUnit": 7.8
+    },
+    {
+      "id": "lot-vino-004",
+      "name": "Vino Malbec Gran Reserva Botella 750ml",
+      "category": "Bebidas & Bodega",
+      "lotCode": "LOT-2026-MAL-301",
+      "barcode": "7793332221114",
+      "currentQuantity": 36,
+      "unit": "unidades",
+      "minStock": 12,
+      "expiryDate": "2028-12-31",
+      "supplierId": 4,
+      "supplierName": "Bodega Valle de Uco Select",
+      "costPerUnit": 11500
+    },
+    {
+      "id": "lot-choc-005",
+      "name": "Chocolate Belga 70% Callebaut",
+      "category": "Pastelería",
+      "lotCode": "LOT-2026-CHO-019",
+      "barcode": "5410522012345",
+      "currentQuantity": 7500,
+      "unit": "g",
+      "minStock": 2500,
+      "expiryDate": "2027-04-20",
+      "supplierId": 5,
+      "supplierName": "Distribuidora Chocolates del Mundo",
+      "costPerUnit": 12.0
+    }
+  ],
+  "suppliers": [
+    {
+      "id": 1,
+      "name": "Frigorífico La Pampa Gourmet",
+      "cuit": "30-70891234-9",
+      "category": "Carnes Rojas & Achuras",
+      "contact": "Mariano Echeverría",
+      "phone": "+54 9 11 3456-7890",
+      "email": "pedidos@lapampagourmet.com.ar",
+      "deliveryDays": "Martes y Viernes",
+      "rating": 4.9,
+      "activeOrders": 1
+    },
+    {
+      "id": 2,
+      "name": "Pescadería Central Mar Adentro",
+      "cuit": "30-68994512-4",
+      "category": "Pescados & Mariscos",
+      "contact": "Silvia Barrenechea",
+      "phone": "+54 9 11 4567-8901",
+      "email": "ventas@maradentro.com.ar",
+      "deliveryDays": "Lunes, Miércoles y Sábados",
+      "rating": 4.8,
+      "activeOrders": 0
+    },
+    {
+      "id": 3,
+      "name": "Huerta Orgánica Los Arrayanes",
+      "cuit": "30-71452389-1",
+      "category": "Verduras, Hongos & Aromáticas",
+      "contact": "Esteban Morales",
+      "phone": "+54 9 11 5678-9012",
+      "email": "contacto@huertarrayanes.org",
+      "deliveryDays": "Lunes a Viernes (Diario)",
+      "rating": 5.0,
+      "activeOrders": 0
+    },
+    {
+      "id": 4,
+      "name": "Bodega Valle de Uco Select",
+      "cuit": "33-59881234-9",
+      "category": "Vinos & Espumantes",
+      "contact": "Gonzalo Videla",
+      "phone": "+54 9 261 489-0123",
+      "email": "sommelier@valledeuco.com",
+      "deliveryDays": "Jueves",
+      "rating": 4.9,
+      "activeOrders": 0
+    },
+    {
+      "id": 5,
+      "name": "Distribuidora Chocolates del Mundo",
+      "cuit": "30-71009988-3",
+      "category": "Insumos Pastelería & Secos",
+      "contact": "Florencia Peña",
+      "phone": "+54 9 11 6789-0123",
+      "email": "chocolates@mundopastelero.com",
+      "deliveryDays": "Miércoles",
+      "rating": 4.7,
+      "activeOrders": 0
+    }
   ]
 }

@@ -6,6 +6,8 @@ const state = {
   menu: [],
   orders: [],
   reservations: [],
+  inventory: [],
+  suppliers: [],
   analytics: {},
   trayItems: [], // Ítems seleccionados para la comanda actual
   selectedArea: 'all',
@@ -24,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setupReservationForm();
   setupAIChat();
   setupModalEvents();
+  setupInventoryEvents();
+  setupSupplierEvents();
+  setupMenuManagementEvents();
 
   // Cargar datos iniciales
   fetchAllData();
@@ -41,6 +46,8 @@ async function fetchAllData() {
     fetchMenu(),
     fetchOrders(),
     fetchReservations(),
+    fetchInventory(),
+    fetchSuppliers(),
     fetchAnalytics()
   ]);
   renderAll();
@@ -103,6 +110,26 @@ async function fetchAnalytics() {
   }
 }
 
+async function fetchInventory() {
+  try {
+    const res = await fetch('/api/inventory');
+    const json = await res.json();
+    if (json.success) state.inventory = json.data;
+  } catch (e) {
+    console.error('Error cargando inventario', e);
+  }
+}
+
+async function fetchSuppliers() {
+  try {
+    const res = await fetch('/api/suppliers');
+    const json = await res.json();
+    if (json.success) state.suppliers = json.data;
+  } catch (e) {
+    console.error('Error cargando proveedores', e);
+  }
+}
+
 // ========================
 // RENDERIZADO GENERAL
 // ========================
@@ -110,6 +137,8 @@ function renderAll() {
   renderTables();
   renderKDS();
   renderMenu();
+  renderInventory();
+  renderSuppliers();
   renderTableSelects();
   renderReservations();
   updateKdsBadge();
@@ -256,16 +285,20 @@ function renderMenu() {
     : state.menu.filter(m => m.category.toLowerCase() === state.selectedCategory.toLowerCase());
 
   container.innerHTML = filtered.map(item => `
-    <div class="menu-item-card">
-      <div>
-        <h4>${item.name}</h4>
-        <p>${item.description}</p>
-        ${item.allergens && item.allergens.length ? `
-          <div style="font-size: 0.72rem; color: #e9c46a; margin-bottom: 8px;">
-            ⚠️ Alérgenos: ${item.allergens.join(', ')}
-          </div>
-        ` : ''}
+    <div class="menu-item-card" style="position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+        <h4 style="margin: 0;">${item.name}</h4>
+        <div style="display: flex; gap: 6px;">
+          <button title="Editar plato" onclick="openEditDishModal(${item.id})" style="background: none; border: none; cursor: pointer; font-size: 0.9rem;">✏️</button>
+          <button title="Eliminar plato" onclick="deleteDish(${item.id})" style="background: none; border: none; cursor: pointer; font-size: 0.9rem;">🗑️</button>
+        </div>
       </div>
+      <p style="margin-top: 6px;">${item.description}</p>
+      ${item.allergens && item.allergens.length ? `
+        <div style="font-size: 0.72rem; color: #e9c46a; margin-bottom: 8px;">
+          ⚠️ Alérgenos: ${item.allergens.join(', ')}
+        </div>
+      ` : ''}
       <div class="menu-item-footer">
         <span class="item-price">$${item.price.toLocaleString('es-AR')}</span>
         <button class="btn-add-item" onclick="addToTray(${item.id})">➕ Agregar</button>
@@ -604,6 +637,8 @@ function setupNavigation() {
     'tab-pos': { title: 'Mapa de Salón y Mesas (POS)', desc: 'Supervisión en tiempo real de ocupación, comandas y cuentas.' },
     'tab-kds': { title: 'Kitchen Display System (KDS)', desc: 'Gestión y control de tiempos de preparación en cocina.' },
     'tab-menu': { title: 'Carta & Toma de Pedidos', desc: 'Catálogo de platos y armado dinámico de comandas.' },
+    'tab-inventory': { title: 'Control de Stock, Lotes FEFO & Escáner', desc: 'Ingreso por código de barras, vencimientos y valorización de inventario.' },
+    'tab-suppliers': { title: 'Directorio de Proveedores & Compras', desc: 'Homologación de distribuidores, CUIT fiscal y órdenes de abastecimiento.' },
     'tab-reservations': { title: 'Gestión de Reservas', desc: 'Planificación de comensales y turnos de sala.' },
     'tab-copilot': { title: 'Copilot IA Gastronómico', desc: 'Asesor de maridaje, alérgenos y sugerencias de optimización.' },
     'tab-analytics': { title: 'Métricas & Desempeño', desc: 'Facturación acumulada, platos estrella y tiempos medios.' },
@@ -699,3 +734,389 @@ window.fetchKobeAudit = async function() {
     container.innerHTML = `<span style="color: #e76f51;">Error consultando Audit Ledger.</span>`;
   }
 };
+
+// ========================
+// VISTA: STOCK & ESCÁNER DE LOTES
+// ========================
+function renderInventory() {
+  const container = document.getElementById('inventory-table-container');
+  if (!container) return;
+
+  const lots = state.inventory || [];
+  const lowStockCount = lots.filter(l => l.currentQuantity <= l.minStock).length;
+  const totalValuation = lots.reduce((sum, l) => sum + (l.currentQuantity * (l.costPerUnit || 0)), 0);
+
+  const statLow = document.getElementById('stat-low-stock');
+  const statLots = document.getElementById('stat-total-lots');
+  const statVal = document.getElementById('stat-stock-valuation');
+
+  if (statLow) statLow.textContent = lowStockCount;
+  if (statLots) statLots.textContent = lots.length;
+  if (statVal) statVal.textContent = `$${Math.round(totalValuation).toLocaleString('es-AR')}`;
+
+  if (lots.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); padding: 16px;">No hay lotes de insumos registrados aún.</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border-color); color: var(--primary);">
+          <th style="padding: 10px 8px;">Código / Lote</th>
+          <th style="padding: 10px 8px;">Insumo</th>
+          <th style="padding: 10px 8px;">Categoría</th>
+          <th style="padding: 10px 8px;">Stock Disponible</th>
+          <th style="padding: 10px 8px;">Vencimiento (FEFO)</th>
+          <th style="padding: 10px 8px;">Proveedor</th>
+          <th style="padding: 10px 8px; text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${lots.map(lot => {
+          const isLow = lot.currentQuantity <= lot.minStock;
+          return `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); ${isLow ? 'background: rgba(217,107,82,0.08);' : ''}">
+              <td style="padding: 12px 8px;">
+                <code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: var(--accent-gold);">${lot.lotCode}</code>
+                <div style="font-size: 0.75rem; color: #94a3b8;">EAN: ${lot.barcode}</div>
+              </td>
+              <td style="padding: 12px 8px; font-weight: 600;">${lot.name}</td>
+              <td style="padding: 12px 8px; color: var(--text-muted);">${lot.category}</td>
+              <td style="padding: 12px 8px;">
+                <strong style="color: ${isLow ? 'var(--accent-red)' : 'var(--accent-green)'};">
+                  ${lot.currentQuantity.toLocaleString('es-AR')} ${lot.unit}
+                </strong>
+                ${isLow ? '<span style="font-size: 0.72rem; color: var(--accent-red); display: block;">⚠️ Bajo Mínimo</span>' : ''}
+              </td>
+              <td style="padding: 12px 8px; color: #e9c46a;">${lot.expiryDate}</td>
+              <td style="padding: 12px 8px; color: var(--text-muted);">${lot.supplierName || '-'}</td>
+              <td style="padding: 12px 8px; text-align: right;">
+                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="adjustStockPrompt('${lot.id}')">⚖️ Ajustar</button>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+window.adjustStockPrompt = async function(lotId) {
+  const deltaStr = prompt('Ingrese cantidad para sumar (+) o restar (-) al stock (en unidad del lote):');
+  if (!deltaStr) return;
+  const delta = Number(deltaStr);
+  if (isNaN(delta)) return alert('Cantidad inválida');
+
+  const reason = prompt('Motivo del ajuste (ej: "Merma de cocina", "Ajuste de inventario", "Uso Josper"):') || 'Ajuste manual';
+
+  try {
+    const res = await fetch(`/api/inventory/${lotId}/adjust`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ delta, reason })
+    });
+    if (res.ok) {
+      await fetchInventory();
+      renderInventory();
+    }
+  } catch (err) {
+    alert('Error al ajustar stock');
+  }
+};
+
+// ========================
+// ESCÁNER DE CÓDIGO DE BARRAS
+// ========================
+function setupInventoryEvents() {
+  const btnScan = document.getElementById('btn-scan-barcode');
+  const inputScan = document.getElementById('scanner-input');
+  const btnSimulate = document.getElementById('btn-simulate-camera-scan');
+
+  const performScan = async (code) => {
+    if (!code) return;
+    const banner = document.getElementById('scanner-result-banner');
+    try {
+      const res = await fetch(`/api/inventory/scan/${encodeURIComponent(code)}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        const item = json.data;
+        if (banner) {
+          banner.style.display = 'block';
+          banner.innerHTML = `
+            <strong>✅ Insumo Escaneado con Éxito:</strong> ${item.name} (${item.lotCode})<br>
+            <span>Stock Actual: <strong>${item.currentQuantity} ${item.unit}</strong> | Vencimiento: ${item.expiryDate} | Proveedor: ${item.supplierName}</span>
+          `;
+        }
+      } else {
+        if (banner) {
+          banner.style.display = 'block';
+          banner.innerHTML = `<span style="color: var(--accent-red);">❌ Código ${code} no encontrado en base de datos.</span>`;
+        }
+      }
+    } catch (e) {
+      if (banner) {
+        banner.style.display = 'block';
+        banner.innerHTML = `<span style="color: var(--accent-red);">Error al consultar escáner.</span>`;
+      }
+    }
+  };
+
+  if (btnScan && inputScan) {
+    btnScan.addEventListener('click', () => performScan(inputScan.value.trim()));
+    inputScan.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') performScan(inputScan.value.trim());
+    });
+  }
+
+  if (btnSimulate) {
+    btnSimulate.addEventListener('click', () => {
+      // Simular selección aleatoria de un lote existente
+      const lots = state.inventory || [];
+      if (lots.length > 0) {
+        const sample = lots[Math.floor(Math.random() * lots.length)];
+        if (inputScan) inputScan.value = sample.barcode;
+        performScan(sample.barcode);
+      } else {
+        alert('No hay lotes registrados para simular');
+      }
+    });
+  }
+
+  // Modal Nuevo Lote
+  const btnOpenLot = document.getElementById('btn-open-new-lot-modal');
+  const modalLot = document.getElementById('modal-lot');
+  const closeLot = document.getElementById('modal-lot-close');
+  const cancelLot = document.getElementById('btn-cancel-lot');
+  const formLot = document.getElementById('form-lot');
+
+  if (btnOpenLot && modalLot) {
+    btnOpenLot.addEventListener('click', () => {
+      // Poblar select de proveedores
+      const suppSelect = document.getElementById('lot-supplier-select');
+      if (suppSelect) {
+        suppSelect.innerHTML = (state.suppliers || []).map(s => `
+          <option value="${s.id}">${s.name} (${s.category})</option>
+        `).join('');
+      }
+      modalLot.classList.add('active');
+    });
+  }
+
+  const closeLotModal = () => modalLot?.classList.remove('active');
+  if (closeLot) closeLot.addEventListener('click', closeLotModal);
+  if (cancelLot) cancelLot.addEventListener('click', closeLotModal);
+
+  if (formLot) {
+    formLot.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('lot-name').value,
+        barcode: document.getElementById('lot-barcode').value,
+        category: document.getElementById('lot-category').value,
+        currentQuantity: Number(document.getElementById('lot-quantity').value),
+        unit: document.getElementById('lot-unit').value,
+        expiryDate: document.getElementById('lot-expiry').value,
+        minStock: Number(document.getElementById('lot-min-stock').value),
+        supplierId: document.getElementById('lot-supplier-select').value
+      };
+
+      try {
+        const res = await fetch('/api/inventory', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          formLot.reset();
+          closeLotModal();
+          await fetchInventory();
+          renderInventory();
+        }
+      } catch (err) {
+        alert('Error al registrar lote');
+      }
+    });
+  }
+}
+
+// ========================
+// VISTA: PROVEEDORES
+// ========================
+function renderSuppliers() {
+  const container = document.getElementById('suppliers-grid');
+  if (!container) return;
+
+  const suppliers = state.suppliers || [];
+  if (suppliers.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); padding: 16px;">No hay proveedores registrados aún.</p>`;
+    return;
+  }
+
+  container.innerHTML = suppliers.map(s => `
+    <div class="glass-box" style="display: flex; flex-direction: column; justify-content: space-between; border-left: 3px solid var(--primary);">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <h4 style="margin: 0; font-size: 1.1rem; color: var(--text-main);">${s.name}</h4>
+          <span style="color: #e9c46a; font-size: 0.85rem;">⭐ ${s.rating || '5.0'}</span>
+        </div>
+        <p style="color: var(--primary); font-size: 0.85rem; margin: 4px 0 10px 0;">${s.category}</p>
+        
+        <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+          <div><strong>CUIT:</strong> ${s.cuit}</div>
+          <div><strong>Contacto:</strong> ${s.contact || 'No especificado'}</div>
+          <div><strong>Teléfono:</strong> <a href="tel:${s.phone}" style="color: var(--text-main);">${s.phone}</a></div>
+          <div><strong>Email:</strong> <a href="mailto:${s.email}" style="color: var(--text-main);">${s.email}</a></div>
+          <div><strong>Días de Entrega:</strong> ${s.deliveryDays}</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; color: var(--accent-green);">● Homologado KOBE</span>
+        <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="alert('Generando orden de abastecimiento para ${s.name}...')">📦 Pedir Insumos</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setupSupplierEvents() {
+  const btnOpen = document.getElementById('btn-open-new-supplier-modal');
+  const modal = document.getElementById('modal-supplier');
+  const closeBtn = document.getElementById('modal-supplier-close');
+  const cancelBtn = document.getElementById('btn-cancel-supplier');
+  const form = document.getElementById('form-supplier');
+
+  if (btnOpen && modal) {
+    btnOpen.addEventListener('click', () => modal.classList.add('active'));
+  }
+
+  const closeModal = () => modal?.classList.remove('active');
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('supp-name').value,
+        cuit: document.getElementById('supp-cuit').value,
+        category: document.getElementById('supp-category').value,
+        contact: document.getElementById('supp-contact').value,
+        phone: document.getElementById('supp-phone').value,
+        email: document.getElementById('supp-email').value,
+        deliveryDays: document.getElementById('supp-delivery').value
+      };
+
+      try {
+        const res = await fetch('/api/suppliers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          form.reset();
+          closeModal();
+          await fetchSuppliers();
+          renderSuppliers();
+        }
+      } catch (err) {
+        alert('Error al registrar proveedor');
+      }
+    });
+  }
+}
+
+// ========================
+// GESTIÓN DE CARTA (MODIFICACIONES DE MENÚ)
+// ========================
+function setupMenuManagementEvents() {
+  const btnOpenDish = document.getElementById('btn-open-new-dish-modal');
+  const modalDish = document.getElementById('modal-dish');
+  const closeDish = document.getElementById('modal-dish-close');
+  const cancelDish = document.getElementById('btn-cancel-dish');
+  const formDish = document.getElementById('form-dish');
+  const modalTitle = document.getElementById('modal-dish-title');
+
+  if (btnOpenDish && modalDish) {
+    btnOpenDish.addEventListener('click', () => {
+      document.getElementById('dish-id').value = '';
+      if (formDish) formDish.reset();
+      if (modalTitle) modalTitle.textContent = 'Agregar Plato a la Carta';
+      modalDish.classList.add('active');
+    });
+  }
+
+  const closeDishModal = () => modalDish?.classList.remove('active');
+  if (closeDish) closeDish.addEventListener('click', closeDishModal);
+  if (cancelDish) cancelDish.addEventListener('click', closeDishModal);
+
+  if (formDish) {
+    formDish.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const dishId = document.getElementById('dish-id').value;
+      const payload = {
+        name: document.getElementById('dish-name').value,
+        category: document.getElementById('dish-category').value,
+        price: Number(document.getElementById('dish-price').value),
+        timeMinutes: Number(document.getElementById('dish-time').value),
+        allergens: document.getElementById('dish-allergens').value,
+        description: document.getElementById('dish-description').value
+      };
+
+      try {
+        const url = dishId ? `/api/menu/${dishId}` : '/api/menu';
+        const method = dishId ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          formDish.reset();
+          closeDishModal();
+          await fetchMenu();
+          renderMenu();
+        }
+      } catch (err) {
+        alert('Error al guardar plato');
+      }
+    });
+  }
+}
+
+window.openEditDishModal = function(dishId) {
+  const item = state.menu.find(m => m.id === dishId);
+  if (!item) return;
+
+  const modalDish = document.getElementById('modal-dish');
+  const modalTitle = document.getElementById('modal-dish-title');
+
+  document.getElementById('dish-id').value = item.id;
+  document.getElementById('dish-name').value = item.name;
+  document.getElementById('dish-category').value = item.category;
+  document.getElementById('dish-price').value = item.price;
+  document.getElementById('dish-time').value = item.timeMinutes || 15;
+  document.getElementById('dish-allergens').value = Array.isArray(item.allergens) ? item.allergens.join(', ') : (item.allergens || '');
+  document.getElementById('dish-description').value = item.description || '';
+
+  if (modalTitle) modalTitle.textContent = `Editar Plato: ${item.name}`;
+  if (modalDish) modalDish.classList.add('active');
+};
+
+window.deleteDish = async function(dishId) {
+  const item = state.menu.find(m => m.id === dishId);
+  if (!item) return;
+
+  if (!confirm(`¿Estás seguro de eliminar "${item.name}" de la carta?`)) return;
+
+  try {
+    const res = await fetch(`/api/menu/${dishId}`, { method: 'DELETE' });
+    if (res.ok) {
+      await fetchMenu();
+      renderMenu();
+    }
+  } catch (err) {
+    alert('Error al eliminar plato');
+  }
+};
+

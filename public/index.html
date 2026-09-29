@@ -33,7 +33,15 @@
         </button>
         <button class="nav-item" data-tab="tab-menu">
           <span class="icon">📋</span>
-          <span>Carta & Comanda</span>
+          <span>Carta &amp; Comanda</span>
+        </button>
+        <button class="nav-item" data-tab="tab-inventory">
+          <span class="icon">📦</span>
+          <span>Stock Cocina &amp; Escáner</span>
+        </button>
+        <button class="nav-item" data-tab="tab-suppliers">
+          <span class="icon">🚚</span>
+          <span>Proveedores</span>
         </button>
         <button class="nav-item" data-tab="tab-reservations">
           <span class="icon">📅</span>
@@ -45,11 +53,11 @@
         </button>
         <button class="nav-item" data-tab="tab-analytics">
           <span class="icon">📊</span>
-          <span>Métricas & Ventas</span>
+          <span>Métricas &amp; Ventas</span>
         </button>
         <button class="nav-item" data-tab="tab-kobe-engine">
           <span class="icon">🛡️</span>
-          <span>KOBE Engine & Audit</span>
+          <span>KOBE Engine &amp; Audit</span>
         </button>
       </nav>
 
@@ -155,6 +163,14 @@
 
       <!-- TAB 3: CARTA Y TOMA DE COMANDAS -->
       <section id="tab-menu" class="tab-pane">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h3>Gestión de Carta y Pedidos</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Crea comandas de salón o añade/edita platos y recetas del restaurante.</p>
+          </div>
+          <button class="btn btn-primary" id="btn-open-new-dish-modal">➕ Agregar Plato a la Carta</button>
+        </div>
+
         <div class="order-creator-layout">
           <!-- Columna izquierda: Menú -->
           <div class="menu-browser">
@@ -198,6 +214,73 @@
               </div>
               <button class="btn btn-primary btn-block" id="btn-send-to-kitchen">🚀 Enviar a Cocina (KDS)</button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: STOCK COCINA & ESCÁNER DE CÓDIGO DE BARRAS -->
+      <section id="tab-inventory" class="tab-pane">
+        <div class="inventory-layout" style="display: flex; flex-direction: column; gap: 20px;">
+          <!-- Barra superior de escáner y acciones -->
+          <div class="glass-box" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
+              <span style="font-size: 1.6rem;">📷</span>
+              <div style="flex: 1;">
+                <label style="font-size: 0.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Escáner de Código de Barras / Lotes</label>
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                  <input type="text" id="scanner-input" class="input-text" placeholder="Escanear o ingresar código (ej: 7791234567890)..." style="flex: 1;" />
+                  <button class="btn btn-primary" id="btn-scan-barcode">🔍 Buscar / Picar</button>
+                  <button class="btn btn-secondary" id="btn-simulate-camera-scan" title="Simular escaneo de cámara">📸 Simular Cámara</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" id="btn-open-new-lot-modal">➕ Recibir Nuevo Lote / Insumo</button>
+            </div>
+          </div>
+
+          <!-- Alerta de escáner en vivo -->
+          <div id="scanner-result-banner" style="display: none; padding: 14px; border-radius: 8px; background: rgba(72,169,124,0.15); border: 1px solid var(--accent-green);"></div>
+
+          <!-- Métricas de stock -->
+          <div class="stats-bar">
+            <div class="stat-card">
+              <span class="stat-label">Insumos Críticos</span>
+              <strong class="stat-value text-accent" id="stat-low-stock">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Total Lotes Activos</span>
+              <strong class="stat-value" id="stat-total-lots">5</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Valorizado en Stock</span>
+              <strong class="stat-value text-success" id="stat-stock-valuation">$845.000</strong>
+            </div>
+          </div>
+
+          <!-- Grilla de Lotes e Inventario -->
+          <div class="table-container glass-box">
+            <h3 style="margin-bottom: 14px;">Lotes en Cámara Fría y Depósito (FEFO)</h3>
+            <div id="inventory-table-container">
+              <!-- Render dinámico de lotes -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: PROVEEDORES Y COMPRAS -->
+      <section id="tab-suppliers" class="tab-pane">
+        <div class="suppliers-layout" style="display: flex; flex-direction: column; gap: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3>Directorio de Proveedores Homologados</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">Gestión de compras, CUITs fiscales, contactos y frecuencias de entrega.</p>
+            </div>
+            <button class="btn btn-primary" id="btn-open-new-supplier-modal">➕ Registrar Proveedor</button>
+          </div>
+
+          <div class="suppliers-grid" id="suppliers-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px;">
+            <!-- Inyectado vía JS -->
           </div>
         </div>
       </section>
@@ -405,6 +488,181 @@
       <div class="modal-footer" id="modal-table-footer">
         <!-- Acciones: Cobrar cuenta, Liberar mesa, etc. -->
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR / EDITAR PLATO DEL MENÚ -->
+  <div class="modal-overlay" id="modal-dish">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-dish-title">Agregar Plato a la Carta</h3>
+        <button class="close-btn" id="modal-dish-close">×</button>
+      </div>
+      <form id="form-dish">
+        <div class="modal-body">
+          <input type="hidden" id="dish-id" />
+          <div class="form-group">
+            <label>Nombre del Plato</label>
+            <input type="text" id="dish-name" class="input-text" placeholder="Ej: Risotto al Azafrán con Calamares" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Categoría</label>
+              <select id="dish-category" class="input-select">
+                <option value="Entradas">Entradas</option>
+                <option value="Principales" selected>Principales</option>
+                <option value="Pastas">Pastas</option>
+                <option value="Postres">Postres</option>
+                <option value="Vinos">Vinos</option>
+                <option value="Bebidas">Bebidas</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Precio de Venta ($)</label>
+              <input type="number" id="dish-price" class="input-text" placeholder="24000" min="0" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tiempo Estimado (min)</label>
+              <input type="number" id="dish-time" class="input-text" value="15" min="1" />
+            </div>
+            <div class="form-group">
+              <label>Alérgenos (separados por coma)</label>
+              <input type="text" id="dish-allergens" class="input-text" placeholder="Gluten, Lácteos..." />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descripción y Notas de Cocina</label>
+            <textarea id="dish-description" class="input-text" rows="2" placeholder="Detalle de ingredientes, preparación y presentación..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-dish">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar en Carta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RECIBIR NUEVO LOTE DE INVENTARIO -->
+  <div class="modal-overlay" id="modal-lot">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Recepción de Lote / Insumo</h3>
+        <button class="close-btn" id="modal-lot-close">×</button>
+      </div>
+      <form id="form-lot">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre del Insumo / Producto</label>
+            <input type="text" id="lot-name" class="input-text" placeholder="Ej: Lomo Vacuno Envasado al Vacío" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Código de Barras / EAN-13</label>
+              <input type="text" id="lot-barcode" class="input-text" placeholder="779..." required />
+            </div>
+            <div class="form-group">
+              <label>Categoría</label>
+              <select id="lot-category" class="input-select">
+                <option value="Carnes Rojas">Carnes Rojas</option>
+                <option value="Pescados & Mariscos">Pescados & Mariscos</option>
+                <option value="Vegetales & Hongos">Vegetales & Hongos</option>
+                <option value="Lácteos & Quesos">Lácteos & Quesos</option>
+                <option value="Bebidas & Bodega">Bebidas & Bodega</option>
+                <option value="Pastelería & Secos">Pastelería & Secos</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Cantidad Inicial</label>
+              <input type="number" id="lot-quantity" class="input-text" placeholder="10000" required />
+            </div>
+            <div class="form-group">
+              <label>Unidad de Medida</label>
+              <select id="lot-unit" class="input-select">
+                <option value="g">Gramos (g)</option>
+                <option value="ml">Mililitros (ml)</option>
+                <option value="unidades">Unidades</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha de Vencimiento (FEFO)</label>
+              <input type="date" id="lot-expiry" class="input-text" required />
+            </div>
+            <div class="form-group">
+              <label>Stock Mínimo de Alerta</label>
+              <input type="number" id="lot-min-stock" class="input-text" value="3000" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Proveedor Homologado</label>
+            <select id="lot-supplier-select" class="input-select">
+              <!-- Cargado dinámicamente -->
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-lot">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar Lote</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR NUEVO PROVEEDOR -->
+  <div class="modal-overlay" id="modal-supplier">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Registrar Nuevo Proveedor</h3>
+        <button class="close-btn" id="modal-supplier-close">×</button>
+      </div>
+      <form id="form-supplier">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Razón Social / Nombre Comercial</label>
+            <input type="text" id="supp-name" class="input-text" placeholder="Ej: Distribuidora Frutas Andinas" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>CUIT Fiscal</label>
+              <input type="text" id="supp-cuit" class="input-text" placeholder="30-..." required />
+            </div>
+            <div class="form-group">
+              <label>Rubro Principal</label>
+              <input type="text" id="supp-category" class="input-text" placeholder="Frutas, Verduras..." required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Contacto / Vendedor</label>
+              <input type="text" id="supp-contact" class="input-text" placeholder="Nombre del representante" />
+            </div>
+            <div class="form-group">
+              <label>Teléfono / WhatsApp</label>
+              <input type="text" id="supp-phone" class="input-text" placeholder="+54 9 11..." required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email de Pedidos</label>
+              <input type="email" id="supp-email" class="input-text" placeholder="pedidos@..." />
+            </div>
+            <div class="form-group">
+              <label>Frecuencia / Días de Entrega</label>
+              <input type="text" id="supp-delivery" class="input-text" placeholder="Martes y Viernes mañana" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-supplier">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Proveedor</button>
+        </div>
+      </form>
     </div>
   </div>
 
