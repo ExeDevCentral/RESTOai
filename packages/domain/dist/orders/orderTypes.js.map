@@ -1,0 +1,1 @@
+{"version":3,"file":"orderTypes.js","sourceRoot":"","sources":["../../src/orders/orderTypes.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,CAAC,EAAE,MAAM,KAAK,CAAC;AAIxB,MAAM,CAAC,MAAM,gBAAgB,GAAG,CAAC,CAAC,IAAI,CAAC;IACrC,OAAO;IACP,WAAW;IACX,gBAAgB;IAChB,OAAO;IACP,WAAW;IACX,WAAW;IACX,QAAQ;CACT,CAAC,CAAC"}

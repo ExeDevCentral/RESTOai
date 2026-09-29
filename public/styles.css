@@ -1,27 +1,33 @@
 :root {
-  --bg-dark: #0f1117;
-  --bg-card: #181b24;
-  --bg-card-hover: #212634;
-  --bg-sidebar: #0b0d12;
-  --primary: #d4a373;
-  --primary-hover: #e6b88a;
-  --accent-gold: #e9c46a;
-  --accent-red: #e76f51;
-  --accent-green: #2a9d8f;
-  --accent-blue: #457b9d;
-  --text-main: #f8f9fa;
-  --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(212, 163, 115, 0.4);
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  /* Paleta cálida, humana y orgánica (Bistró & Café Moderno) */
+  --bg-dark: #12100e; /* Espresso profundo, no negro frío */
+  --bg-card: #1c1815; /* Roble oscuro suave */
+  --bg-card-hover: #26211c;
+  --bg-sidebar: #0d0b09; /* Ébano cálido */
+  
+  --primary: #e0a96d; /* Ámbar tostado suave */
+  --primary-hover: #ecc18d;
+  --accent-gold: #f3c68f; /* Luz de vela cálida */
+  --accent-red: #d96b52; /* Terracota natural */
+  --accent-green: #48a97c; /* Salvia / Albahaca suave */
+  --accent-blue: #6096ba; /* Cerámica suave */
+
+  --text-main: #f5efe6; /* Crema marfil suave, cero encandilamiento */
+  --text-muted: #a89f91; /* Arena tostada para lectura descansada */
+  --border-color: rgba(224, 169, 109, 0.10);
+  --border-active: rgba(224, 169, 109, 0.35);
+  
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  
   --font-main: 'Plus Jakarta Sans', sans-serif;
   --font-title: 'Outfit', sans-serif;
   --font-brand: 'Syne', sans-serif;
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-  --glass-bg: rgba(24, 27, 36, 0.75);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  
+  --shadow-card: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  --glass-bg: rgba(28, 24, 21, 0.85);
+  --glass-border: 1px solid rgba(224, 169, 109, 0.12);
 }
 
 * {
