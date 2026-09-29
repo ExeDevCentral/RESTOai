@@ -394,33 +394,50 @@ function renderKDS() {
   document.getElementById('count-cooking').textContent = enCocina.length;
   document.getElementById('count-ready').textContent = listos.length;
 
-  const renderCard = (order, nextStatus, nextLabel, btnClass = 'btn-primary') => `
-    <div class="kds-card">
-      <div class="kds-card-head">
-        <strong>Mesa ${order.tableNumber}</strong>
-        <span class="kds-time">${formatTimeAgo(order.createdAt)}</span>
+  const renderCard = (order, nextStatus, nextLabel, btnClass = 'btn-primary') => {
+    const elapsedMins = order.createdAt ? Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000) : 0;
+    const isDelayed = elapsedMins >= 20;
+    const isWarning = elapsedMins >= 10 && elapsedMins < 20;
+    const borderColor = isDelayed ? '#ef4444' : isWarning ? '#e9c46a' : 'rgba(224,169,109,0.18)';
+    const delayBadge = isDelayed 
+      ? '<span style="background: rgba(239,68,68,0.2); color: #ef4444; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #ef4444;">🚨 DEMORA CRÍTICA</span>' 
+      : isWarning 
+      ? '<span style="background: rgba(233,196,106,0.2); color: #e9c46a; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">⚠️ ALERTA TIEMPO</span>' 
+      : '';
+
+    return `
+      <div class="kds-card" style="border: 1px solid ${borderColor}; transition: transform 0.2s ease, border-color 0.2s ease;">
+        <div class="kds-card-head">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <strong>Mesa ${order.tableNumber}</strong>
+            ${delayBadge}
+          </div>
+          <span class="kds-time" style="color: ${isDelayed ? '#ef4444' : isWarning ? '#e9c46a' : 'inherit'}; font-weight: 600;">
+            ⏱️ ${elapsedMins} min
+          </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <small style="color: #94a3b8;">Mozo: ${order.waiter}</small>
+          ${station !== 'all' ? `<span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(224,169,109,0.15); color: var(--primary);">Estación: ${station}</span>` : ''}
+        </div>
+        <ul class="kds-items">
+          ${order.filteredItems.map(i => `
+            <li>
+              <span><strong>${i.quantity}x</strong> ${i.name}</span>
+              ${i.notes ? `<div class="kds-note">Nota: ${i.notes}</div>` : ''}
+            </li>
+          `).join('')}
+        </ul>
+        <div class="kds-actions">
+          ${nextStatus ? `
+            <button class="btn ${btnClass} btn-block" onclick="updateOrderStatus(${order.id}, '${nextStatus}')">
+              ${nextLabel}
+            </button>
+          ` : ''}
+        </div>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <small style="color: #94a3b8;">Mozo: ${order.waiter}</small>
-        ${station !== 'all' ? `<span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(224,169,109,0.15); color: var(--primary);">Estación: ${station}</span>` : ''}
-      </div>
-      <ul class="kds-items">
-        ${order.filteredItems.map(i => `
-          <li>
-            <span><strong>${i.quantity}x</strong> ${i.name}</span>
-            ${i.notes ? `<div class="kds-note">Nota: ${i.notes}</div>` : ''}
-          </li>
-        `).join('')}
-      </ul>
-      <div class="kds-actions">
-        ${nextStatus ? `
-          <button class="btn ${btnClass} btn-block" onclick="updateOrderStatus(${order.id}, '${nextStatus}')">
-            ${nextLabel}
-          </button>
-        ` : ''}
-      </div>
-    </div>
-  `;
+    `;
+  };
 
   listPendiente.innerHTML = pendientes.length > 0
     ? pendientes.map(o => renderCard(o, 'en_cocina', '🔥 Iniciar Preparación')).join('')
@@ -889,11 +906,58 @@ window.settleBillWithFiscal = async function(orderId) {
     await fetchAllData();
 
     if (json.invoice) {
-      alert(`✅ Cobro exitoso y Factura Emitida:\n• Tipo: ${json.invoice.invoiceType}\n• Total: $${(Number(json.invoice.totalAmountCents) / 100).toLocaleString('es-AR')}\n• CAE: ${json.invoice.cae}\n• Vto CAE: ${json.invoice.caeExpirationDate}\n• Asiento contable registrado en Audit Ledger.`);
+      showFiscalInvoiceModal(json.invoice, json.data, paymentMethod);
     }
   } catch (err) {
     alert('Error al procesar cobro');
   }
+};
+
+window.showFiscalInvoiceModal = function(invoice, order, paymentMethod) {
+  const modal = document.getElementById('modal-fiscal-invoice');
+  if (!modal) return;
+
+  const letterBadge = document.getElementById('invoice-letter-badge');
+  const titleText = document.getElementById('invoice-title-text');
+  const dateText = document.getElementById('invoice-date-text');
+  const buyerText = document.getElementById('invoice-buyer-text');
+  const tableText = document.getElementById('invoice-table-text');
+  const payMethodText = document.getElementById('invoice-payment-method-text');
+  const itemsContainer = document.getElementById('invoice-items-list');
+  const netText = document.getElementById('invoice-net-text');
+  const vatText = document.getElementById('invoice-vat-text');
+  const totalText = document.getElementById('invoice-total-text');
+  const caeText = document.getElementById('invoice-cae-text');
+  const caeExpText = document.getElementById('invoice-cae-exp-text');
+
+  const letter = invoice.invoiceType === 'FACTURA_A' ? 'A' : invoice.invoiceType === 'FACTURA_C' ? 'C' : 'B';
+  if (letterBadge) letterBadge.textContent = letter;
+  if (titleText) titleText.textContent = `${invoice.invoiceType.replace('_', ' ')} N° 0001-${String(invoice.invoiceNumber || 42).padStart(8, '0')}`;
+  if (dateText) dateText.textContent = new Date(invoice.issuedAt || Date.now()).toLocaleString('es-AR');
+  if (buyerText) buyerText.textContent = invoice.buyerCategory === 'RESPONSABLE_INSCRIPTO' ? `Resp. Inscripto (CUIT ${invoice.buyerCuit || '30-XXXXXXXX-X'})` : 'Consumidor Final';
+  if (tableText) tableText.textContent = order ? `Mesa ${order.tableNumber || '-'}` : 'Salón';
+  if (payMethodText) payMethodText.textContent = paymentMethod === 'DIGITAL' ? '💳 Tarjeta / Transferencia QR' : '💵 Efectivo (Gaveta de Caja)';
+
+  if (itemsContainer && order && order.items) {
+    itemsContainer.innerHTML = order.items.map(item => `
+      <div style="display: flex; justify-content: space-between; padding: 2px 0;">
+        <span>${item.quantity}x ${item.name}</span>
+        <span>$${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+      </div>
+    `).join('');
+  }
+
+  const net = Number(invoice.netAmountCents) / 100;
+  const vat = Number(invoice.vatAmountCents) / 100;
+  const total = Number(invoice.totalAmountCents) / 100;
+
+  if (netText) netText.textContent = `$${net.toLocaleString('es-AR')}`;
+  if (vatText) vatText.textContent = `$${vat.toLocaleString('es-AR')}`;
+  if (totalText) totalText.textContent = `$${total.toLocaleString('es-AR')}`;
+  if (caeText) caeText.textContent = invoice.cae || '74391823901923';
+  if (caeExpText) caeExpText.textContent = invoice.caeExpirationDate ? new Date(invoice.caeExpirationDate).toLocaleDateString('es-AR') : '10 Días';
+
+  modal.classList.add('active');
 };
 
 window.startNewOrderForTable = function(tableId) {

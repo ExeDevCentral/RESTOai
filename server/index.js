@@ -582,6 +582,66 @@ app.put('/api/orders/:id/status', async (req, res) => {
 
   order.status = status;
 
+  // Si pasa a 'en_cocina' o 'listo' por primera vez, descontar stock de insumos por Receta (BOM)
+  if ((status === 'en_cocina' || status === 'listo') && !order.stockDeducted) {
+    order.stockDeducted = true;
+    if (data.inventory && Array.isArray(data.inventory)) {
+      const { Recipe } = await import('../packages/domain/dist/index.js').catch(() => ({}));
+      
+      // Diccionario de recetas estándar de KOBE (BOM: Bill of Materials)
+      const recipeMap = {
+        1: [ // Bife de Chorizo Madurado 400g
+          { ingredientName: 'Bife de Chorizo', qty: 400, unit: 'g' }
+        ],
+        2: [ // Ojo de Bife con Puré Ahumado
+          { ingredientName: 'Bife de Chorizo', qty: 350, unit: 'g' }
+        ],
+        3: [ // Salmón Rosado en Costra de Almendras
+          { ingredientName: 'Salmón Rosado', qty: 250, unit: 'g' }
+        ],
+        5: [ // Risotto de Hongos Silvestres
+          { ingredientName: 'Hongos Silvestres', qty: 150, unit: 'g' }
+        ],
+        12: [ // Smoked Negroni
+          { ingredientName: 'Vino Malbec', qty: 1, unit: 'unidades' }
+        ]
+      };
+
+      for (const item of order.items) {
+        const ingredients = recipeMap[item.menuItemId] || [];
+        for (const ing of ingredients) {
+          const totalQtyToDeduct = ing.qty * item.quantity;
+          // Buscar lote correspondiente en inventario
+          const lot = data.inventory.find(l => l.name.toLowerCase().includes(ing.ingredientName.toLowerCase()));
+          if (lot) {
+            lot.currentQuantity = Math.max(0, lot.currentQuantity - totalQtyToDeduct);
+            console.log(`[BOM Stock] Descontados ${totalQtyToDeduct}${lot.unit} de "${lot.name}" para comanda #${order.id}`);
+          }
+        }
+      }
+
+      try {
+        const { AuditLedger } = await import('../packages/domain/dist/index.js');
+        AuditLedger.appendRecord({
+          organizationId: 'org-kobe-chain-arg',
+          locationId: 'loc-centro-arg',
+          actorId: 'usr-chef-01',
+          action: 'STOCK_CONSUMED_BY_RECIPE',
+          entityType: 'ORDER',
+          entityId: String(order.id),
+          requestId: `req-${Date.now()}`,
+          payload: {
+            orderId: order.id,
+            status,
+            itemCount: order.items.length
+          }
+        });
+      } catch (e) {
+        console.warn('Audit error on stock recipe deduction:', e);
+      }
+    }
+  }
+
   // Si se cobra, liberar la mesa y registrar en analítica y ledger
   let invoice = null;
   if (status === 'cobrado') {

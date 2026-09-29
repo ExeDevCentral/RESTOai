@@ -1024,7 +1024,8 @@ body {
   justify-content: center;
 }
 
-.modal-overlay.open {
+.modal-overlay.open,
+.modal-overlay.active {
   display: flex;
 }
 

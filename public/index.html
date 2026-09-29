@@ -949,6 +949,72 @@
     </div>
   </div>
 
+  <!-- MODAL: FACTURA ELECTRÓNICA & TICKET FISCAL ARCA -->
+  <div class="modal-overlay" id="modal-fiscal-invoice">
+    <div class="modal-content" style="max-width: 440px; background: #fff; color: #111; font-family: 'Courier New', Courier, monospace; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); border-radius: 8px;">
+      <div style="text-align: center; border-bottom: 2px dashed #333; padding-bottom: 12px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.3rem; margin: 0; font-family: 'Syne', sans-serif; letter-spacing: 1px; color: #000;">KOBE RESTO &amp; GRILL</h3>
+        <p style="font-size: 0.75rem; margin: 2px 0;">KOBE Gastronomía S.A. &bull; CUIT 30-71234567-8</p>
+        <p style="font-size: 0.72rem; margin: 0; color: #555;">IVA Responsable Inscripto &bull; Pto Vta: 0001</p>
+        <div style="display: inline-block; border: 2px solid #000; padding: 2px 14px; margin-top: 8px; font-weight: 800; font-size: 1.2rem;" id="invoice-letter-badge">B</div>
+        <p style="font-weight: 700; margin-top: 4px; font-size: 0.9rem;" id="invoice-title-text">FACTURA B N° 0001-00000042</p>
+      </div>
+
+      <div style="font-size: 0.8rem; line-height: 1.4; border-bottom: 1px dashed #777; padding-bottom: 10px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Fecha/Hora:</span> <strong id="invoice-date-text">29/09/2026 21:15</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Cliente:</span> <span id="invoice-buyer-text">Consumidor Final</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Mesa / Origen:</span> <span id="invoice-table-text">Mesa M-01</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Condición Venta:</span> <strong id="invoice-payment-method-text">Efectivo / Contado</strong>
+        </div>
+      </div>
+
+      <!-- Detalle de Ítems -->
+      <div style="font-size: 0.78rem; margin-bottom: 12px; min-height: 80px;" id="invoice-items-list">
+        <!-- Ítems inyectados vía JS -->
+      </div>
+
+      <div style="border-top: 2px dashed #333; padding-top: 10px; font-size: 0.85rem; line-height: 1.5;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Subtotal Neto Gravado:</span> <span id="invoice-net-text">$0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>IVA (21.00%):</span> <span id="invoice-vat-text">$0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 800; margin-top: 6px; border-top: 1px solid #111; padding-top: 4px;">
+          <span>TOTAL:</span> <span id="invoice-total-text">$0</span>
+        </div>
+      </div>
+
+      <!-- Pie Fiscal ARCA & Código QR Estándar AFIP -->
+      <div style="margin-top: 14px; padding-top: 10px; border-top: 2px dashed #333; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px;">
+          <div style="background: #000; color: #fff; padding: 6px; border-radius: 4px; display: inline-flex; flex-direction: column; align-items: center;">
+            <div style="width: 54px; height: 54px; background: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 50% / 9px 9px; border: 2px solid #fff;"></div>
+            <span style="font-size: 0.55rem; margin-top: 2px; letter-spacing: 0.5px;">QR AFIP ARCA</span>
+          </div>
+          <div style="text-align: left; font-size: 0.72rem; color: #222;">
+            <div><strong>CAE N°:</strong> <span id="invoice-cae-text">74391823901923</span></div>
+            <div><strong>Vto. CAE:</strong> <span id="invoice-cae-exp-text">09/10/2026</span></div>
+            <div style="color: #666; font-size: 0.65rem; margin-top: 2px;">Cadena Criptográfica KOBE SHA-256</div>
+          </div>
+        </div>
+        <p style="font-size: 0.68rem; color: #666; margin: 4px 0 0 0;">Comprobante Autorizado por Agencia de Recaudación y Control Aduanero (ARCA)</p>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 14px;">
+        <button type="button" class="btn btn-secondary" style="flex: 1; border-color: #999; color: #333; background: #eee;" onclick="document.getElementById('modal-fiscal-invoice').classList.remove('active');">Cerrar</button>
+        <button type="button" class="btn btn-primary" style="flex: 1; background: #111; color: #fff; border: none;" onclick="window.print()">🖨️ Imprimir Ticket</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
