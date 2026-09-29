@@ -125,15 +125,39 @@
           </div>
         </div>
 
-        <div class="area-filter-tabs">
-          <button class="area-pill active" data-area="all">Todas las Áreas</button>
-          <button class="area-pill" data-area="Salón Principal">Salón Principal</button>
-          <button class="area-pill" data-area="Terraza">Terraza</button>
-          <button class="area-pill" data-area="Barra & Coctelería">Barra</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div class="area-filter-tabs" style="margin-bottom: 0;">
+            <button class="area-pill active" data-area="all">Todas las Áreas</button>
+            <button class="area-pill" data-area="Salón Principal">Salón Principal</button>
+            <button class="area-pill" data-area="Terraza">Terraza</button>
+            <button class="area-pill" data-area="Barra & Coctelería">Barra</button>
+          </div>
+
+          <div class="view-mode-toggle" style="display: flex; gap: 6px; background: var(--bg-card); padding: 4px; border-radius: 20px; border: var(--glass-border);">
+            <button class="layout-toggle-btn active" id="btn-view-grid" style="padding: 6px 14px; border-radius: 16px; border: none; font-size: 0.82rem; cursor: pointer; background: var(--primary); color: #12100e; font-weight: 600;">🔲 Vista Tarjetas</button>
+            <button class="layout-toggle-btn" id="btn-view-floor" style="padding: 6px 14px; border-radius: 16px; border: none; font-size: 0.82rem; cursor: pointer; background: transparent; color: var(--text-muted); font-weight: 500;">🗺️ Plano Arquitectónico</button>
+          </div>
         </div>
 
+        <!-- Vista 1: Grilla de Tarjetas -->
         <div class="tables-grid" id="tables-grid">
           <!-- Renderizado dinámico de mesas -->
+        </div>
+
+        <!-- Vista 2: Plano Interactivo de Salón -->
+        <div class="floor-plan-container glass-box" id="floor-plan-view" style="display: none; position: relative; height: 520px; width: 100%; border-radius: 16px; overflow: hidden; background: radial-gradient(circle at 50% 50%, rgba(224, 169, 109, 0.04) 0%, rgba(18, 16, 14, 0.95) 100%); border: 1px solid var(--border-color);">
+          <div style="position: absolute; top: 16px; left: 20px; display: flex; gap: 16px; font-size: 0.8rem; color: var(--text-muted); z-index: 10;">
+            <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></span> Libre</span>
+            <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-gold);"></span> Ocupada</span>
+            <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-red);"></span> Cuenta Pedida</span>
+            <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue);"></span> Reservada</span>
+          </div>
+          <div style="position: absolute; top: 16px; right: 20px; font-size: 0.8rem; color: var(--primary); font-weight: 600; z-index: 10;">
+            📍 Salón &bull; Terraza &bull; Barra
+          </div>
+          <div id="floor-plan-canvas" style="position: relative; width: 100%; height: 100%;">
+            <!-- Mesas renderizadas con posiciones espaciales -->
+          </div>
         </div>
       </section>
 
