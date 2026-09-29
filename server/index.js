@@ -250,12 +250,30 @@ app.post('/api/orders', (req, res) => {
   }
 
   db.saveData(data);
+
+  // Registrar evento en Audit Ledger Criptográfico
+  import('../packages/domain/dist/index.js').then(({ AuditLedger }) => {
+    AuditLedger.append({
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg',
+      actorId: waiter || 'usr-waiter-01',
+      action: 'ORDER_CONFIRMED',
+      entityType: 'ORDER',
+      entityId: String(newOrder.id),
+      payload: {
+        tableNumber: newOrder.tableNumber,
+        itemCount: newOrder.items.length,
+        totalCents: BigInt(newOrder.total * 100)
+      }
+    });
+  }).catch(() => {});
+
   res.status(201).json({ success: true, data: newOrder });
 });
 
-app.put('/api/orders/:id/status', (req, res) => {
+app.put('/api/orders/:id/status', async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, paymentMethod } = req.body;
   const data = db.getData();
 
   const order = data.orders.find(o => o.id === parseInt(id));
@@ -263,17 +281,67 @@ app.put('/api/orders/:id/status', (req, res) => {
 
   order.status = status;
 
-  // Si se cobra, liberar la mesa y registrar en analítica
+  // Si se cobra, liberar la mesa y registrar en analítica y ledger
+  let invoice = null;
   if (status === 'cobrado') {
     const table = data.tables.find(t => t.id === order.tableId);
     if (table) {
       table.status = 'libre';
       table.currentOrderId = null;
     }
+
+    try {
+      const { AuditLedger, FiscalEngine, JournalAutomator } = await import('../packages/domain/dist/index.js');
+      
+      // 1. Emitir factura fiscal ARCA
+      invoice = FiscalEngine.issueInvoice({
+        organizationId: 'org-kobe-chain-arg',
+        locationId: 'loc-centro-arg',
+        orderId: String(order.id),
+        seller: {
+          cuit: '30712345678',
+          taxCategory: 'RESPONSABLE_INSCRIPTO',
+          businessName: 'KOBE Gastronomía S.A.',
+          pointOfSale: 1
+        },
+        buyer: {
+          taxCategory: 'CONSUMIDOR_FINAL',
+          businessName: `Comensal Mesa ${order.tableNumber}`
+        },
+        totalAmountCents: BigInt(order.total * 100)
+      });
+
+      // 2. Asentar partida doble contable
+      JournalAutomator.postSale({
+        organizationId: 'org-kobe-chain-arg',
+        locationId: 'loc-centro-arg',
+        orderId: String(order.id),
+        totalAmountCents: BigInt(order.total * 100),
+        paymentMethod: paymentMethod === 'DIGITAL' ? 'DIGITAL' : 'CASH'
+      });
+
+      // 3. Registrar en hash chain SHA-256
+      AuditLedger.append({
+        organizationId: 'org-kobe-chain-arg',
+        locationId: 'loc-centro-arg',
+        actorId: 'usr-cajero-01',
+        action: 'ORDER_PAID_AND_INVOICED',
+        entityType: 'INVOICE',
+        entityId: invoice.id,
+        payload: {
+          orderId: order.id,
+          invoiceType: invoice.invoiceType,
+          cae: invoice.cae,
+          totalCents: BigInt(order.total * 100)
+        }
+      });
+    } catch (e) {
+      console.warn('Advertencia registrando en ledger KOBE:', e.message);
+    }
   }
 
   db.saveData(data);
-  res.json({ success: true, data: order });
+  res.json({ success: true, data: order, invoice });
 });
 
 // ========================

@@ -582,13 +582,22 @@ window.openTableModal = function(tableId) {
             <span>$${(i.price * i.quantity).toLocaleString('es-AR')}</span>
           </li>
         `).join('')}
-      </ul>
-      <h3 style="margin-top: 12px; color: var(--primary);">Total: $${currentOrder.total.toLocaleString('es-AR')}</h3>
+      <div style="margin-top: 14px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px;">
+        <label style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">Medio de Pago:</label>
+        <div style="display: flex; gap: 10px; margin-top: 6px;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <input type="radio" name="payment-method-${currentOrder.id}" value="CASH" checked> 💵 Efectivo (Caja)
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <input type="radio" name="payment-method-${currentOrder.id}" value="DIGITAL"> 💳 Tarjeta / QR MP
+          </label>
+        </div>
+      </div>
     `;
 
     footer.innerHTML = `
       <button class="btn btn-secondary" onclick="closeTableModal()">Cerrar</button>
-      <button class="btn btn-primary" onclick="settleBill(${currentOrder.id})">💳 Cobrar y Liberar Mesa</button>
+      <button class="btn btn-primary" onclick="settleBillWithFiscal(${currentOrder.id})">🧾 Cobrar &amp; Facturar ARCA</button>
     `;
   } else {
     contentHtml += `<p style="margin-top: 14px; color: #94a3b8;">La mesa está libre y lista para recibir comensales.</p>`;
@@ -606,10 +615,26 @@ window.closeTableModal = function() {
   document.getElementById('modal-table-detail').classList.remove('open');
 };
 
-window.settleBill = async function(orderId) {
-  await updateOrderStatus(orderId, 'cobrado');
-  closeTableModal();
-  await fetchAllData();
+window.settleBillWithFiscal = async function(orderId) {
+  const radio = document.querySelector(`input[name="payment-method-${orderId}"]:checked`);
+  const paymentMethod = radio ? radio.value : 'CASH';
+
+  try {
+    const res = await fetch(`/api/orders/${orderId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cobrado', paymentMethod })
+    });
+    const json = await res.json();
+    closeTableModal();
+    await fetchAllData();
+
+    if (json.invoice) {
+      alert(`✅ Cobro exitoso y Factura Emitida:\n• Tipo: ${json.invoice.invoiceType}\n• Total: $${(Number(json.invoice.totalAmountCents) / 100).toLocaleString('es-AR')}\n• CAE: ${json.invoice.cae}\n• Vto CAE: ${json.invoice.caeExpirationDate}\n• Asiento contable registrado en Audit Ledger.`);
+    }
+  } catch (err) {
+    alert('Error al procesar cobro');
+  }
 };
 
 window.startNewOrderForTable = function(tableId) {
