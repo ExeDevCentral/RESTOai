@@ -11,6 +11,7 @@ const state = {
   purchaseOrders: [],
   cashSession: { activeSession: null, history: [] },
   analytics: {},
+  printers: [],
   trayItems: [], // Ítems seleccionados para la comanda actual
   selectedArea: 'all',
   selectedStation: 'all',
@@ -57,6 +58,7 @@ async function fetchAllData() {
     fetchSuppliers(),
     fetchPurchaseOrders(),
     fetchCashSession(),
+    fetchPrinters(),
     fetchAnalytics()
   ]);
   renderAll();
@@ -159,6 +161,19 @@ async function fetchCashSession() {
   }
 }
 
+async function fetchPrinters() {
+  try {
+    const res = await fetch('/api/printers');
+    const json = await res.json();
+    if (json.success) {
+      state.printers = json.data;
+      renderPrinters();
+    }
+  } catch (e) {
+    console.error('Error cargando impresoras', e);
+  }
+}
+
 // ========================
 // RENDERIZADO GENERAL
 // ========================
@@ -170,6 +185,8 @@ function renderAll() {
   renderSuppliers();
   renderPurchaseOrders();
   renderCashSession();
+  renderPrinters();
+  renderReceiptOrderSelect();
   renderTableSelects();
   renderReservations();
   renderAnalytics();
@@ -1029,6 +1046,7 @@ function setupNavigation() {
     'tab-copilot': { title: 'Copilot IA Gastronómico', desc: 'Asesor de maridaje, alérgenos y sugerencias de optimización.' },
     'tab-analytics': { title: 'Métricas & Desempeño', desc: 'Facturación acumulada, platos estrella y tiempos medios.' },
     'tab-cash': { title: 'Control de Caja & Arqueos de Turno', desc: 'Apertura de gaveta, arqueo ciego, conciliación digital y egresos autorizados.' },
+    'tab-printers': { title: 'Arquitectura de Impresión Universal', desc: 'Ruteo por estación, spooler outbox, emulador ESC/POS y tickets fiscales.' },
     'tab-kobe-engine': { title: 'KOBE Gastronomic Engine — Audit & Status', desc: 'Auditoría inmutable con hash chain SHA-256 e integridad transaccional.' }
   };
 
@@ -2165,6 +2183,153 @@ function renderAnalytics() {
     `;
   }
 }
+
+// ========================
+// VISTA: IMPRESIÓN UNIVERSAL & BOLETA MODERNA
+// ========================
+function renderPrinters() {
+  const container = document.getElementById('printers-list-table-container');
+  if (!container) return;
+
+  const printers = state.printers || [];
+  if (printers.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); padding: 12px;">Cargando catálogo de impresoras...</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border-color); color: var(--primary);">
+          <th style="padding: 10px 8px;">Nombre / Estación</th>
+          <th style="padding: 10px 8px;">Tipo</th>
+          <th style="padding: 10px 8px;">Transporte</th>
+          <th style="padding: 10px 8px;">Dirección / Endpoint</th>
+          <th style="padding: 10px 8px;">Papel / Charset</th>
+          <th style="padding: 10px 8px;">Estado</th>
+          <th style="padding: 10px 8px; text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${printers.map(p => `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+            <td style="padding: 10px 8px; font-weight: 600;">${p.name}</td>
+            <td style="padding: 10px 8px;"><code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${p.kind}</code></td>
+            <td style="padding: 10px 8px; color: var(--accent-gold); font-weight: 600;">${p.transport}</td>
+            <td style="padding: 10px 8px; color: var(--text-muted);">${p.address}</td>
+            <td style="padding: 10px 8px;">${p.paperWidthMm}mm · ${p.charset}</td>
+            <td style="padding: 10px 8px;">
+              <span class="table-badge" style="background: rgba(72,169,124,0.15); color: var(--accent-green);">
+                ${p.status}
+              </span>
+            </td>
+            <td style="padding: 10px 8px; text-align: right;">
+              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="testPrintPrinter('${p.id}')">🖨️ Test Print</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderReceiptOrderSelect() {
+  const select = document.getElementById('select-receipt-order');
+  if (!select) return;
+
+  const orders = state.orders || [];
+  if (orders.length === 0) {
+    select.innerHTML = `<option value="">No hay comandas disponibles</option>`;
+    return;
+  }
+
+  select.innerHTML = orders.map(o => `
+    <option value="${o.id}">Comanda #${o.id} - Mesa ${o.tableNumber} ($${(o.total || 0).toLocaleString('es-AR')})</option>
+  `).join('');
+}
+
+window.loadReceiptPreview = async function() {
+  const select = document.getElementById('select-receipt-order');
+  const container = document.getElementById('receipt-preview-container');
+  if (!select || !container) return;
+
+  const orderId = select.value;
+  if (!orderId) {
+    alert('Selecciona una comanda primero.');
+    return;
+  }
+
+  try {
+    container.innerHTML = `<span style="color: var(--accent-gold);">Generando boleta térmica moderna...</span>`;
+    const res = await fetch(`/api/orders/${orderId}/receipt?format=html`);
+    if (res.ok) {
+      const html = await res.text();
+      container.innerHTML = `
+        <div style="background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; max-width: 380px; width: 100%;">
+          <iframe id="receipt-iframe" srcdoc="${html.replace(/"/g, '&quot;')}" style="width: 100%; height: 560px; border: none;"></iframe>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `<span style="color: var(--accent-red);">Error al obtener boleta.</span>`;
+    }
+  } catch (e) {
+    container.innerHTML = `<span style="color: var(--accent-red);">Error de conexión al generar boleta.</span>`;
+  }
+};
+
+window.printReceiptBrowser = function() {
+  const iframe = document.getElementById('receipt-iframe');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  } else {
+    // Si no está cargado el iframe, cargarlo y luego imprimir
+    const select = document.getElementById('select-receipt-order');
+    if (select && select.value) {
+      window.open(`/api/orders/${select.value}/receipt?format=html`, '_blank');
+    } else {
+      alert('Selecciona una comanda para imprimir.');
+    }
+  }
+};
+
+window.downloadEscPosBinary = function() {
+  const select = document.getElementById('select-receipt-order');
+  if (!select || !select.value) {
+    alert('Selecciona una comanda primero.');
+    return;
+  }
+  window.location.href = `/api/orders/${select.value}/receipt?format=raw`;
+};
+
+window.testPrintPrinter = async function(printerId) {
+  const orders = state.orders || [];
+  if (orders.length === 0) {
+    alert('No hay comandas para emitir prueba de impresión.');
+    return;
+  }
+  const sampleOrder = orders[0];
+  try {
+    const res = await fetch('/api/print/jobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        docType: 'RECEIPT',
+        orderId: sampleOrder.id,
+        format: 'ESCPOS'
+      })
+    });
+    const json = await res.json();
+    if (res.ok) {
+      alert(`✅ Trabajo de impresión enviado a spooler (${printerId}).\n${json.message}`);
+    } else {
+      alert(`Error al imprimir: ${json.message}`);
+    }
+  } catch (e) {
+    alert('Error enviando trabajo a la cola de impresión.');
+  }
+};
+
 
 
 

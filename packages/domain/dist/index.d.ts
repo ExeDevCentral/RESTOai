@@ -21,4 +21,9 @@ export * from './accounting/journalEntry.js';
 export * from './accounting/accountingLedger.js';
 export * from './accounting/journalAutomator.js';
 export * from './fiscal/fiscalEngine.js';
+export * from './printing/printTypes.js';
+export * from './printing/receiptBuilder.js';
+export * from './printing/escPosRenderer.js';
+export * from './printing/htmlReceiptRenderer.js';
+export * from './printing/printDispatcher.js';
 //# sourceMappingURL=index.d.ts.map

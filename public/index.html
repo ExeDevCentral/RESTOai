@@ -59,6 +59,10 @@
           <span class="icon">💵</span>
           <span>Caja &amp; Arqueos</span>
         </button>
+        <button class="nav-item" data-tab="tab-printers">
+          <span class="icon">🖨️</span>
+          <span>Impresión Universal</span>
+        </button>
         <button class="nav-item" data-tab="tab-kobe-engine">
           <span class="icon">🛡️</span>
           <span>KOBE Engine &amp; Audit</span>
@@ -521,6 +525,62 @@
             <h4 style="margin-bottom: 12px; color: var(--primary);">Historial de Turnos de Caja (Arqueos Cerrados)</h4>
             <div id="cash-history-table-container">
               <!-- Render dinámico vía JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6.8: ARQUITECTURA DE IMPRESIÓN UNIVERSAL -->
+      <section id="tab-printers" class="tab-pane">
+        <div class="analytics-grid">
+          <!-- Tarjeta de Impresoras Online -->
+          <div class="analytics-card metric-hero">
+            <h3>Impresoras en Red / Agente</h3>
+            <div class="hero-number" id="printers-online-count" style="font-size: 1.8rem; color: #2a9d8f;">3 ONLINE 🟢</div>
+            <span class="trend-badge">Transportes: TCP9100, Print Agent y Browser Fallback</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Ruteo por Estación</h3>
+            <div class="hero-number" style="font-size: 1.8rem; color: #e9c46a;">4 RUTAS</div>
+            <span class="sub-label">Cocina Caliente, Barra, Caja &amp; Salón</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Protocolos Soportados</h3>
+            <div class="hero-number" style="font-size: 1.8rem; color: #457b9d;">ESC/POS · PDF</div>
+            <span class="sub-label">80mm (48 col), 58mm (32 col) y A4</span>
+          </div>
+
+          <!-- Tabla de Impresoras Configuradas -->
+          <div class="analytics-card full-width">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="margin: 0; color: var(--primary);">Parque de Impresoras Registradas</h4>
+              <button class="btn btn-secondary" onclick="fetchPrinters();">🔄 Refrescar Estado</button>
+            </div>
+            <div id="printers-list-table-container">
+              <!-- Render dinámico vía JS -->
+            </div>
+          </div>
+
+          <!-- Emulador de Boleta Térmica Moderna & Precuenta -->
+          <div class="analytics-card full-width">
+            <h4 style="margin-bottom: 6px; color: var(--primary);">Visualizador de Boleta Moderna y Confiable (Ticket Térmico 80 mm)</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+              Formato de boleta monocromático con código corto de verificación (8 caracteres), QR de validación digital, hash SHA-256 inmutable, CAE fiscal y opción de impresión directa por Print Agent o diálogo navegador (window.print).
+            </p>
+            <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+              <select id="select-receipt-order" class="form-control" style="max-width: 260px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px;">
+                <!-- Opciones dinámicas de comandas -->
+              </select>
+              <button class="btn btn-primary" onclick="loadReceiptPreview();">👁️ Previsualizar Boleta</button>
+              <button class="btn btn-secondary" onclick="printReceiptBrowser();">🖨️ Imprimir (window.print)</button>
+              <button class="btn btn-secondary" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="downloadEscPosBinary();">💾 Descargar ESC/POS (.bin)</button>
+            </div>
+            <div id="receipt-preview-container" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; justify-content: center; min-height: 250px;">
+              <div style="color: var(--text-muted); font-style: italic; align-self: center;">
+                Selecciona una comanda para previsualizar la boleta moderna con QR y CAE.
+              </div>
             </div>
           </div>
         </div>

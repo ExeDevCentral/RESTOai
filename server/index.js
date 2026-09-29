@@ -1033,6 +1033,196 @@ app.get('/api/kobe/status', (req, res) => {
   });
 });
 
+// ========================
+// 8. ARQUITECTURA DE IMPRESIÓN UNIVERSAL (KOBE PRINT ENGINE)
+// ========================
+app.get('/api/printers', async (req, res) => {
+  try {
+    const { PrintDispatcher } = await import('../packages/domain/dist/index.js');
+    const printers = PrintDispatcher.listPrinters('org-kobe-chain-arg', 'loc-centro-arg');
+    // Si no hay registradas en memoria, proveer configuración estándar
+    if (printers.length === 0) {
+      const defaultPrinters = [
+        {
+          id: 'prn-cocina-epson',
+          tenantId: 'org-kobe-chain-arg',
+          locationId: 'loc-centro-arg',
+          name: 'Cocina Caliente (Epson TM-T20 LAN)',
+          kind: 'THERMAL_ESCPOS',
+          transport: 'TCP9100',
+          address: '192.168.1.201:9100',
+          paperWidthMm: 80,
+          charset: 'CP858',
+          cut: true,
+          drawer: false,
+          status: 'ONLINE'
+        },
+        {
+          id: 'prn-barra-star',
+          tenantId: 'org-kobe-chain-arg',
+          locationId: 'loc-centro-arg',
+          name: 'Barra & Bebidas (Star TSP143 LAN)',
+          kind: 'THERMAL_ESCPOS',
+          transport: 'TCP9100',
+          address: '192.168.1.202:9100',
+          paperWidthMm: 80,
+          charset: 'CP858',
+          cut: true,
+          drawer: false,
+          status: 'ONLINE'
+        },
+        {
+          id: 'prn-caja-bixolon',
+          tenantId: 'org-kobe-chain-arg',
+          locationId: 'loc-centro-arg',
+          name: 'Caja Principal (Bixolon SRP-350 USB/Agent)',
+          kind: 'THERMAL_ESCPOS',
+          transport: 'AGENT',
+          address: 'agent-restoia-caja',
+          paperWidthMm: 80,
+          charset: 'CP858',
+          cut: true,
+          drawer: true,
+          status: 'ONLINE'
+        }
+      ];
+      defaultPrinters.forEach(p => PrintDispatcher.registerPrinter(p));
+      PrintDispatcher.setRoutes([
+        { id: 'r1', tenantId: 'org-kobe-chain-arg', locationId: 'loc-centro-arg', docType: 'KITCHEN_TICKET', station: 'cocina', printerId: 'prn-cocina-epson', copies: 1, priority: 10 },
+        { id: 'r2', tenantId: 'org-kobe-chain-arg', locationId: 'loc-centro-arg', docType: 'BAR_TICKET', station: 'barra', printerId: 'prn-barra-star', copies: 1, priority: 10 },
+        { id: 'r3', tenantId: 'org-kobe-chain-arg', locationId: 'loc-centro-arg', docType: 'INVOICE', printerId: 'prn-caja-bixolon', copies: 1, priority: 10 },
+        { id: 'r4', tenantId: 'org-kobe-chain-arg', locationId: 'loc-centro-arg', docType: 'PRE_BILL', printerId: 'prn-caja-bixolon', copies: 1, priority: 10 }
+      ]);
+      return res.json({ success: true, data: defaultPrinters });
+    }
+    res.json({ success: true, data: printers });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Endpoint para renderizar boleta moderna (HTML / ESC-POS / Data)
+app.get('/api/orders/:id/receipt', async (req, res) => {
+  const { id } = req.params;
+  const { format = 'html', isReprint = 'false' } = req.query;
+  const data = db.getData();
+
+  const order = data.orders.find(o => o.id === parseInt(id));
+  if (!order) return res.status(404).json({ success: false, message: 'Comanda no encontrada' });
+
+  try {
+    const { ReceiptBuilder, EscPosRenderer, HtmlReceiptRenderer, AuditLedger } = await import('../packages/domain/dist/index.js');
+    const reprintBool = isReprint === 'true';
+
+    // Obtener hash del audit trail si existe
+    let orderHash = `HASH-${order.id}`;
+    try {
+      const ledger = AuditLedger.getLedger('org-kobe-chain-arg');
+      const rec = ledger.find(r => r.entityId === String(order.id) || (r.payload && r.payload.orderId === order.id));
+      if (rec) orderHash = rec.hash;
+    } catch (e) {}
+
+    const receipt = ReceiptBuilder.buildReceipt({
+      order,
+      orderHash,
+      isReprint: reprintBool,
+      reprintCount: reprintBool ? (order.reprintCount = (order.reprintCount || 0) + 1) : 0,
+      paymentMethod: order.paymentMethod || 'Mercado Pago (QR)'
+    });
+
+    if (reprintBool) {
+      db.saveData(data);
+    }
+
+    if (format === 'raw' || format === 'escpos') {
+      const escposBuffer = EscPosRenderer.renderReceipt(receipt, { columns: 48 });
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="receipt-${receipt.orderShortHash}.bin"`);
+      return res.send(escposBuffer);
+    }
+
+    if (format === 'html') {
+      const html = HtmlReceiptRenderer.renderReceiptHtml(receipt);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.send(html);
+    }
+
+    const serializedReceipt = JSON.parse(JSON.stringify(receipt, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    ));
+
+    res.json({ success: true, data: serializedReceipt });
+  } catch (err) {
+    console.error('Error generando receipt:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Endpoint para encolar impresión universal
+app.post('/api/print/jobs', async (req, res) => {
+  const { docType, orderId, station, format = 'ESCPOS', openDrawer = false } = req.body;
+  const data = db.getData();
+  const order = data.orders.find(o => o.id === parseInt(orderId));
+
+  if (!order) return res.status(404).json({ success: false, message: 'Comanda no encontrada' });
+
+  try {
+    const { ReceiptBuilder, EscPosRenderer, HtmlReceiptRenderer, PrintDispatcher, AuditLedger } = await import('../packages/domain/dist/index.js');
+
+    let payload = '';
+    if (docType === 'KITCHEN_TICKET') {
+      const buf = EscPosRenderer.renderKitchenTicket({
+        station: station || 'Cocina Caliente',
+        orderId: order.id,
+        tableNumber: order.tableNumber,
+        waiter: order.waiter || 'Personal de Salón',
+        items: order.items || []
+      });
+      payload = buf.toString('base64');
+    } else {
+      const receipt = ReceiptBuilder.buildReceipt({
+        order,
+        paymentMethod: order.paymentMethod || 'Mercado Pago (QR)'
+      });
+      if (format === 'ESCPOS') {
+        const buf = EscPosRenderer.renderReceipt(receipt, { columns: 48 });
+        payload = buf.toString('base64');
+      } else {
+        payload = HtmlReceiptRenderer.renderReceiptHtml(receipt);
+      }
+    }
+
+    const idempotencyKey = `PRN-${docType}-${order.id}-${Date.now().toString().slice(-4)}`;
+    const jobs = PrintDispatcher.enqueueJob({
+      tenantId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg',
+      docType: docType || 'RECEIPT',
+      format,
+      payload,
+      station,
+      idempotencyKey,
+      openDrawer
+    });
+
+    // Registrar en Audit Ledger
+    AuditLedger.appendRecord({
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg',
+      actorId: 'usr-cajero-01',
+      action: 'PRINT_JOB_ENQUEUED',
+      entityType: 'PRINT_JOB',
+      entityId: jobs[0]?.id || `job-${Date.now()}`,
+      requestId: `req-${Date.now()}`,
+      payload: { docType, orderId, count: jobs.length }
+    });
+
+    res.json({ success: true, message: `Trabajo de impresión encolado (${jobs.length} impresora(s))`, jobs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 RESTOia Suite Server ejecutándose en: http://localhost:${PORT}`);
 });
+

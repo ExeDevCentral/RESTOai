@@ -1,0 +1,1 @@
+{"version":3,"file":"htmlReceiptRenderer.d.ts","sourceRoot":"","sources":["../../src/printing/htmlReceiptRenderer.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,iBAAiB,EAAE,MAAM,iBAAiB,CAAC;AAEpD,qBAAa,mBAAmB;IAC9B,OAAO,CAAC,MAAM,CAAC,WAAW;IAK1B;;OAEG;IACH,MAAM,CAAC,iBAAiB,CAAC,OAAO,EAAE,iBAAiB,GAAG,MAAM;CAkK7D"}
