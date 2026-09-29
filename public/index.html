@@ -442,33 +442,30 @@
         <div class="analytics-grid">
           <div class="analytics-card metric-hero">
             <h3>Facturación Acumulada Hoy</h3>
-            <div class="hero-number">$1.720.000</div>
-            <span class="trend-badge">+18.4% vs semana anterior</span>
+            <div class="hero-number" id="analytics-total-sales">$0</div>
+            <span class="trend-badge" id="analytics-total-orders">0 comandas gestionadas</span>
           </div>
 
           <div class="analytics-card">
             <h3>Ticket Promedio por Mesa</h3>
-            <div class="hero-number">$68.500</div>
-            <span class="sub-label">Tiempo promedio por turno: 62 min</span>
+            <div class="hero-number" id="analytics-avg-ticket">$0</div>
+            <span class="sub-label" id="analytics-occupancy-sub">0 mesas activas en salón</span>
           </div>
 
           <div class="analytics-card">
             <h3>Top Platos Más Vendidos</h3>
-            <ul class="top-list">
-              <li><span>1. Bife de Chorizo Madurado</span> <strong>42 pedidos</strong></li>
-              <li><span>2. Salmón Rosado en Costra</span> <strong>31 pedidos</strong></li>
-              <li><span>3. Risotto de Hongos Silvestres</span> <strong>28 pedidos</strong></li>
-              <li><span>4. Smoked Negroni</span> <strong>25 tragos</strong></li>
+            <ul class="top-list" id="analytics-top-dishes-list">
+              <!-- Renderizado dinámico vía JS -->
             </ul>
           </div>
 
           <div class="analytics-card full-width">
-            <h3>Historial de Rendimiento Semanal</h3>
-            <div class="mock-chart">
-              <div class="chart-bar" style="height: 60%"><span>Jue</span><strong>$450k</strong></div>
-              <div class="chart-bar" style="height: 85%"><span>Vie</span><strong>$680k</strong></div>
-              <div class="chart-bar" style="height: 75%"><span>Sáb</span><strong>$590k</strong></div>
-              <div class="chart-bar highlight" style="height: 100%"><span>Dom (Hoy)</span><strong>$1.72M</strong></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h3 style="margin: 0;">Historial de Rendimiento y Facturación</h3>
+              <button class="btn btn-secondary" onclick="fetchAnalytics(); renderAnalytics();">🔄 Actualizar Métricas</button>
+            </div>
+            <div class="mock-chart" id="analytics-history-chart">
+              <!-- Render dinámico de barras de ventas -->
             </div>
           </div>
         </div>

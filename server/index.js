@@ -672,27 +672,45 @@ app.put('/api/orders/:id/status', async (req, res) => {
         totalAmountCents: BigInt(order.total * 100)
       });
 
+      const isSplit = paymentMethod === 'SPLIT';
+      const cashAmt = isSplit ? (Number(req.body.splitCashAmount) || 0) : (paymentMethod === 'CASH' ? order.total : 0);
+      const digitalAmt = isSplit ? (Number(req.body.splitDigitalAmount) || 0) : (paymentMethod === 'DIGITAL' ? order.total : 0);
+
       // 2. Asentar partida doble contable
-      JournalAutomator.postSale({
-        organizationId: 'org-kobe-chain-arg',
-        locationId: 'loc-centro-arg',
-        orderId: String(order.id),
-        totalAmountCents: BigInt(order.total * 100),
-        paymentMethod: paymentMethod === 'DIGITAL' ? 'DIGITAL' : 'CASH'
-      });
+      if (cashAmt > 0) {
+        JournalAutomator.postSale({
+          organizationId: 'org-kobe-chain-arg',
+          locationId: 'loc-centro-arg',
+          orderId: String(order.id),
+          totalAmountCents: BigInt(Math.round(cashAmt * 100)),
+          paymentMethod: 'CASH'
+        });
+      }
+      if (digitalAmt > 0) {
+        JournalAutomator.postSale({
+          organizationId: 'org-kobe-chain-arg',
+          locationId: 'loc-centro-arg',
+          orderId: String(order.id),
+          totalAmountCents: BigInt(Math.round(digitalAmt * 100)),
+          paymentMethod: 'DIGITAL'
+        });
+      }
 
       // 3. Registrar en hash chain SHA-256
       AuditLedger.appendRecord({
         organizationId: 'org-kobe-chain-arg',
         locationId: 'loc-centro-arg',
         actorId: 'usr-cajero-01',
-        action: 'ORDER_PAID_AND_INVOICED',
+        action: isSplit ? 'ORDER_PAID_SPLIT_PAYMENT' : 'ORDER_PAID_AND_INVOICED',
         entityType: 'INVOICE',
         entityId: invoice.id,
         requestId: `req-${Date.now()}`,
         payload: {
           orderId: order.id,
           invoiceType: invoice.invoiceType,
+          paymentMethod,
+          cashPartCents: (cashAmt * 100).toString(),
+          digitalPartCents: (digitalAmt * 100).toString(),
           cae: invoice.cae,
           totalCents: (order.total * 100).toString()
         }
@@ -702,16 +720,17 @@ app.put('/api/orders/:id/status', async (req, res) => {
       if (data.cashSessions) {
         const activeCashSession = data.cashSessions.find(s => s.status === 'OPEN');
         if (activeCashSession) {
-          if (paymentMethod === 'DIGITAL') {
-            activeCashSession.digitalSales = (activeCashSession.digitalSales || 0) + order.total;
-          } else {
-            activeCashSession.cashInflow = (activeCashSession.cashInflow || 0) + order.total;
-            activeCashSession.expectedCash += order.total;
+          if (digitalAmt > 0) {
+            activeCashSession.digitalSales = (activeCashSession.digitalSales || 0) + digitalAmt;
+          }
+          if (cashAmt > 0) {
+            activeCashSession.cashInflow = (activeCashSession.cashInflow || 0) + cashAmt;
+            activeCashSession.expectedCash += cashAmt;
             activeCashSession.movements.unshift({
               id: `MOV-${Date.now().toString().slice(-4)}`,
               type: 'INGRESO',
-              amount: order.total,
-              reason: `Cobro Comanda Mesa ${order.tableNumber}`,
+              amount: cashAmt,
+              reason: `Cobro Comanda Mesa ${order.tableNumber}${isSplit ? ' (Parte Efectivo)' : ''}`,
               timestamp: new Date().toISOString()
             });
           }
@@ -944,20 +963,35 @@ app.post('/api/ai/chat', (req, res) => {
 // ========================
 app.get('/api/analytics', (req, res) => {
   const data = db.getData();
-  const totalActiveSales = data.orders.reduce((acc, o) => acc + (o.total || 0), 0);
-  const totalOrders = data.orders.length;
-  const occupiedTables = data.tables.filter(t => t.status === 'ocupada').length;
-  const freeTables = data.tables.filter(t => t.status === 'libre').length;
+  const totalActiveSales = (data.orders || []).reduce((acc, o) => acc + (o.total || 0), 0);
+  const totalOrders = (data.orders || []).length;
+  const occupiedTables = (data.tables || []).filter(t => t.status === 'ocupada' || t.status === 'cuenta_pedida').length;
+  const freeTables = (data.tables || []).filter(t => t.status === 'libre').length;
+  const avgTicket = totalOrders > 0 ? Math.round(totalActiveSales / totalOrders) : 0;
+
+  // Conteo dinámico de platos más vendidos
+  const dishCounts = {};
+  for (const o of (data.orders || [])) {
+    for (const item of (o.items || [])) {
+      dishCounts[item.name] = (dishCounts[item.name] || 0) + (item.quantity || 1);
+    }
+  }
+  const topDishes = Object.entries(dishCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, count]) => ({ name, count }));
 
   res.json({
     success: true,
     data: {
       totalActiveSales,
       totalOrders,
+      avgTicket,
       occupiedTables,
       freeTables,
       totalTables: data.tables.length,
-      salesHistory: data.salesHistory
+      topDishes,
+      salesHistory: data.salesHistory || []
     }
   });
 });

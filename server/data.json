@@ -13,24 +13,24 @@
       "number": "M-02",
       "area": "Salón Principal",
       "capacity": 2,
-      "status": "ocupada",
-      "currentOrderId": 1790716049205
+      "status": "libre",
+      "currentOrderId": null
     },
     {
       "id": 3,
       "number": "M-03",
       "area": "Salón Principal",
       "capacity": 6,
-      "status": "cuenta_pedida",
-      "currentOrderId": 102
+      "status": "libre",
+      "currentOrderId": null
     },
     {
       "id": 4,
       "number": "M-04",
       "area": "Terraza",
       "capacity": 4,
-      "status": "ocupada",
-      "currentOrderId": 103
+      "status": "libre",
+      "currentOrderId": null
     },
     {
       "id": 5,
@@ -61,8 +61,8 @@
       "number": "B-02",
       "area": "Barra & Coctelería",
       "capacity": 2,
-      "status": "ocupada",
-      "currentOrderId": 104
+      "status": "libre",
+      "currentOrderId": null
     }
   ],
   "menu": [
@@ -222,7 +222,7 @@
       "tableNumber": "M-01",
       "tableId": 1,
       "waiter": "Facundo M.",
-      "status": "listo",
+      "status": "cobrado",
       "createdAt": "2026-09-29T19:08:25.758Z",
       "items": [
         {
@@ -257,7 +257,7 @@
       "tableNumber": "M-03",
       "tableId": 3,
       "waiter": "Camila R.",
-      "status": "cuenta_pedida",
+      "status": "cobrado",
       "createdAt": "2026-09-29T18:28:25.759Z",
       "items": [
         {
@@ -292,7 +292,7 @@
       "tableNumber": "M-04",
       "tableId": 4,
       "waiter": "Lucas G.",
-      "status": "listo",
+      "status": "cobrado",
       "createdAt": "2026-09-29T19:18:25.759Z",
       "items": [
         {
@@ -319,7 +319,7 @@
       "tableNumber": "B-02",
       "tableId": 8,
       "waiter": "Barra Central",
-      "status": "listo",
+      "status": "cobrado",
       "createdAt": "2026-09-29T19:15:25.759Z",
       "items": [
         {
@@ -346,7 +346,7 @@
       "tableId": 1,
       "tableNumber": "M-01",
       "waiter": "Facundo M.",
-      "status": "en_cocina",
+      "status": "cobrado",
       "createdAt": "2026-09-29T20:51:25.175Z",
       "items": [
         {
@@ -358,14 +358,15 @@
           "status": "pendiente"
         }
       ],
-      "total": 24500
+      "total": 24500,
+      "stockDeducted": true
     },
     {
       "id": 1790716049205,
       "tableId": 2,
       "tableNumber": "M-2",
       "waiter": "Facundo M.",
-      "status": "pendiente",
+      "status": "cobrado",
       "createdAt": "2026-09-29T21:07:29.205Z",
       "items": [
         {
@@ -376,7 +377,8 @@
           "status": "pendiente"
         }
       ],
-      "total": 24500
+      "total": 24500,
+      "stockDeducted": true
     },
     {
       "id": 1790716123079,
@@ -448,7 +450,7 @@
       "category": "Carnes Rojas",
       "lotCode": "LOT-2026-BIF-089",
       "barcode": "7791234567890",
-      "currentQuantity": 18500,
+      "currentQuantity": 17700,
       "unit": "g",
       "minStock": 5000,
       "expiryDate": "2026-10-15",
