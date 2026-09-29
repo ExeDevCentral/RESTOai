@@ -9,3 +9,4 @@
 Pre-flight: all interfaces coherent.
 
 ## Progress
+- Task 1: complete (commits b53ecef..7cb7b54, tests: npx vitest run -> 2/2 pass)
