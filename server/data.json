@@ -5,16 +5,16 @@
       "number": "M-01",
       "area": "Salón Principal",
       "capacity": 4,
-      "status": "ocupada",
-      "currentOrderId": 1790715085175
+      "status": "libre",
+      "currentOrderId": null
     },
     {
       "id": 2,
       "number": "M-02",
       "area": "Salón Principal",
       "capacity": 2,
-      "status": "libre",
-      "currentOrderId": null
+      "status": "ocupada",
+      "currentOrderId": 1790716049205
     },
     {
       "id": 3,
@@ -359,6 +359,42 @@
         }
       ],
       "total": 24500
+    },
+    {
+      "id": 1790716049205,
+      "tableId": 2,
+      "tableNumber": "M-2",
+      "waiter": "Facundo M.",
+      "status": "pendiente",
+      "createdAt": "2026-09-29T21:07:29.205Z",
+      "items": [
+        {
+          "menuItemId": 1,
+          "name": "Bife de Chorizo Madurado 400g",
+          "price": 24500,
+          "quantity": 1,
+          "status": "pendiente"
+        }
+      ],
+      "total": 24500
+    },
+    {
+      "id": 1790716123079,
+      "tableId": 1,
+      "tableNumber": "M-1",
+      "waiter": "Facundo M.",
+      "status": "cobrado",
+      "createdAt": "2026-09-29T21:08:43.079Z",
+      "items": [
+        {
+          "menuItemId": 1,
+          "name": "Bife de Chorizo Madurado 400g",
+          "price": 24500,
+          "quantity": 1,
+          "status": "pendiente"
+        }
+      ],
+      "total": 24500
     }
   ],
   "reservations": [
@@ -432,7 +468,7 @@
       "expiryDate": "2026-10-04",
       "supplierId": 2,
       "supplierName": "Pescadería Central Mar Adentro",
-      "costPerUnit": 22.0
+      "costPerUnit": 22
     },
     {
       "id": "lot-hongos-003",
@@ -474,7 +510,7 @@
       "expiryDate": "2027-04-20",
       "supplierId": 5,
       "supplierName": "Distribuidora Chocolates del Mundo",
-      "costPerUnit": 12.0
+      "costPerUnit": 12
     }
   ],
   "suppliers": [
@@ -511,7 +547,7 @@
       "phone": "+54 9 11 5678-9012",
       "email": "contacto@huertarrayanes.org",
       "deliveryDays": "Lunes a Viernes (Diario)",
-      "rating": 5.0,
+      "rating": 5,
       "activeOrders": 0
     },
     {

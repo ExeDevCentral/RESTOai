@@ -141,11 +141,18 @@
       <section id="tab-kds" class="tab-pane">
         <div class="kds-header">
           <div>
-            <h3>Kitchen Display System (KDS)</h3>
-            <p>Visualización y flujo de preparación por tiempos de espera.</p>
+            <h3>Kitchen Display System (KDS Multi-Estación)</h3>
+            <p>Visualización y flujo de preparación segmentado por partida o estación culinaria.</p>
           </div>
-          <div class="kds-filter">
-            <span class="live-indicator"><span class="blink-dot"></span> EN VIVO</span>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="area-filter-tabs" style="margin: 0;">
+              <button class="kds-station-pill active" data-station="all">Todas las Estaciones</button>
+              <button class="kds-station-pill" data-station="COCINA">🔥 Cocina &amp; Parrilla Josper</button>
+              <button class="kds-station-pill" data-station="BARRA">🍸 Barra &amp; Tragos</button>
+            </div>
+            <div class="kds-filter">
+              <span class="live-indicator"><span class="blink-dot"></span> EN VIVO</span>
+            </div>
           </div>
         </div>
 

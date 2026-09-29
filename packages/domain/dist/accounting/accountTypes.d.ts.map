@@ -1,0 +1,1 @@
+{"version":3,"file":"accountTypes.d.ts","sourceRoot":"","sources":["../../src/accounting/accountTypes.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,WAAW,GAAG,OAAO,GAAG,WAAW,GAAG,QAAQ,GAAG,SAAS,GAAG,SAAS,CAAC;AAEnF,MAAM,WAAW,OAAO;IACtB,IAAI,EAAE,MAAM,CAAC;IACb,cAAc,EAAE,MAAM,CAAC;IACvB,IAAI,EAAE,MAAM,CAAC;IACb,IAAI,EAAE,WAAW,CAAC;IAClB,QAAQ,EAAE,OAAO,CAAC;CACnB"}

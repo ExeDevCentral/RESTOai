@@ -353,6 +353,162 @@ app.put('/api/orders/:id/status', async (req, res) => {
   res.json({ success: true, data: order, invoice: serializedInvoice });
 });
 
+// Endpoint para Operaciones Críticas: Anulación de Comanda / Ítems
+app.post('/api/orders/:id/void', async (req, res) => {
+  const { id } = req.params;
+  const { role, supervisorPin, reason } = req.body;
+  const data = db.getData();
+
+  const order = data.orders.find(o => o.id === parseInt(id));
+  if (!order) return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
+
+  try {
+    const { RbacManager, AuditLedger } = await import('../packages/domain/dist/index.js');
+    
+    // Configurar contexto de permisos
+    const actorId = `usr-${(role || 'WAITER').toLowerCase()}-01`;
+    RbacManager.clearAssignments();
+    RbacManager.assignRole({
+      userId: actorId,
+      roleCode: role || 'WAITER',
+      scope: 'LOCATION',
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg'
+    });
+    // Supervisor PIN registrado: '1234'
+    RbacManager.registerSupervisorPin('usr-manager-master', '1234');
+    RbacManager.assignRole({
+      userId: 'usr-manager-master',
+      roleCode: 'MANAGER',
+      scope: 'LOCATION',
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg'
+    });
+
+    const check = RbacManager.canExecuteCriticalAction(
+      actorId,
+      'orders:void',
+      { organizationId: 'org-kobe-chain-arg', locationId: 'loc-centro-arg' },
+      supervisorPin
+    );
+
+    if (!check.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: `⛔ Operación Crítica Denegada: ${check.reason || 'Se requiere rol Manager/Owner o PIN de supervisor válido (ej: 1234).'}`
+      });
+    }
+
+    order.status = 'anulado';
+    order.voidReason = reason || 'Anulado por solicitud de salón';
+
+    // Liberar mesa
+    const table = data.tables.find(t => t.id === order.tableId);
+    if (table) {
+      table.status = 'libre';
+      table.currentOrderId = null;
+    }
+
+    db.saveData(data);
+
+    // Audit Ledger
+    AuditLedger.appendRecord({
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg',
+      actorId: actorId,
+      action: 'ORDER_VOIDED',
+      entityType: 'ORDER',
+      entityId: String(order.id),
+      requestId: `req-${Date.now()}`,
+      payload: {
+        tableNumber: order.tableNumber,
+        reason: order.voidReason,
+        authorizedByPin: Boolean(supervisorPin)
+      }
+    });
+
+    res.json({ success: true, message: `Comanda #${order.id} anulada correctamente`, data: order });
+  } catch (err) {
+    console.error('Error en void order:', err);
+    res.status(500).json({ success: false, message: 'Error interno procesando anulación' });
+  }
+});
+
+// Endpoint para Operaciones Críticas: Aplicación de Descuento
+app.post('/api/orders/:id/discount', async (req, res) => {
+  const { id } = req.params;
+  const { role, supervisorPin, discountPercent } = req.body;
+  const data = db.getData();
+
+  const order = data.orders.find(o => o.id === parseInt(id));
+  if (!order) return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
+
+  try {
+    const { RbacManager, AuditLedger } = await import('../packages/domain/dist/index.js');
+    
+    const actorId = `usr-${(role || 'WAITER').toLowerCase()}-01`;
+    RbacManager.clearAssignments();
+    RbacManager.assignRole({
+      userId: actorId,
+      roleCode: role || 'WAITER',
+      scope: 'LOCATION',
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg'
+    });
+    RbacManager.registerSupervisorPin('usr-manager-master', '1234');
+    RbacManager.assignRole({
+      userId: 'usr-manager-master',
+      roleCode: 'MANAGER',
+      scope: 'LOCATION',
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg'
+    });
+
+    const check = RbacManager.canExecuteCriticalAction(
+      actorId,
+      'orders:discount',
+      { organizationId: 'org-kobe-chain-arg', locationId: 'loc-centro-arg' },
+      supervisorPin
+    );
+
+    if (!check.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: `⛔ Descuento Denegado: ${check.reason || 'Se requiere rol Manager/Owner o PIN de supervisor válido (ej: 1234).'}`
+      });
+    }
+
+    const pct = Math.min(Math.max(Number(discountPercent) || 10, 1), 100);
+    const discountAmount = Math.round(order.total * (pct / 100));
+    order.discount = { percent: pct, amount: discountAmount };
+    order.total = Math.max(0, order.total - discountAmount);
+
+    db.saveData(data);
+
+    AuditLedger.appendRecord({
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg',
+      actorId: actorId,
+      action: 'ORDER_DISCOUNT_APPLIED',
+      entityType: 'ORDER',
+      entityId: String(order.id),
+      requestId: `req-${Date.now()}`,
+      payload: {
+        tableNumber: order.tableNumber,
+        percent: pct,
+        discountAmount,
+        newTotal: order.total,
+        authorizedByPin: Boolean(supervisorPin)
+      }
+    });
+
+    res.json({ success: true, message: `Descuento del ${pct}% aplicado correctamente`, data: order });
+  } catch (err) {
+    console.error('Error en discount order:', err);
+    res.status(500).json({ success: false, message: 'Error aplicando descuento' });
+  }
+});
+
 // ========================
 // 4. ENDPOINTS DE RESERVAS
 // ========================

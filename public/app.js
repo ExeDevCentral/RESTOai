@@ -11,6 +11,7 @@ const state = {
   analytics: {},
   trayItems: [], // Ítems seleccionados para la comanda actual
   selectedArea: 'all',
+  selectedStation: 'all',
   selectedCategory: 'all',
   selectedTableForOrder: null
 };
@@ -21,6 +22,7 @@ const state = {
 document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
   setupAreaFilters();
+  setupStationFilters();
   setupCategoryFilters();
   setupOrderTrayEvents();
   setupReservationForm();
@@ -213,9 +215,35 @@ function renderKDS() {
   const listCocina = document.getElementById('kds-list-cocina');
   const listListo = document.getElementById('kds-list-listo');
 
-  const pendientes = state.orders.filter(o => o.status === 'pendiente');
-  const enCocina = state.orders.filter(o => o.status === 'en_cocina');
-  const listos = state.orders.filter(o => o.status === 'listo');
+  // Filtrado por estación: COCINA vs BARRA vs ALL
+  const station = state.selectedStation || 'all';
+
+  const filterOrderItems = (order) => {
+    if (station === 'all') return order.items;
+    return order.items.filter(item => {
+      // Buscar en el menú local para conocer la categoría
+      const menuItem = state.menu.find(m => m.id === item.menuItemId || m.name === item.name);
+      const category = menuItem ? menuItem.category : '';
+      const isBar = ['Bebidas', 'Vinos', 'Tragos', 'Cafetería'].includes(category);
+      if (station === 'BARRA') return isBar;
+      if (station === 'COCINA') return !isBar;
+      return true;
+    });
+  };
+
+  const getFilteredOrders = (status) => {
+    return state.orders
+      .filter(o => o.status === status)
+      .map(o => ({
+        ...o,
+        filteredItems: filterOrderItems(o)
+      }))
+      .filter(o => o.filteredItems.length > 0);
+  };
+
+  const pendientes = getFilteredOrders('pendiente');
+  const enCocina = getFilteredOrders('en_cocina');
+  const listos = getFilteredOrders('listo');
 
   document.getElementById('count-pending').textContent = pendientes.length;
   document.getElementById('count-cooking').textContent = enCocina.length;
@@ -227,9 +255,12 @@ function renderKDS() {
         <strong>Mesa ${order.tableNumber}</strong>
         <span class="kds-time">${formatTimeAgo(order.createdAt)}</span>
       </div>
-      <small style="color: #94a3b8;">Mozo: ${order.waiter}</small>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <small style="color: #94a3b8;">Mozo: ${order.waiter}</small>
+        ${station !== 'all' ? `<span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(224,169,109,0.15); color: var(--primary);">Estación: ${station}</span>` : ''}
+      </div>
       <ul class="kds-items">
-        ${order.items.map(i => `
+        ${order.filteredItems.map(i => `
           <li>
             <span><strong>${i.quantity}x</strong> ${i.name}</span>
             ${i.notes ? `<div class="kds-note">Nota: ${i.notes}</div>` : ''}
@@ -246,9 +277,17 @@ function renderKDS() {
     </div>
   `;
 
-  listPendiente.innerHTML = pendientes.map(o => renderCard(o, 'en_cocina', '🔥 Iniciar Preparación')).join('');
-  listCocina.innerHTML = enCocina.map(o => renderCard(o, 'listo', '🛎️ Marcar Listo para Servir')).join('');
-  listListo.innerHTML = listos.map(o => renderCard(o, 'cobrado', '✅ Entregado & Finalizar', 'btn-secondary')).join('');
+  listPendiente.innerHTML = pendientes.length > 0
+    ? pendientes.map(o => renderCard(o, 'en_cocina', '🔥 Iniciar Preparación')).join('')
+    : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">No hay comandas pendientes para ${station === 'all' ? 'ninguna estación' : station}</div>`;
+
+  listCocina.innerHTML = enCocina.length > 0
+    ? enCocina.map(o => renderCard(o, 'listo', '🛎️ Marcar Listo para Servir')).join('')
+    : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">Sin preparaciones en marcha</div>`;
+
+  listListo.innerHTML = listos.length > 0
+    ? listos.map(o => renderCard(o, 'cobrado', '✅ Entregado & Finalizar', 'btn-secondary')).join('')
+    : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">Sin comandas listas</div>`;
 }
 
 function formatTimeAgo(isoString) {
@@ -596,8 +635,16 @@ window.openTableModal = function(tableId) {
     `;
 
     footer.innerHTML = `
-      <button class="btn btn-secondary" onclick="closeTableModal()">Cerrar</button>
-      <button class="btn btn-primary" onclick="settleBillWithFiscal(${currentOrder.id})">🧾 Cobrar &amp; Facturar ARCA</button>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary" style="border-color: #ef4444; color: #ef4444;" onclick="voidCurrentOrder(${currentOrder.id})">❌ Anular Comanda</button>
+          <button class="btn btn-secondary" style="border-color: var(--primary); color: var(--primary);" onclick="applyDiscountToOrder(${currentOrder.id})">🏷️ Descuento (%)</button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary" onclick="closeTableModal()">Cerrar</button>
+          <button class="btn btn-primary" onclick="settleBillWithFiscal(${currentOrder.id})">🧾 Cobrar &amp; Facturar ARCA</button>
+        </div>
+      </div>
     `;
   } else {
     contentHtml += `<p style="margin-top: 14px; color: #94a3b8;">La mesa está libre y lista para recibir comensales.</p>`;
@@ -609,6 +656,73 @@ window.openTableModal = function(tableId) {
 
   body.innerHTML = contentHtml;
   modal.classList.add('open');
+};
+
+window.voidCurrentOrder = async function(orderId) {
+  const currentRole = document.getElementById('select-session-role')?.value || 'WAITER';
+  let pin = '';
+
+  // Si no es OWNER ni MANAGER, solicitar PIN de supervisor
+  if (currentRole !== 'OWNER' && currentRole !== 'MANAGER') {
+    pin = prompt(`🔐 Acción Crítica (RBAC Nivel 3 requerido):\nTu rol actual es "${currentRole}". Para anular la comanda ingresa el PIN de Supervisor (Demo: 1234):`);
+    if (!pin) return;
+  }
+
+  const reason = prompt('Motivo de la anulación (opcional):', 'Comensal canceló pedido');
+
+  try {
+    const res = await fetch(`/api/orders/${orderId}/void`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: currentRole, supervisorPin: pin, reason })
+    });
+    const json = await res.json();
+    if (res.ok && json.success) {
+      alert(`✅ ${json.message}`);
+      closeTableModal();
+      await fetchAllData();
+    } else {
+      alert(json.message || 'Error al anular la comanda');
+    }
+  } catch (err) {
+    alert('Error de conexión al anular comanda');
+  }
+};
+
+window.applyDiscountToOrder = async function(orderId) {
+  const currentRole = document.getElementById('select-session-role')?.value || 'WAITER';
+  let pin = '';
+
+  if (currentRole !== 'OWNER' && currentRole !== 'MANAGER') {
+    pin = prompt(`🔐 Acción Crítica (RBAC Nivel 3 requerido):\nTu rol actual es "${currentRole}". Para aplicar un descuento ingresa el PIN de Supervisor (Demo: 1234):`);
+    if (!pin) return;
+  }
+
+  const percentStr = prompt('Porcentaje de descuento (1 - 100):', '15');
+  if (!percentStr) return;
+
+  try {
+    const res = await fetch(`/api/orders/${orderId}/discount`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        role: currentRole,
+        supervisorPin: pin,
+        discountPercent: Number(percentStr)
+      })
+    });
+    const json = await res.json();
+    if (res.ok && json.success) {
+      alert(`✅ ${json.message}`);
+      await fetchAllData();
+      const currentTable = state.tables.find(t => t.currentOrderId === orderId);
+      if (currentTable) openTableModal(currentTable.id);
+    } else {
+      alert(json.message || 'Error al aplicar descuento');
+    }
+  } catch (err) {
+    alert('Error de conexión al aplicar descuento');
+  }
 };
 
 window.closeTableModal = function() {
@@ -730,6 +844,18 @@ function setupAreaFilters() {
       pill.classList.add('active');
       state.selectedArea = pill.getAttribute('data-area');
       renderTables();
+    });
+  });
+}
+
+function setupStationFilters() {
+  const pills = document.querySelectorAll('.kds-station-pill');
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      state.selectedStation = pill.getAttribute('data-station') || 'all';
+      renderKDS();
     });
   });
 }

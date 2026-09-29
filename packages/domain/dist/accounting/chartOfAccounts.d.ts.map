@@ -1,0 +1,1 @@
+{"version":3,"file":"chartOfAccounts.d.ts","sourceRoot":"","sources":["../../src/accounting/chartOfAccounts.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,mBAAmB,CAAC;AAE5C,qBAAa,eAAe;IAC1B,OAAO,CAAC,QAAQ,CAAC,QAAQ,CAA8B;IACvD,QAAQ,CAAC,cAAc,EAAE,MAAM,CAAC;gBAEpB,cAAc,EAAE,MAAM;IAKlC,OAAO,CAAC,oBAAoB;IA2B5B,UAAU,CAAC,IAAI,EAAE,MAAM,GAAG,OAAO,GAAG,SAAS;CAG9C"}
