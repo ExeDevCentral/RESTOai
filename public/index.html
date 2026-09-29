@@ -55,6 +55,10 @@
           <span class="icon">📊</span>
           <span>Métricas &amp; Ventas</span>
         </button>
+        <button class="nav-item" data-tab="tab-cash">
+          <span class="icon">💵</span>
+          <span>Caja &amp; Arqueos</span>
+        </button>
         <button class="nav-item" data-tab="tab-kobe-engine">
           <span class="icon">🛡️</span>
           <span>KOBE Engine &amp; Audit</span>
@@ -470,6 +474,61 @@
         </div>
       </section>
 
+      <!-- TAB 6.5: GESTIÓN DE CAJA & ARQUEOS -->
+      <section id="tab-cash" class="tab-pane">
+        <div class="analytics-grid">
+          <!-- Tarjeta de Estado de Turno de Caja -->
+          <div class="analytics-card metric-hero" id="cash-status-card">
+            <h3>Turno de Caja Actual</h3>
+            <div class="hero-number" id="cash-session-status-text" style="font-size: 1.8rem; color: #2a9d8f;">SIN SESIÓN ABIERTA</div>
+            <span class="trend-badge" id="cash-session-meta">Abre un turno con fondo inicial para comenzar a operar</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Efectivo Esperado en Gaveta</h3>
+            <div class="hero-number" id="cash-expected-amount" style="font-size: 1.8rem; color: #e9c46a;">$0</div>
+            <span class="sub-label" id="cash-inflow-outflow-sub">Fondo: $0 | Ingresos: $0 | Egresos: $0</span>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Cobros Digitales (Tarjetas / QR)</h3>
+            <div class="hero-number" id="cash-digital-amount" style="font-size: 1.8rem; color: #457b9d;">$0</div>
+            <span class="sub-label">Asentado automáticamente en partida doble</span>
+          </div>
+
+          <!-- Botones de Acción de Caja -->
+          <div class="analytics-card full-width">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h4 style="margin: 0; font-size: 1.1rem; color: var(--primary);">Operaciones de Caja &amp; Tesorería</h4>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Control estricto de arqueo con supervisión por PIN de supervisor para cierre definitivo.</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" id="btn-open-cash-modal">🔓 Abrir Turno de Caja</button>
+                <button class="btn btn-secondary" id="btn-cash-movement-modal">💸 Retiro / Ingreso de Efectivo</button>
+                <button class="btn btn-secondary" style="border-color: #ef4444; color: #ef4444;" id="btn-close-cash-modal">🔒 Cerrar Caja &amp; Arqueo</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla de Movimientos del Turno Actual -->
+          <div class="analytics-card full-width">
+            <h4 style="margin-bottom: 12px; color: var(--primary);">Movimientos de la Sesión en Curso</h4>
+            <div id="cash-movements-table-container">
+              <!-- Render dinámico vía JS -->
+            </div>
+          </div>
+
+          <!-- Historial de Turnos de Caja Pasados -->
+          <div class="analytics-card full-width">
+            <h4 style="margin-bottom: 12px; color: var(--primary);">Historial de Turnos de Caja (Arqueos Cerrados)</h4>
+            <div id="cash-history-table-container">
+              <!-- Render dinámico vía JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- TAB 7: KOBE ENGINE & AUDIT TRAIL -->
       <section id="tab-kobe-engine" class="tab-pane">
         <div class="analytics-grid">
@@ -781,6 +840,110 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btn-cancel-po">Cancelar</button>
           <button type="submit" class="btn btn-primary">📑 Emitir y Enviar Orden</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ABRIR TURNO DE CAJA -->
+  <div class="modal-overlay" id="modal-open-cash">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>Abrir Turno de Caja</h3>
+        <button class="close-btn" id="modal-open-cash-close">×</button>
+      </div>
+      <form id="form-open-cash">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre del Cajero / Responsable</label>
+            <input type="text" id="open-cash-name" class="input-text" value="Facundo M. (Cajero)" required />
+          </div>
+          <div class="form-group">
+            <label>Fondo Inicial de Gaveta en Efectivo ($)</label>
+            <input type="number" id="open-cash-float" class="input-text" placeholder="Ej: 50000" min="0" required />
+            <span style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; display: block;">Monto de cambio con el que se inicia la jornada.</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-open-cash">Cancelar</button>
+          <button type="submit" class="btn btn-primary">🔓 Iniciar Turno</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: INGRESO / RETIRO DE EFECTIVO -->
+  <div class="modal-overlay" id="modal-cash-movement">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>Movimiento Extraordinario de Caja</h3>
+        <button class="close-btn" id="modal-cash-movement-close">×</button>
+      </div>
+      <form id="form-cash-movement">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Tipo de Operación</label>
+            <select id="cash-mov-type" class="input-select">
+              <option value="OUT">💸 Retiro de Efectivo (Egreso / Pago Menor)</option>
+              <option value="IN">💰 Ingreso de Efectivo (Aporte Extra)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Monto ($)</label>
+            <input type="number" id="cash-mov-amount" class="input-text" placeholder="15000" min="1" required />
+          </div>
+          <div class="form-group">
+            <label>Motivo / Concepto Justificado</label>
+            <input type="text" id="cash-mov-reason" class="input-text" placeholder="Ej: Pago de hielo de emergencia, propinas, retiro blindado..." required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-cash-movement">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar Movimiento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CERRAR CAJA & ARQUEO (SUPERVISOR PIN) -->
+  <div class="modal-overlay" id="modal-close-cash">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3>Cierre Definitivo de Caja &amp; Arqueo</h3>
+        <button class="close-btn" id="modal-close-cash-close">×</button>
+      </div>
+      <form id="form-close-cash">
+        <div class="modal-body">
+          <div style="background: rgba(224,169,109,0.08); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(224,169,109,0.2);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+              <span>Efectivo Teórico en Gaveta:</span>
+              <strong id="close-cash-expected-display" style="color: var(--primary);">$0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+              <span>Ventas Digitales Asentadas:</span>
+              <span id="close-cash-digital-display">$0</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Efectivo Físico Real Recontado en Gaveta ($)</label>
+            <input type="number" id="close-cash-actual" class="input-text" placeholder="Contar todos los billetes..." min="0" required />
+          </div>
+
+          <div class="form-group" id="close-cash-pin-group" style="display: none; background: rgba(239, 68, 68, 0.08); padding: 10px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+            <label style="color: #ef4444; font-weight: 600;">🔐 PIN de Supervisor Requerido</label>
+            <input type="password" id="close-cash-pin" class="input-text" placeholder="Ingresar PIN de Supervisor (Demo: 1234)" />
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">El rol Cajero exige elevación por supervisor para aprobar arqueo final.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Observaciones de Cierre (Diferencias o Novedades)</label>
+            <textarea id="close-cash-notes" class="input-text" rows="2" placeholder="Sin novedades, arqueo exacto..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-close-cash">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="background: #e76f51; border-color: #e76f51;">🔒 Aprobar y Cerrar Sesión</button>
         </div>
       </form>
     </div>

@@ -9,6 +9,7 @@ const state = {
   inventory: [],
   suppliers: [],
   purchaseOrders: [],
+  cashSession: { activeSession: null, history: [] },
   analytics: {},
   trayItems: [], // Ítems seleccionados para la comanda actual
   selectedArea: 'all',
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupInventoryEvents();
   setupSupplierEvents();
   setupPurchaseOrderEvents();
+  setupCashSessionEvents();
   setupMenuManagementEvents();
   setupFloorPlanEvents();
 
@@ -54,6 +56,7 @@ async function fetchAllData() {
     fetchInventory(),
     fetchSuppliers(),
     fetchPurchaseOrders(),
+    fetchCashSession(),
     fetchAnalytics()
   ]);
   renderAll();
@@ -146,6 +149,16 @@ async function fetchPurchaseOrders() {
   }
 }
 
+async function fetchCashSession() {
+  try {
+    const res = await fetch('/api/cash/session');
+    const json = await res.json();
+    if (json.success) state.cashSession = json.data;
+  } catch (e) {
+    console.error('Error cargando sesiones de caja', e);
+  }
+}
+
 // ========================
 // RENDERIZADO GENERAL
 // ========================
@@ -156,6 +169,7 @@ function renderAll() {
   renderInventory();
   renderSuppliers();
   renderPurchaseOrders();
+  renderCashSession();
   renderTableSelects();
   renderReservations();
   updateKdsBadge();
@@ -912,6 +926,7 @@ function setupNavigation() {
     'tab-reservations': { title: 'Gestión de Reservas', desc: 'Planificación de comensales y turnos de sala.' },
     'tab-copilot': { title: 'Copilot IA Gastronómico', desc: 'Asesor de maridaje, alérgenos y sugerencias de optimización.' },
     'tab-analytics': { title: 'Métricas & Desempeño', desc: 'Facturación acumulada, platos estrella y tiempos medios.' },
+    'tab-cash': { title: 'Control de Caja & Arqueos de Turno', desc: 'Apertura de gaveta, arqueo ciego, conciliación digital y egresos autorizados.' },
     'tab-kobe-engine': { title: 'KOBE Gastronomic Engine — Audit & Status', desc: 'Auditoría inmutable con hash chain SHA-256 e integridad transaccional.' }
   };
 
@@ -1588,4 +1603,316 @@ window.deleteDish = async function(dishId) {
     alert('Error al eliminar plato');
   }
 };
+
+// ========================
+// GESTIÓN DE CAJA & ARQUEOS DE TURNO
+// ========================
+function renderCashSession() {
+  const session = state.cashSession?.activeSession;
+  const statusCard = document.getElementById('cash-status-card');
+  const statusText = document.getElementById('cash-session-status-text');
+  const metaText = document.getElementById('cash-session-meta');
+  const expectedAmount = document.getElementById('cash-expected-amount');
+  const inflowOutflowSub = document.getElementById('cash-inflow-outflow-sub');
+  const digitalAmount = document.getElementById('cash-digital-amount');
+  const movementsContainer = document.getElementById('cash-movements-table-container');
+  const historyContainer = document.getElementById('cash-history-table-container');
+
+  // Modal close display values
+  const closeExpectedDisplay = document.getElementById('close-cash-expected-display');
+  const closeDigitalDisplay = document.getElementById('close-cash-digital-display');
+
+  if (session && session.status === 'OPEN') {
+    if (statusText) {
+      statusText.textContent = `TURNO ABIERTO (#${session.id})`;
+      statusText.style.color = '#2a9d8f';
+    }
+    if (metaText) {
+      const openedDate = new Date(session.openedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+      metaText.textContent = `Responsable: ${session.cashierName} | Inicio: ${openedDate} hs`;
+    }
+    if (expectedAmount) expectedAmount.textContent = `$${(session.expectedCash || 0).toLocaleString('es-AR')}`;
+    if (inflowOutflowSub) {
+      inflowOutflowSub.textContent = `Fondo: $${(session.initialFloat || 0).toLocaleString('es-AR')} | Cobros Efvo: +$${(session.cashInflow || 0).toLocaleString('es-AR')} | Egresos: -$${(session.cashOutflow || 0).toLocaleString('es-AR')}`;
+    }
+    if (digitalAmount) digitalAmount.textContent = `$${(session.digitalSales || 0).toLocaleString('es-AR')}`;
+    if (closeExpectedDisplay) closeExpectedDisplay.textContent = `$${(session.expectedCash || 0).toLocaleString('es-AR')}`;
+    if (closeDigitalDisplay) closeDigitalDisplay.textContent = `$${(session.digitalSales || 0).toLocaleString('es-AR')}`;
+
+    // Render movimientos
+    if (movementsContainer) {
+      const movs = session.movements || [];
+      if (movs.length === 0) {
+        movementsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">No se han registrado movimientos extraordinarios de gaveta en este turno.</p>';
+      } else {
+        movementsContainer.innerHTML = `
+          <table class="data-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Hora</th>
+                <th>Operación</th>
+                <th>Concepto / Motivo</th>
+                <th style="text-align: right;">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${movs.map(m => `
+                <tr>
+                  <td><code>${m.id}</code></td>
+                  <td>${new Date(m.timestamp).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td>
+                    <span class="badge ${m.type === 'INGRESO' ? 'badge-confirmed' : 'badge-occupied'}" style="font-size: 0.75rem;">
+                      ${m.type === 'INGRESO' ? '💰 INGRESO' : '💸 RETIRO'}
+                    </span>
+                  </td>
+                  <td>${m.reason}</td>
+                  <td style="text-align: right; font-weight: 600; color: ${m.type === 'INGRESO' ? '#2a9d8f' : '#ef4444'};">
+                    ${m.type === 'INGRESO' ? '+' : '-'}$${(m.amount || 0).toLocaleString('es-AR')}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    }
+  } else {
+    // Sin sesión activa
+    if (statusText) {
+      statusText.textContent = 'SIN SESIÓN ABIERTA';
+      statusText.style.color = '#ef4444';
+    }
+    if (metaText) metaText.textContent = 'Abre un turno con fondo inicial para habilitar cobros en gaveta y arqueo.';
+    if (expectedAmount) expectedAmount.textContent = '$0';
+    if (inflowOutflowSub) inflowOutflowSub.textContent = 'Fondo: $0 | Ingresos: $0 | Egresos: $0';
+    if (digitalAmount) digitalAmount.textContent = '$0';
+    if (closeExpectedDisplay) closeExpectedDisplay.textContent = '$0';
+    if (closeDigitalDisplay) closeDigitalDisplay.textContent = '$0';
+
+    if (movementsContainer) {
+      movementsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">Abre un turno de caja para registrar y visualizar movimientos de gaveta en vivo.</p>';
+    }
+  }
+
+  // Render Historial de Sesiones Pasadas
+  if (historyContainer) {
+    const closedSessions = (state.cashSession?.history || []).filter(s => s.status === 'CLOSED');
+    if (closedSessions.length === 0) {
+      historyContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">No hay turnos cerrados registrados todavía.</p>';
+    } else {
+      historyContainer.innerHTML = `
+        <table class="data-table" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>ID Turno</th>
+              <th>Cajero</th>
+              <th>Apertura</th>
+              <th>Cierre</th>
+              <th style="text-align: right;">Fondo Inicial</th>
+              <th style="text-align: right;">Esperado</th>
+              <th style="text-align: right;">Real Declarado</th>
+              <th style="text-align: right;">Diferencia</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${closedSessions.map(s => {
+              const diff = s.discrepancy || 0;
+              const diffColor = diff === 0 ? '#2a9d8f' : diff > 0 ? '#457b9d' : '#ef4444';
+              const diffText = diff === 0 ? 'Exacto' : `${diff > 0 ? '+' : ''}$${diff.toLocaleString('es-AR')}`;
+              return `
+                <tr>
+                  <td><strong>${s.id}</strong></td>
+                  <td>${s.cashierName}</td>
+                  <td>${new Date(s.openedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td>${s.closedAt ? new Date(s.closedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '-'}</td>
+                  <td style="text-align: right;">$${(s.initialFloat || 0).toLocaleString('es-AR')}</td>
+                  <td style="text-align: right;">$${(s.expectedCash || 0).toLocaleString('es-AR')}</td>
+                  <td style="text-align: right;">$${(s.actualCash || 0).toLocaleString('es-AR')}</td>
+                  <td style="text-align: right; font-weight: 600; color: ${diffColor};">${diffText}</td>
+                  <td>
+                    <span class="badge ${diff === 0 ? 'badge-confirmed' : 'badge-occupied'}" style="font-size: 0.72rem;">
+                      ${s.authorizedByPin ? '🔐 APROBADO PIN' : '✅ SUPERVISADO'}
+                    </span>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+  }
+}
+
+function setupCashSessionEvents() {
+  // Modal Abrir Turno
+  const btnOpenModal = document.getElementById('btn-open-cash-modal');
+  const modalOpen = document.getElementById('modal-open-cash');
+  const closeOpenBtn = document.getElementById('modal-open-cash-close');
+  const cancelOpenBtn = document.getElementById('btn-cancel-open-cash');
+  const formOpen = document.getElementById('form-open-cash');
+
+  // Modal Movimiento Extraordinario
+  const btnMovModal = document.getElementById('btn-cash-movement-modal');
+  const modalMov = document.getElementById('modal-cash-movement');
+  const closeMovBtn = document.getElementById('modal-cash-movement-close');
+  const cancelMovBtn = document.getElementById('btn-cancel-cash-movement');
+  const formMov = document.getElementById('form-cash-movement');
+
+  // Modal Cierre de Caja
+  const btnCloseModal = document.getElementById('btn-close-cash-modal');
+  const modalClose = document.getElementById('modal-close-cash');
+  const closeCloseBtn = document.getElementById('modal-close-cash-close');
+  const cancelCloseBtn = document.getElementById('btn-cancel-close-cash');
+  const formClose = document.getElementById('form-close-cash');
+  const pinGroup = document.getElementById('close-cash-pin-group');
+
+  // Apertura
+  if (btnOpenModal && modalOpen) {
+    btnOpenModal.addEventListener('click', () => {
+      if (state.cashSession?.activeSession) {
+        alert(`Ya hay un turno de caja abierto (#${state.cashSession.activeSession.id}). Debes cerrarlo antes de iniciar otro.`);
+        return;
+      }
+      modalOpen.classList.add('active');
+    });
+  }
+  const closeOpenModal = () => modalOpen?.classList.remove('active');
+  if (closeOpenBtn) closeOpenBtn.addEventListener('click', closeOpenModal);
+  if (cancelOpenBtn) cancelOpenBtn.addEventListener('click', closeOpenModal);
+
+  if (formOpen) {
+    formOpen.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cashierName = document.getElementById('open-cash-name').value;
+      const initialFloat = Number(document.getElementById('open-cash-float').value) || 0;
+
+      try {
+        const res = await fetch('/api/cash/session/open', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cashierName, initialFloat })
+        });
+        const json = await res.json();
+        if (res.ok) {
+          alert(`✅ Turno ${json.data.id} iniciado correctamente con fondo de $${initialFloat.toLocaleString('es-AR')}`);
+          formOpen.reset();
+          closeOpenModal();
+          await fetchCashSession();
+          renderCashSession();
+        } else {
+          alert(json.message || 'Error al iniciar turno de caja');
+        }
+      } catch (err) {
+        alert('Error de conexión al abrir turno de caja');
+      }
+    });
+  }
+
+  // Movimiento
+  if (btnMovModal && modalMov) {
+    btnMovModal.addEventListener('click', () => {
+      if (!state.cashSession?.activeSession) {
+        alert('No hay un turno de caja abierto para registrar movimientos.');
+        return;
+      }
+      modalMov.classList.add('active');
+    });
+  }
+  const closeMovModal = () => modalMov?.classList.remove('active');
+  if (closeMovBtn) closeMovBtn.addEventListener('click', closeMovModal);
+  if (cancelMovBtn) cancelMovBtn.addEventListener('click', closeMovModal);
+
+  if (formMov) {
+    formMov.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const type = document.getElementById('cash-mov-type').value;
+      const amount = Number(document.getElementById('cash-mov-amount').value) || 0;
+      const reason = document.getElementById('cash-mov-reason').value;
+
+      try {
+        const res = await fetch('/api/cash/session/movement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, amount, reason })
+        });
+        const json = await res.json();
+        if (res.ok) {
+          alert(`✅ Movimiento asentado: ${type === 'OUT' ? 'Retiro' : 'Ingreso'} de $${amount.toLocaleString('es-AR')}`);
+          formMov.reset();
+          closeMovModal();
+          await fetchCashSession();
+          renderCashSession();
+        } else {
+          alert(json.message || 'Error al registrar movimiento');
+        }
+      } catch (err) {
+        alert('Error de conexión al registrar movimiento');
+      }
+    });
+  }
+
+  // Cierre de Caja
+  if (btnCloseModal && modalClose) {
+    btnCloseModal.addEventListener('click', () => {
+      if (!state.cashSession?.activeSession) {
+        alert('No hay ningún turno de caja abierto para cerrar.');
+        return;
+      }
+      const currentRole = document.getElementById('select-session-role')?.value || 'MANAGER';
+      // Si el rol es CASHIER u otro rol operativo que requiera elevación, mostrar grupo de PIN
+      if (pinGroup) {
+        if (['CASHIER', 'WAITER', 'COOK', 'CHEF'].includes(currentRole)) {
+          pinGroup.style.display = 'block';
+        } else {
+          pinGroup.style.display = 'none';
+        }
+      }
+      modalClose.classList.add('active');
+    });
+  }
+  const closeCloseModal = () => modalClose?.classList.remove('active');
+  if (closeCloseBtn) closeCloseBtn.addEventListener('click', closeCloseModal);
+  if (cancelCloseBtn) cancelCloseBtn.addEventListener('click', closeCloseModal);
+
+  if (formClose) {
+    formClose.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const actualCash = Number(document.getElementById('close-cash-actual').value) || 0;
+      const notes = document.getElementById('close-cash-notes').value;
+      const supervisorPin = document.getElementById('close-cash-pin')?.value || '';
+      const currentRole = document.getElementById('select-session-role')?.value || 'MANAGER';
+
+      try {
+        const res = await fetch('/api/cash/session/close', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            actualCash,
+            notes,
+            role: currentRole,
+            supervisorPin
+          })
+        });
+        const json = await res.json();
+        if (res.ok) {
+          const diff = json.data.discrepancy || 0;
+          const diffMsg = diff === 0 ? 'Arqueo exacto sin diferencias.' : `Diferencia de arqueo: ${diff > 0 ? 'Sobrante +' : 'Faltante -'}$${Math.abs(diff).toLocaleString('es-AR')}`;
+          alert(`✅ ${json.message}\n${diffMsg}`);
+          formClose.reset();
+          closeCloseModal();
+          await fetchCashSession();
+          renderCashSession();
+        } else {
+          alert(json.message || 'Error al cerrar caja');
+        }
+      } catch (err) {
+        alert('Error de conexión al cerrar turno de caja');
+      }
+    });
+  }
+}
+
 
