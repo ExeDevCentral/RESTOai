@@ -1,19 +1,22 @@
 {
-  "name": "restoia",
-  "version": "1.0.0",
-  "description": "Suite integral de gestión gastronómica con IA para restaurantes",
-  "main": "server/index.js",
+  "name": "kobe-gastronomic-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KOBE — Enterprise Multi-Tenant Gastronomic Transaction Engine",
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node --watch server/index.js"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "resto:legacy": "node server/index.js"
   },
-  "keywords": ["restaurant", "pos", "kds", "ai", "gastronomy"],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
   }
 }
