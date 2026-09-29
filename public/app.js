@@ -8,6 +8,7 @@ const state = {
   reservations: [],
   inventory: [],
   suppliers: [],
+  purchaseOrders: [],
   analytics: {},
   trayItems: [], // Ítems seleccionados para la comanda actual
   selectedArea: 'all',
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModalEvents();
   setupInventoryEvents();
   setupSupplierEvents();
+  setupPurchaseOrderEvents();
   setupMenuManagementEvents();
   setupFloorPlanEvents();
 
@@ -51,6 +53,7 @@ async function fetchAllData() {
     fetchReservations(),
     fetchInventory(),
     fetchSuppliers(),
+    fetchPurchaseOrders(),
     fetchAnalytics()
   ]);
   renderAll();
@@ -133,6 +136,16 @@ async function fetchSuppliers() {
   }
 }
 
+async function fetchPurchaseOrders() {
+  try {
+    const res = await fetch('/api/purchase-orders');
+    const json = await res.json();
+    if (json.success) state.purchaseOrders = json.data;
+  } catch (e) {
+    console.error('Error cargando órdenes de compra', e);
+  }
+}
+
 // ========================
 // RENDERIZADO GENERAL
 // ========================
@@ -142,6 +155,7 @@ function renderAll() {
   renderMenu();
   renderInventory();
   renderSuppliers();
+  renderPurchaseOrders();
   renderTableSelects();
   renderReservations();
   updateKdsBadge();
@@ -1263,10 +1277,175 @@ function renderSuppliers() {
 
       <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 0.8rem; color: var(--accent-green);">● Homologado KOBE</span>
-        <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="alert('Generando orden de abastecimiento para ${s.name}...')">📦 Pedir Insumos</button>
+        <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="openCreatePOModal(${s.id})">📦 Emitir Orden de Compra</button>
       </div>
     </div>
   `).join('');
+}
+
+function renderPurchaseOrders() {
+  const container = document.getElementById('purchase-orders-container');
+  if (!container) return;
+
+  const orders = state.purchaseOrders || [];
+  if (orders.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; padding: 12px 0;">No se han emitido órdenes de compra aún.</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border-color); color: var(--primary);">
+          <th style="padding: 10px 8px;">N° Orden</th>
+          <th style="padding: 10px 8px;">Proveedor</th>
+          <th style="padding: 10px 8px;">CUIT</th>
+          <th style="padding: 10px 8px;">Fecha Entrega</th>
+          <th style="padding: 10px 8px;">Ítems Solicitados</th>
+          <th style="padding: 10px 8px;">Total Est.</th>
+          <th style="padding: 10px 8px;">Estado</th>
+          <th style="padding: 10px 8px; text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${orders.map(po => `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+            <td style="padding: 12px 8px;"><strong style="color: var(--accent-gold);">${po.id}</strong></td>
+            <td style="padding: 12px 8px; font-weight: 600;">${po.supplierName}</td>
+            <td style="padding: 12px 8px; color: var(--text-muted);">${po.supplierCuit}</td>
+            <td style="padding: 12px 8px;">${po.deliveryDate}</td>
+            <td style="padding: 12px 8px;">
+              ${po.items.map(i => `<span style="display:block; font-size: 0.78rem;">• ${i.quantity} ${i.unit || 'g'} - ${i.name}</span>`).join('')}
+            </td>
+            <td style="padding: 12px 8px; font-weight: 700; color: var(--text-main);">$${(po.totalEstimated || 0).toLocaleString('es-AR')}</td>
+            <td style="padding: 12px 8px;">
+              <span class="table-badge" style="background: ${po.status === 'RECIBIDA' ? 'rgba(42, 157, 143, 0.2)' : 'rgba(233, 196, 106, 0.2)'}; color: ${po.status === 'RECIBIDA' ? 'var(--accent-green)' : 'var(--accent-gold)'};">
+                ${po.status}
+              </span>
+            </td>
+            <td style="padding: 12px 8px; text-align: right;">
+              ${po.status !== 'RECIBIDA' ? `
+                <button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.78rem;" onclick="receivePurchaseOrder('${po.id}')">📥 Recibir Mercadería</button>
+              ` : `
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Recibido ${po.receivedAt ? formatTimeAgo(po.receivedAt) : ''}</span>
+              `}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+window.openCreatePOModal = function(supplierId) {
+  const supplier = (state.suppliers || []).find(s => s.id === supplierId);
+  if (!supplier) return;
+
+  const modal = document.getElementById('modal-po');
+  document.getElementById('po-supplier-id').value = supplier.id;
+  document.getElementById('po-supplier-name').textContent = supplier.name;
+  document.getElementById('po-supplier-meta').textContent = `CUIT: ${supplier.cuit} | Rubro: ${supplier.category} | Días de Entrega: ${supplier.deliveryDays}`;
+  
+  // Set default delivery date (mañana)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('po-delivery-date').value = tomorrow.toISOString().split('T')[0];
+
+  modal?.classList.add('active');
+};
+
+window.receivePurchaseOrder = async function(poId) {
+  if (!confirm(`¿Confirmar recepción de mercadería para la Orden ${poId}?\nLos insumos ingresarán automáticamente a la cámara de frío con control FEFO.`)) return;
+
+  try {
+    const res = await fetch(`/api/purchase-orders/${poId}/receive`, { method: 'PUT' });
+    const json = await res.json();
+    if (res.ok) {
+      alert(`✅ ${json.message}`);
+      await Promise.all([fetchPurchaseOrders(), fetchInventory()]);
+      renderPurchaseOrders();
+      renderInventory();
+    } else {
+      alert(json.message || 'Error al recibir mercadería');
+    }
+  } catch (e) {
+    alert('Error de conexión al recibir orden');
+  }
+};
+
+function setupPurchaseOrderEvents() {
+  const modal = document.getElementById('modal-po');
+  const closeBtn = document.getElementById('modal-po-close');
+  const cancelBtn = document.getElementById('btn-cancel-po');
+  const form = document.getElementById('form-po');
+  const btnAddRow = document.getElementById('btn-po-add-row');
+  const rowsContainer = document.getElementById('po-items-rows');
+
+  const closeModal = () => modal?.classList.remove('active');
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  if (btnAddRow && rowsContainer) {
+    btnAddRow.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'form-row';
+      row.style.alignItems = 'center';
+      row.style.marginTop = '6px';
+      row.innerHTML = `
+        <input type="text" class="input-text po-item-name" placeholder="Insumo adicional" style="flex: 2;" required />
+        <input type="number" class="input-text po-item-qty" placeholder="Cant." style="flex: 1;" min="1" required />
+        <select class="input-select po-item-unit" style="flex: 1;">
+          <option value="g">Gramos (g)</option>
+          <option value="unidades">Unidades</option>
+          <option value="ml">Mililitros</option>
+        </select>
+        <input type="number" class="input-text po-item-cost" placeholder="$ Costo" style="flex: 1;" min="0" required />
+        <button type="button" class="btn btn-secondary" style="padding: 4px 8px; color: #ef4444;" onclick="this.parentElement.remove()">✕</button>
+      `;
+      rowsContainer.appendChild(row);
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const supplierId = document.getElementById('po-supplier-id').value;
+      const deliveryDate = document.getElementById('po-delivery-date').value;
+      const notes = document.getElementById('po-notes').value;
+
+      const names = Array.from(document.querySelectorAll('.po-item-name'));
+      const qtys = Array.from(document.querySelectorAll('.po-item-qty'));
+      const units = Array.from(document.querySelectorAll('.po-item-unit'));
+      const costs = Array.from(document.querySelectorAll('.po-item-cost'));
+
+      const items = names.map((nameInput, idx) => ({
+        name: nameInput.value.trim(),
+        quantity: Number(qtys[idx]?.value || 1),
+        unit: units[idx]?.value || 'g',
+        unitCost: Number(costs[idx]?.value || 0)
+      })).filter(i => i.name.length > 0);
+
+      try {
+        const res = await fetch('/api/purchase-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ supplierId, deliveryDate, notes, items })
+        });
+        const json = await res.json();
+        if (res.ok) {
+          alert(`✅ Orden de Compra ${json.data.id} emitida con éxito para ${json.data.supplierName}`);
+          closeModal();
+          form.reset();
+          await fetchPurchaseOrders();
+          renderPurchaseOrders();
+        } else {
+          alert(json.message || 'Error al emitir orden de compra');
+        }
+      } catch (err) {
+        alert('Error de conexión emitiendo orden de compra');
+      }
+    });
+  }
 }
 
 function setupSupplierEvents() {

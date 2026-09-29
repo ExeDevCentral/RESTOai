@@ -208,6 +208,104 @@ app.post('/api/suppliers', (req, res) => {
   res.status(201).json({ success: true, data: newSupplier });
 });
 
+// Órdenes de Compra a Proveedores (Abastecimiento Formal)
+app.get('/api/purchase-orders', (req, res) => {
+  const data = db.getData();
+  res.json({ success: true, data: data.purchaseOrders || [] });
+});
+
+app.post('/api/purchase-orders', async (req, res) => {
+  const { supplierId, items, deliveryDate, notes } = req.body;
+  const data = db.getData();
+  if (!data.purchaseOrders) data.purchaseOrders = [];
+
+  const supplier = (data.suppliers || []).find(s => s.id === parseInt(supplierId));
+  if (!supplier) return res.status(404).json({ success: false, message: 'Proveedor no encontrado' });
+
+  const totalEstimated = (items || []).reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unitCost || 0)), 0);
+
+  const po = {
+    id: `PO-${Date.now().toString().slice(-6)}`,
+    supplierId: supplier.id,
+    supplierName: supplier.name,
+    supplierCuit: supplier.cuit,
+    status: 'EMITIDA', // EMITIDA | EN_TRANSITO | RECIBIDA | CANCELADA
+    createdAt: new Date().toISOString(),
+    deliveryDate: deliveryDate || '2026-10-02',
+    notes: notes || '',
+    items: items || [],
+    totalEstimated
+  };
+
+  supplier.activeOrders = (supplier.activeOrders || 0) + 1;
+  data.purchaseOrders.unshift(po);
+  db.saveData(data);
+
+  // Registrar en Audit Ledger SHA-256
+  try {
+    const { AuditLedger } = await import('../packages/domain/dist/index.js');
+    AuditLedger.appendRecord({
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg',
+      actorId: 'usr-manager-master',
+      action: 'PURCHASE_ORDER_ISSUED',
+      entityType: 'PURCHASE_ORDER',
+      entityId: po.id,
+      requestId: `req-${Date.now()}`,
+      payload: {
+        supplierName: supplier.name,
+        cuit: supplier.cuit,
+        itemCount: po.items.length,
+        totalEstimatedCents: (totalEstimated * 100).toString()
+      }
+    });
+  } catch (e) {
+    console.warn('Audit error on PO:', e);
+  }
+
+  res.status(201).json({ success: true, data: po });
+});
+
+app.put('/api/purchase-orders/:id/receive', async (req, res) => {
+  const { id } = req.params;
+  const data = db.getData();
+  const po = (data.purchaseOrders || []).find(p => p.id === id);
+  if (!po) return res.status(404).json({ success: false, message: 'Orden de compra no encontrada' });
+
+  po.status = 'RECIBIDA';
+  po.receivedAt = new Date().toISOString();
+
+  // Descontar activeOrders del proveedor
+  const supplier = (data.suppliers || []).find(s => s.id === po.supplierId);
+  if (supplier && supplier.activeOrders > 0) supplier.activeOrders--;
+
+  // Opcional: auto-ingreso de insumos a lotes si no existen
+  for (const item of po.items) {
+    const existingLot = (data.inventory || []).find(l => l.name.toLowerCase() === item.name.toLowerCase());
+    if (existingLot) {
+      existingLot.currentQuantity += Number(item.quantity);
+    } else {
+      data.inventory.push({
+        id: `lot-po-${Date.now().toString().slice(-4)}`,
+        name: item.name,
+        category: 'Insumos Homologados',
+        lotCode: `LOT-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+        barcode: `779${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+        currentQuantity: Number(item.quantity),
+        unit: item.unit || 'g',
+        minStock: Math.round(Number(item.quantity) * 0.25),
+        expiryDate: '2026-11-30',
+        supplierId: po.supplierId,
+        supplierName: po.supplierName,
+        costPerUnit: Number(item.unitCost) || 0
+      });
+    }
+  }
+
+  db.saveData(data);
+  res.json({ success: true, data: po, message: 'Mercadería recibida e ingresada al stock FEFO' });
+});
+
 // ========================
 // 3. ENDPOINTS DE COMANDAS / PEDIDOS (KDS)
 // ========================

@@ -328,6 +328,20 @@
           <div class="suppliers-grid" id="suppliers-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px;">
             <!-- Inyectado vía JS -->
           </div>
+
+          <!-- Tabla de Órdenes de Compra y Abastecimiento Activas -->
+          <div class="table-container glass-box" style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div>
+                <h4 style="margin: 0; font-size: 1.1rem; color: var(--primary);">Historial de Órdenes de Compra &amp; Recepción FEFO</h4>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Trazabilidad de pedidos a proveedores con registro criptográfico de remitos y recepción.</p>
+              </div>
+              <button class="btn btn-secondary" onclick="fetchPurchaseOrders(); renderPurchaseOrders();">🔄 Actualizar Órdenes</button>
+            </div>
+            <div id="purchase-orders-container">
+              <!-- Renderizado dinámico de órdenes de compra -->
+            </div>
+          </div>
         </div>
       </section>
 
@@ -707,6 +721,66 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btn-cancel-supplier">Cancelar</button>
           <button type="submit" class="btn btn-primary">Guardar Proveedor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR ORDEN DE COMPRA (ABASTECIMIENTO FORMAL) -->
+  <div class="modal-overlay" id="modal-po">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="modal-po-title">Emitir Orden de Compra (Abastecimiento)</h3>
+        <button class="close-btn" id="modal-po-close">×</button>
+      </div>
+      <form id="form-po">
+        <div class="modal-body">
+          <input type="hidden" id="po-supplier-id" />
+          <div style="background: rgba(224,169,109,0.08); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(224,169,109,0.2);">
+            <strong id="po-supplier-name" style="color: var(--primary); font-size: 1.05rem;">Proveedor</strong>
+            <div id="po-supplier-meta" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">CUIT: 30-00000000-0 | Frecuencia: Diaria</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha de Entrega Estimada</label>
+              <input type="date" id="po-delivery-date" class="input-text" required />
+            </div>
+            <div class="form-group">
+              <label>Condición Fiscal / Pago</label>
+              <select id="po-payment-term" class="input-select">
+                <option value="CTA_CTE_15">Cuenta Corriente 15 días</option>
+                <option value="CTA_CTE_30">Cuenta Corriente 30 días</option>
+                <option value="CONTADO_CONTRA_ENTREGA">Contado contra Entrega</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Ítems del Pedido (Insumo, Cantidad y Costo Unitario)</label>
+            <div id="po-items-rows" style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="form-row" style="align-items: center;">
+                <input type="text" class="input-text po-item-name" placeholder="Ej: Lomo vacuno envasado" style="flex: 2;" required />
+                <input type="number" class="input-text po-item-qty" placeholder="Cant." style="flex: 1;" min="1" required />
+                <select class="input-select po-item-unit" style="flex: 1;">
+                  <option value="g">Gramos (g)</option>
+                  <option value="unidades">Unidades</option>
+                  <option value="ml">Mililitros</option>
+                </select>
+                <input type="number" class="input-text po-item-cost" placeholder="$ Costo" style="flex: 1;" min="0" required />
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary" id="btn-po-add-row" style="margin-top: 8px; font-size: 0.78rem; padding: 4px 10px;">➕ Agregar Otro Insumo</button>
+          </div>
+
+          <div class="form-group">
+            <label>Instrucciones de Recepción y Control de Calidad</label>
+            <textarea id="po-notes" class="input-text" rows="2" placeholder="Exigir cadena de frío < 4°C, control de precintos y remito fiscal oficial..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-po">Cancelar</button>
+          <button type="submit" class="btn btn-primary">📑 Emitir y Enviar Orden</button>
         </div>
       </form>
     </div>
