@@ -253,20 +253,21 @@ app.post('/api/orders', (req, res) => {
 
   // Registrar evento en Audit Ledger Criptográfico
   import('../packages/domain/dist/index.js').then(({ AuditLedger }) => {
-    AuditLedger.append({
+    AuditLedger.appendRecord({
       organizationId: 'org-kobe-chain-arg',
       locationId: 'loc-centro-arg',
       actorId: waiter || 'usr-waiter-01',
       action: 'ORDER_CONFIRMED',
       entityType: 'ORDER',
       entityId: String(newOrder.id),
+      requestId: `req-${Date.now()}`,
       payload: {
         tableNumber: newOrder.tableNumber,
         itemCount: newOrder.items.length,
-        totalCents: BigInt(newOrder.total * 100)
+        totalCents: (newOrder.total * 100).toString()
       }
     });
-  }).catch(() => {});
+  }).catch((err) => console.error('Error appendRecord:', err));
 
   res.status(201).json({ success: true, data: newOrder });
 });
@@ -321,18 +322,19 @@ app.put('/api/orders/:id/status', async (req, res) => {
       });
 
       // 3. Registrar en hash chain SHA-256
-      AuditLedger.append({
+      AuditLedger.appendRecord({
         organizationId: 'org-kobe-chain-arg',
         locationId: 'loc-centro-arg',
         actorId: 'usr-cajero-01',
         action: 'ORDER_PAID_AND_INVOICED',
         entityType: 'INVOICE',
         entityId: invoice.id,
+        requestId: `req-${Date.now()}`,
         payload: {
           orderId: order.id,
           invoiceType: invoice.invoiceType,
           cae: invoice.cae,
-          totalCents: BigInt(order.total * 100)
+          totalCents: (order.total * 100).toString()
         }
       });
     } catch (e) {
@@ -341,7 +343,14 @@ app.put('/api/orders/:id/status', async (req, res) => {
   }
 
   db.saveData(data);
-  res.json({ success: true, data: order, invoice });
+  const serializedInvoice = invoice ? {
+    ...invoice,
+    netAmountCents: invoice.netAmountCents.toString(),
+    vatAmountCents: invoice.vatAmountCents.toString(),
+    totalAmountCents: invoice.totalAmountCents.toString()
+  } : null;
+
+  res.json({ success: true, data: order, invoice: serializedInvoice });
 });
 
 // ========================
