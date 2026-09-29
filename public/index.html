@@ -62,12 +62,27 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-chip">
-          <div class="avatar">FM</div>
-          <div class="user-meta">
-            <strong>Facundo M.</strong>
-            <span>Jefe de Sala</span>
+        <div class="user-chip" style="flex-direction: column; align-items: stretch; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="avatar" id="current-user-avatar">FM</div>
+            <div class="user-meta" style="flex: 1;">
+              <strong id="current-user-name">Facundo M.</strong>
+              <span id="current-user-role-label" style="color: var(--primary);">Manager (Nivel 3)</span>
+            </div>
           </div>
+          <div style="font-size: 0.75rem; color: #94a3b8;">Cambiar Rol de Sesión:</div>
+          <select id="select-session-role" class="input-select" style="padding: 4px 8px; font-size: 0.78rem;">
+            <option value="OWNER">Nivel 1: Owner (Dueño)</option>
+            <option value="ADMIN">Nivel 2: Admin (Sistema)</option>
+            <option value="MANAGER" selected>Nivel 3: Manager (Gerente)</option>
+            <option value="AUDITOR">Nivel 3: Auditor (Solo Lectura)</option>
+            <option value="CASHIER">Nivel 4: Cashier (Cajero)</option>
+            <option value="CHEF">Nivel 4: Chef (Cocina)</option>
+            <option value="COOK">Nivel 5: Cook (Cocinero)</option>
+            <option value="BARTENDER">Nivel 5: Bartender</option>
+            <option value="WAITER">Nivel 6: Waiter (Mozo)</option>
+            <option value="RUNNER_HOST">Nivel 7: Runner / Host</option>
+          </select>
         </div>
         <div class="system-status">
           <span class="status-dot"></span> Servidor REST Activo (3000)

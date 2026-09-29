@@ -673,6 +673,17 @@ function setupNavigation() {
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.getAttribute('data-tab');
+      const currentRole = document.getElementById('select-session-role')?.value || 'MANAGER';
+
+      // Regla de Negocio: La pestaña de auditoría solo es accesible para Owner, Auditor y Manager
+      if (tab === 'tab-kobe-engine') {
+        const allowedRoles = ['OWNER', 'AUDITOR', 'MANAGER'];
+        if (!allowedRoles.includes(currentRole)) {
+          alert(`⛔ Acceso Denegado por RBAC: La pestaña de Auditoría Criptográfica exige rol Owner, Auditor o Manager. Tu rol actual es ${currentRole}.`);
+          return;
+        }
+      }
+
       buttons.forEach(b => b.classList.remove('active'));
       panes.forEach(p => p.classList.remove('active'));
 
@@ -690,6 +701,17 @@ function setupNavigation() {
       }
     });
   });
+
+  // Listener para el selector de roles de sesión
+  const roleSelect = document.getElementById('select-session-role');
+  const roleLabel = document.getElementById('current-user-role-label');
+  if (roleSelect && roleLabel) {
+    roleSelect.addEventListener('change', (e) => {
+      const selected = e.target.value;
+      const optionText = e.target.options[e.target.selectedIndex].text;
+      roleLabel.textContent = optionText;
+    });
+  }
 
   const btnRefresh = document.getElementById('btn-refresh');
   if (btnRefresh) btnRefresh.addEventListener('click', () => fetchAllData());
