@@ -1174,7 +1174,8 @@ function renderInventory() {
               </td>
               <td style="padding: 12px 8px; color: #e9c46a;">${lot.expiryDate}</td>
               <td style="padding: 12px 8px; color: var(--text-muted);">${lot.supplierName || '-'}</td>
-              <td style="padding: 12px 8px; text-align: right;">
+              <td style="padding: 12px 8px; text-align: right; white-space: nowrap;">
+                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem; margin-right: 4px;" title="Ver e Imprimir Rótulo de Frío" onclick="showBarcodeLabelModal('${lot.id}')">🏷️ Etiqueta</button>
                 <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" onclick="adjustStockPrompt('${lot.id}')">⚖️ Ajustar</button>
               </td>
             </tr>
@@ -1184,6 +1185,45 @@ function renderInventory() {
     </table>
   `;
 }
+
+window.showBarcodeLabelModal = function(lotId) {
+  const lot = (state.inventory || []).find(l => l.id === lotId);
+  if (!lot) return;
+
+  const modal = document.getElementById('modal-barcode-label');
+  if (!modal) return;
+
+  const nameEl = document.getElementById('label-lot-name');
+  const metaEl = document.getElementById('label-lot-meta');
+  const digitsEl = document.getElementById('label-barcode-digits');
+  const expiryEl = document.getElementById('label-expiry');
+  const supplierEl = document.getElementById('label-supplier');
+  const linesContainer = document.getElementById('barcode-lines-container');
+
+  if (nameEl) nameEl.textContent = lot.name;
+  if (metaEl) metaEl.textContent = `Lote: ${lot.lotCode} • ${lot.category}`;
+  if (digitsEl) digitsEl.textContent = lot.barcode || '7791234567890';
+  if (expiryEl) expiryEl.textContent = lot.expiryDate ? new Date(lot.expiryDate).toLocaleDateString('es-AR') : '-';
+  if (supplierEl) supplierEl.textContent = lot.supplierName || 'Proveedor Homologado';
+
+  // Generar barras alternadas realistas simulando EAN-13
+  if (linesContainer) {
+    const rawBarcode = lot.barcode || '7791234567890';
+    let barsHtml = '';
+    for (let i = 0; i < rawBarcode.length; i++) {
+      const digit = parseInt(rawBarcode[i], 10) || 1;
+      const w1 = (digit % 3) + 1;
+      const w2 = ((digit + 1) % 3) + 1;
+      barsHtml += `<div style="width: ${w1}px; height: 100%; background: #000;"></div>`;
+      barsHtml += `<div style="width: ${w2}px; height: 100%; background: #fff;"></div>`;
+      barsHtml += `<div style="width: 2px; height: 100%; background: #000;"></div>`;
+      barsHtml += `<div style="width: 1px; height: 100%; background: #fff;"></div>`;
+    }
+    linesContainer.innerHTML = barsHtml;
+  }
+
+  modal.classList.add('active');
+};
 
 window.adjustStockPrompt = async function(lotId) {
   const deltaStr = prompt('Ingrese cantidad para sumar (+) o restar (-) al stock (en unidad del lote):');

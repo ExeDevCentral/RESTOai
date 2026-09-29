@@ -1015,6 +1015,38 @@
     </div>
   </div>
 
+  <!-- MODAL: ETIQUETA DE CÓDIGO DE BARRAS / RÓTULO FEFO -->
+  <div class="modal-overlay" id="modal-barcode-label">
+    <div class="modal-content" style="max-width: 400px; background: #fff; color: #111; border-radius: 8px;">
+      <div class="modal-header" style="border-bottom: 2px solid #000;">
+        <h3 style="color: #000; font-size: 1.1rem; margin: 0;">🏷️ Rótulo de Frío &amp; Trazabilidad FEFO</h3>
+        <button class="close-btn" style="color: #333;" onclick="document.getElementById('modal-barcode-label').classList.remove('active');">×</button>
+      </div>
+      <div class="modal-body" style="text-align: center; padding: 16px 8px;">
+        <h4 id="label-lot-name" style="font-size: 1.1rem; margin: 0; color: #000; font-family: 'Plus Jakarta Sans', sans-serif;">Bife de Chorizo Premium</h4>
+        <p id="label-lot-meta" style="font-size: 0.8rem; color: #444; margin: 4px 0 14px;">Lote: LOT-2026-BIF-089 &bull; Carnes Rojas</p>
+        
+        <!-- Renderizado de Código de Barras tipo Zebra / EAN -->
+        <div style="background: #fff; padding: 12px; display: inline-block; border: 1px solid #ccc; border-radius: 6px;">
+          <div style="display: flex; height: 55px; justify-content: center; align-items: flex-end; gap: 2px;" id="barcode-lines-container">
+            <!-- Barras generadas dinámicamente -->
+          </div>
+          <div style="font-family: 'Courier New', monospace; font-size: 1.1rem; font-weight: 700; letter-spacing: 3px; margin-top: 6px;" id="label-barcode-digits">7791234567890</div>
+        </div>
+
+        <div style="margin-top: 14px; text-align: left; font-size: 0.8rem; background: #f5f5f5; padding: 10px; border-radius: 6px; line-height: 1.4;">
+          <div><strong>Fecha de Vencimiento:</strong> <span id="label-expiry" style="color: #d90429; font-weight: 700;">15/10/2026</span></div>
+          <div><strong>Proveedor:</strong> <span id="label-supplier">Frigorífico La Pampa Gourmet</span></div>
+          <div><strong>Control de Ingesta:</strong> Cadena de Frío KOBE (-18°C a 2°C)</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-secondary" style="flex: 1; border-color: #ccc; color: #333;" onclick="document.getElementById('modal-barcode-label').classList.remove('active');">Cerrar</button>
+        <button type="button" class="btn btn-primary" style="flex: 1; background: #111; color: #fff; border: none;" onclick="window.print()">🖨️ Imprimir Rótulo</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
