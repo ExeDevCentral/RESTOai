@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es" class="fonts-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2eee5">
+  <meta name="description" content="Carta de KOBE: platos de parrilla, pastas, vinos y postres.">
+  <title>Carta | KOBE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="guest-menu.css">
+  <script>
+    const revealMenuFonts = () => document.documentElement.classList.replace('fonts-pending', 'fonts-ready');
+    document.fonts?.load('600 1em "Cormorant Garamond"').then(revealMenuFonts).catch(revealMenuFonts);
+    window.setTimeout(revealMenuFonts, 2500);
+  </script>
+</head>
+<body>
+  <main class="guest-shell">
+    <header class="menu-masthead">
+      <a class="wordmark" href="/menu.html" aria-label="KOBE, inicio de la carta">KOBE<span>.</span></a>
+      <div class="masthead-location">
+        <span class="location-mark" aria-hidden="true"></span>
+        <span>Rosario · Salón Central</span>
+      </div>
+      <span id="guest-menu-table" class="table-label" hidden></span>
+    </header>
+
+    <section class="menu-hero" aria-labelledby="menu-title">
+      <img class="menu-hero-image" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1800&q=82" alt="Cortes a la parrilla servidos para compartir" fetchpriority="high">
+      <div class="menu-hero-copy">
+        <p class="eyebrow">Fuego · producto · tiempo</p>
+        <h1 id="menu-title">La carta<br>de KOBE</h1>
+        <p>Una mesa, buenos cortes y el tiempo justo.</p>
+      </div>
+      <span class="hero-index" aria-hidden="true">01 / CARTA</span>
+    </section>
+
+    <section class="menu-section" aria-labelledby="menu-section-title">
+      <div class="menu-intro">
+        <div>
+          <p class="eyebrow">Nuestra cocina</p>
+          <h2 id="menu-section-title">Elegí algo<br>para disfrutar.</h2>
+        </div>
+        <p class="menu-service-note">Carta de consulta. Para ordenar o resolver una duda sobre alérgenos, acercate al equipo.</p>
+      </div>
+
+      <div class="menu-controls">
+        <div class="category-list" id="guest-menu-categories" aria-label="Filtrar por categoría"></div>
+        <label class="search-control">
+          <span>Buscar</span>
+          <input id="guest-menu-search" type="search" placeholder="Plato o ingrediente" autocomplete="off">
+        </label>
+      </div>
+
+      <p class="menu-count" id="guest-menu-count" aria-live="polite">Cargando carta…</p>
+      <div id="guest-menu-status" class="menu-status" role="status" aria-live="polite" hidden></div>
+      <div id="guest-menu-items" class="dish-grid" aria-label="Platos disponibles"></div>
+    </section>
+
+    <footer class="menu-footer">
+      <a class="wordmark" href="/menu.html" aria-label="KOBE">KOBE<span>.</span></a>
+      <p>Los platos pueden variar según disponibilidad. Consultá al equipo por información de alérgenos.</p>
+      <small>Fotografía ilustrativa · Unsplash</small>
+    </footer>
+  </main>
+  <script type="module" src="modules/guestMenu.js"></script>
+</body>
+</html>

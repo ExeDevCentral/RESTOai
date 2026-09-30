@@ -1,4 +1,15 @@
 // Kitchen Display System (KDS) View Module
+export function sortOrdersByAge(orders) {
+  return orders
+    .map((order, index) => ({ order, index, createdAt: Date.parse(order.createdAt) }))
+    .sort((left, right) => {
+      const leftTime = Number.isFinite(left.createdAt) ? left.createdAt : Infinity;
+      const rightTime = Number.isFinite(right.createdAt) ? right.createdAt : Infinity;
+      return leftTime - rightTime || left.index - right.index;
+    })
+    .map(entry => entry.order);
+}
+
 export function renderKDSView(state, onStatusUpdate) {
   const listPendiente = document.getElementById('kds-list-pendiente');
   const listCocina = document.getElementById('kds-list-cocina');
@@ -21,13 +32,15 @@ export function renderKDSView(state, onStatusUpdate) {
   };
 
   const getFilteredOrders = (status) => {
-    return state.orders
+    const orders = state.orders
       .filter(o => o.status === status)
       .map(o => ({
         ...o,
         filteredItems: filterOrderItems(o)
       }))
       .filter(o => o.filteredItems.length > 0);
+
+    return sortOrdersByAge(orders);
   };
 
   const pendientes = getFilteredOrders('pendiente');

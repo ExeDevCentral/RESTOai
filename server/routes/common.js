@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { processAIChat } from '../aiEngine.js';
+import { calculateServiceMetrics } from '../operationsMetrics.js';
 
 export const commonRouter = Router();
 
@@ -80,7 +81,8 @@ commonRouter.get('/analytics', (req, res) => {
       freeTables,
       totalTables: data.tables.length,
       topDishes,
-      salesHistory: data.salesHistory || []
+      salesHistory: data.salesHistory || [],
+      serviceMetrics: calculateServiceMetrics(data.orders || [])
     }
   });
 });

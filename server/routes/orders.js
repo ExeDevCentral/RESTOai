@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db.js';
+import { recordOrderStatus } from '../operationsMetrics.js';
 
 export const ordersRouter = Router();
 
@@ -189,6 +190,7 @@ ordersRouter.post('/', async (req, res) => {
       total,
       totalCents: Number(domainOrder.totalCents)
     };
+    recordOrderStatus(newOrder, newOrder.status, newOrder.createdAt);
 
     data.orders.push(newOrder);
 
@@ -247,6 +249,7 @@ ordersRouter.put('/:id/status', async (req, res) => {
     console.warn('Advertencia validando máquina de estados:', err);
   }
 
+  if (order.status !== status) recordOrderStatus(order, status);
   order.status = status;
 
   if ((status === 'en_cocina' || status === 'listo') && !order.stockDeducted) {

@@ -223,12 +223,15 @@
 
       <!-- TAB 3: CARTA Y TOMA DE COMANDAS -->
       <section id="tab-menu" class="tab-pane">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
           <div>
             <h3>Gestión de Carta y Pedidos</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem;">Crea comandas de salón o añade/edita platos y recetas del restaurante.</p>
           </div>
-          <button class="btn btn-primary" id="btn-open-new-dish-modal">➕ Agregar Plato a la Carta</button>
+          <div class="menu-management-actions">
+            <a class="btn btn-secondary" href="/menu.html" target="_blank" rel="noopener">Vista carta cliente ↗</a>
+            <button class="btn btn-primary" id="btn-open-new-dish-modal">➕ Agregar Plato a la Carta</button>
+          </div>
         </div>
 
         <div class="order-creator-layout">
@@ -476,6 +479,32 @@
             <ul class="top-list" id="analytics-top-dishes-list">
               <!-- Renderizado dinámico vía JS -->
             </ul>
+          </div>
+
+          <div class="analytics-card full-width service-metrics">
+            <div class="service-metrics-heading">
+              <div>
+                <h3>Ritmo de servicio</h3>
+                <p class="sub-label">Tiempos observados en comandas con transiciones registradas.</p>
+              </div>
+              <span class="service-metrics-scope">Mediana y percentil 90</span>
+            </div>
+            <div class="service-metrics-grid">
+              <div class="service-metric">
+                <div>
+                  <strong>Comanda enviada a lista</strong>
+                  <small id="analytics-order-ready-sample">Aún sin transiciones completas</small>
+                </div>
+                <span id="analytics-order-ready-median">Sin datos</span>
+              </div>
+              <div class="service-metric">
+                <div>
+                  <strong>Lista a servida</strong>
+                  <small id="analytics-ready-served-sample">Aún sin transiciones completas</small>
+                </div>
+                <span id="analytics-ready-served-median">Sin datos</span>
+              </div>
+            </div>
           </div>
 
           <div class="analytics-card full-width">

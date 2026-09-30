@@ -21,8 +21,8 @@
       "number": "M-03",
       "area": "Salón Principal",
       "capacity": 6,
-      "status": "libre",
-      "currentOrderId": null
+      "status": "ocupada",
+      "currentOrderId": 1790787672677
     },
     {
       "id": 4,
@@ -397,6 +397,63 @@
         }
       ],
       "total": 24500
+    },
+    {
+      "id": 1790785649097,
+      "clientOrderId": "ai-1790785649097",
+      "tableId": 1,
+      "tableNumber": "M-01",
+      "waiter": "Copilot IA 🤖",
+      "items": [
+        {
+          "menuItemId": 1,
+          "name": "Bife de Chorizo Madurado 400g",
+          "price": 24500,
+          "quantity": 2,
+          "notes": "Ingresado vía AI Copilot"
+        },
+        {
+          "menuItemId": 11,
+          "name": "Vino Malbec Gran Reserva 750ml",
+          "price": 22000,
+          "quantity": 1,
+          "notes": "Ingresado vía AI Copilot"
+        }
+      ],
+      "subtotal": 71000,
+      "serviceCharge": 7100,
+      "total": 78100,
+      "status": "cobrado",
+      "createdAt": "2026-09-30T16:27:29.097Z",
+      "paymentMethod": "CASH"
+    },
+    {
+      "id": 1790787672677,
+      "clientOrderId": "ai-1790787672677",
+      "tableId": 3,
+      "tableNumber": "M-03",
+      "waiter": "Facundo (MANAGER)",
+      "items": [
+        {
+          "menuItemId": 1,
+          "name": "Bife de Chorizo Madurado 400g",
+          "price": 24500,
+          "quantity": 1,
+          "notes": "Ingresado por Facundo (MANAGER) vía AI Copilot"
+        },
+        {
+          "menuItemId": 6,
+          "name": "Provoleta Especial de la Casa",
+          "price": 11500,
+          "quantity": 1,
+          "notes": "Ingresado por Facundo (MANAGER) vía AI Copilot"
+        }
+      ],
+      "subtotal": 36000,
+      "serviceCharge": 3600,
+      "total": 39600,
+      "status": "en_cocina",
+      "createdAt": "2026-09-30T17:01:12.677Z"
     }
   ],
   "reservations": [

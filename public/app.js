@@ -8,10 +8,10 @@ import {
   generateClientOrderId, 
   setupOfflineListeners 
 } from './modules/offlineQueue.js';
-import { renderTablesGrid, renderFloorPlan, setupFloorPlanEvents, formatStatus } from './modules/views/posView.js';
 import { renderKDSView } from './modules/views/kdsView.js';
 import { renderCashView } from './modules/views/cashView.js';
 import { setupRoleMatrixDemo } from './modules/roleMatrix.js';
+import { normalizeSalesHistory } from './modules/analytics.js';
 
 // Exponer a window para interactividad HTML onclick
 window.toCents = toCents;
@@ -403,7 +403,7 @@ function formatStatus(status) {
 // ========================
 // VISTA: COCINA KDS
 // ========================
-function renderKDS() {
+function renderKDSLegacy() {
   const listPendiente = document.getElementById('kds-list-pendiente');
   const listCocina = document.getElementById('kds-list-cocina');
   const listListo = document.getElementById('kds-list-listo');
@@ -2037,7 +2037,7 @@ window.deleteDish = async function(dishId) {
 // ========================
 // GESTIÓN DE CAJA & ARQUEOS DE TURNO
 // ========================
-function renderCashSession() {
+function renderCashSessionLegacy() {
   const session = state.cashSession?.activeSession;
   const statusCard = document.getElementById('cash-status-card');
   const statusText = document.getElementById('cash-session-status-text');
@@ -2357,6 +2357,23 @@ function renderAnalytics() {
   const topDishesList = document.getElementById('analytics-top-dishes-list');
   const chartEl = document.getElementById('analytics-history-chart');
 
+  const formatServiceMetric = (metric, valueId, sampleId) => {
+    const value = document.getElementById(valueId);
+    const sample = document.getElementById(sampleId);
+    const hasSample = metric?.sampleSize > 0 && Number.isFinite(metric.medianMinutes);
+
+    if (value) value.textContent = hasSample ? `${metric.medianMinutes} min` : 'Sin datos';
+    if (sample) {
+      sample.textContent = hasSample && Number.isFinite(metric.p90Minutes)
+        ? `n=${metric.sampleSize} · P90 ${metric.p90Minutes} min`
+        : 'Aún sin transiciones completas';
+    }
+  };
+
+  const serviceMetrics = analytics.serviceMetrics || {};
+  formatServiceMetric(serviceMetrics.orderToReady, 'analytics-order-ready-median', 'analytics-order-ready-sample');
+  formatServiceMetric(serviceMetrics.readyToServed, 'analytics-ready-served-median', 'analytics-ready-served-sample');
+
   // Facturación acumulada
   const totalSales = analytics.totalActiveSales || state.orders.reduce((sum, o) => sum + (o.total || 0), 0);
   if (totalSalesEl) totalSalesEl.textContent = `$${totalSales.toLocaleString('es-AR')}`;
@@ -2400,31 +2417,27 @@ function renderAnalytics() {
 
   // Gráfico de historial
   if (chartEl) {
-    const history = analytics.salesHistory && analytics.salesHistory.length > 0 ? analytics.salesHistory : [
-      { time: '12:00', amount: 34000 },
-      { time: '13:00', amount: 68000 },
-      { time: '14:00', amount: 89000 },
-      { time: '15:00', amount: 45000 },
-      { time: '20:00', amount: 92000 },
-      { time: '21:00', amount: 125000 },
-      { time: '22:00', amount: 110000 }
-    ];
+    const history = normalizeSalesHistory(analytics.salesHistory);
 
-    const maxAmt = Math.max(...history.map(h => h.amount), 1);
-    chartEl.innerHTML = `
-      <div style="display: flex; align-items: flex-end; justify-content: space-between; height: 180px; gap: 14px; padding: 20px 10px 10px 10px; width: 100%;">
-        ${history.map(h => {
-          const heightPct = Math.max(12, Math.round((h.amount / maxAmt) * 100));
-          return `
-            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; gap: 6px;">
-              <span style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 600;">$${(h.amount / 1000).toFixed(0)}k</span>
-              <div style="width: 100%; max-width: 44px; height: ${heightPct}%; background: linear-gradient(180deg, var(--primary) 0%, rgba(224,169,109,0.3) 100%); border-radius: 4px 4px 0 0; transition: height 0.4s ease;"></div>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">${h.time}</span>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
+    if (history.length === 0) {
+      chartEl.innerHTML = '<p class="analytics-chart-empty">Todavía no hay historial de ventas disponible.</p>';
+    } else {
+      const maxAmount = Math.max(...history.map(point => point.amount), 1);
+      chartEl.innerHTML = `
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; height: 180px; gap: 14px; padding: 20px 10px 10px 10px; width: 100%;">
+          ${history.map(point => {
+            const heightPct = Math.max(12, Math.round((point.amount / maxAmount) * 100));
+            return `
+              <div style="display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; gap: 6px;">
+                <span style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 600;">$${(point.amount / 1000).toFixed(0)}k</span>
+                <div style="width: 100%; max-width: 44px; height: ${heightPct}%; background: linear-gradient(180deg, var(--primary) 0%, rgba(224,169,109,0.3) 100%); border-radius: 4px 4px 0 0; transition: height 0.4s ease;"></div>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${point.label}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
   }
 }
 

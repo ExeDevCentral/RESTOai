@@ -567,6 +567,16 @@ body {
   gap: 30px;
 }
 
+.menu-management-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.menu-management-actions a {
+  text-decoration: none;
+}
+
 .menu-categories {
   display: flex;
   gap: 10px;
@@ -939,6 +949,71 @@ body {
 
 .analytics-card.full-width {
   grid-column: span 3;
+}
+
+.service-metrics-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.service-metrics-heading h3 {
+  margin: 0 0 4px;
+}
+
+.service-metrics-scope {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.service-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.service-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding-top: 14px;
+  border-top: var(--glass-border);
+}
+
+.service-metric strong,
+.service-metric small {
+  display: block;
+}
+
+.service-metric small {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.service-metric > span {
+  flex: 0 0 auto;
+  color: var(--primary);
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 680px) {
+  .service-metrics-heading {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .service-metrics-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
 }
 
 .hero-number {
