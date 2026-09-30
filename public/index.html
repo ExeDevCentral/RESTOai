@@ -91,6 +91,9 @@
             <option value="WAITER">Nivel 6: Waiter (Mozo)</option>
             <option value="RUNNER_HOST">Nivel 7: Runner / Host</option>
           </select>
+          <button type="button" class="btn btn-secondary" id="btn-show-role-matrix" style="padding: 6px 8px; font-size: 0.75rem; border-color: rgba(224,169,109,0.3); color: var(--accent-gold); display: flex; align-items: center; justify-content: center; gap: 4px;">
+            <span>🛡️</span> <span>Ver Alcance &amp; Permisos del Rol</span>
+          </button>
         </div>
         <div class="system-status">
           <span class="status-dot"></span> Servidor REST Activo (3000)
@@ -1112,6 +1115,71 @@
       <div class="modal-footer" style="display: flex; gap: 10px;">
         <button type="button" class="btn btn-secondary" style="flex: 1; border-color: #ccc; color: #333;" onclick="document.getElementById('modal-barcode-label').classList.remove('active');">Cerrar</button>
         <button type="button" class="btn btn-primary" style="flex: 1; background: #111; color: #fff; border: none;" onclick="window.print()">🖨️ Imprimir Rótulo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MATRIZ DE JERARQUÍAS & DEMO EN VIVO RBAC -->
+  <div class="modal-overlay" id="modal-role-matrix">
+    <div class="modal-content" style="max-width: 820px; width: 95%; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.6rem;" id="matrix-header-icon">👑</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.25rem;" id="matrix-header-title">Jerarquía de Roles &amp; Alcance Operativo</h3>
+            <p style="margin: 2px 0 0; color: var(--text-muted); font-size: 0.8rem;">Matriz de seguridad RBAC por nivel, permisos fiscales y simulación en vivo</p>
+          </div>
+        </div>
+        <button type="button" class="close-btn" onclick="document.getElementById('modal-role-matrix').classList.remove('active');">×</button>
+      </div>
+
+      <div class="modal-body" style="padding: 16px 20px;">
+        <!-- Selector rápido de rol dentro de la modal de demo -->
+        <div style="background: rgba(224,169,109,0.08); border: 1px solid rgba(224,169,109,0.25); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-gold); font-weight: 700;">Simular Puesto en Este Dispositivo:</span>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+              <span id="matrix-current-avatar" style="font-size: 1.3rem;">👔</span>
+              <strong id="matrix-current-name" style="font-size: 1.05rem;">Facundo M.</strong>
+              <span class="badge badge-confirmed" id="matrix-current-badge">Manager (Nivel 3)</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="matrix-quick-role-buttons">
+            <!-- Botones inyectados dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Tarjeta de Alcance Detallado del Rol Seleccionado -->
+        <div id="role-scope-details" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+          <!-- Inyectado dinámicamente -->
+        </div>
+
+        <!-- Matriz Comparativa General de Todos los Roles -->
+        <h4 style="font-size: 0.95rem; margin: 16px 0 10px; color: var(--primary);">📋 Matriz Comparativa Completa (10 Niveles de Puesto)</h4>
+        <div style="overflow-x: auto;">
+          <table class="data-table" style="width: 100%; font-size: 0.78rem;">
+            <thead>
+              <tr>
+                <th>Puesto / Jerarquía</th>
+                <th>Dispositivo</th>
+                <th style="text-align: center;">Comandas</th>
+                <th style="text-align: center;">Cocina KDS</th>
+                <th style="text-align: center;">Cobro &amp; ARCA</th>
+                <th style="text-align: center;">Arqueo Caja</th>
+                <th style="text-align: center;">Stock FEFO</th>
+                <th style="text-align: center;">Auditoría SHA</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-table-body">
+              <!-- Filas de la matriz -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">💡 Elige un rol arriba para probar cómo responde la IA y qué vistas se habilitan.</span>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-role-matrix').classList.remove('active');">Entendido / Cerrar</button>
       </div>
     </div>
   </div>

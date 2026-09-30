@@ -11,6 +11,7 @@ import {
 import { renderTablesGrid, renderFloorPlan, setupFloorPlanEvents, formatStatus } from './modules/views/posView.js';
 import { renderKDSView } from './modules/views/kdsView.js';
 import { renderCashView } from './modules/views/cashView.js';
+import { setupRoleMatrixDemo } from './modules/roleMatrix.js';
 
 // Exponer a window para interactividad HTML onclick
 window.toCents = toCents;
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCashSessionEvents();
   setupMenuManagementEvents();
   setupFloorPlanEvents();
+  setupRoleMatrixDemo();
   setupOfflineListeners(fetchAllData);
 
   // Cargar datos iniciales
