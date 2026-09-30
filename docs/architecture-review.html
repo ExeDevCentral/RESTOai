@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RESTOia / KOBE — Reporte de Arquitectura & Matt Pocock Skills</title>
+    <title>KOBE / RESTOia — Auditoría Técnica Profunda & Oportunidades (Matt Pocock Skills)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
       import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
@@ -11,9 +11,8 @@
     </script>
     <style>
       .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #ef4444; }
       .deep-card { background: linear-gradient(135deg, #12100e 0%, #1c1815 100%); }
-      .badge-success { background: rgba(72,169,124,0.2); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
-      .badge-candidate { background: rgba(224,169,109,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
     </style>
   </head>
   <body class="bg-stone-950 text-stone-100 font-sans min-h-screen">
@@ -22,147 +21,192 @@
       <header class="border-b border-stone-800 pb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
-            ✨ Executive Engineering Report &bull; Matt Pocock Skills System
+            🔬 Auditoría Técnica Rigurosa &bull; Skill /improve-codebase-architecture &bull; Matt Pocock
           </div>
           <h1 class="text-3xl md:text-4xl font-extrabold text-stone-100 tracking-tight">
-            RESTOia / KOBE Suite Architecture & Health Report
+            KOBE / RESTOia — Fricciones & Oportunidades Técnicas
           </h1>
           <p class="text-stone-400 text-sm mt-1">
-            Diagnóstico de módulos profundos (deep modules), costuras (seams), invariantes financieros y setup de ingeniería.
+            Revisión sin suavizantes: qué módulos siguen siendo superficiales (shallow), dónde hay fuga entre costuras (seams) y cómo alcanzar nivel bancario/industrial.
           </p>
         </div>
         <div class="flex flex-col gap-2 bg-stone-900/80 p-4 rounded-xl border border-stone-800 text-xs">
           <div class="flex items-center justify-between gap-4">
-            <span class="text-stone-400">Suites Vitest:</span>
-            <span class="font-bold text-emerald-400">24 / 24 Pasando (100%)</span>
+            <span class="text-stone-400">Tests Dominio:</span>
+            <span class="font-bold text-emerald-400">63 / 63 Pasando (100%)</span>
           </div>
           <div class="flex items-center justify-between gap-4">
-            <span class="text-stone-400">Total Tests:</span>
-            <span class="font-bold text-emerald-400">63 Pasando</span>
+            <span class="text-stone-400">Persistencia Actual:</span>
+            <span class="font-bold text-amber-400">Híbrida (JSON Server + pg-mem Test)</span>
           </div>
           <div class="flex items-center justify-between gap-4">
-            <span class="text-stone-400">Invariante Dinero:</span>
-            <span class="font-bold text-amber-400">Money = BigInt Cents (Zero Floats)</span>
+            <span class="text-stone-400">Frontend Restante:</span>
+            <span class="font-bold text-red-400">Monolito en app.js (~2380 líneas)</span>
           </div>
         </div>
       </header>
 
-      <!-- RESUMEN EJECUTIVO DE CANDIDATOS -->
-      <section class="space-y-6">
-        <h2 class="text-xl font-bold text-stone-200 flex items-center gap-2">
-          <span>🚀 Estado de Candidatos de Refactorización</span>
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- CANDIDATO 1: COMPLETADO -->
-          <div class="deep-card p-6 rounded-xl border border-emerald-500/30 space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-bold text-stone-100">1. Desacoplamiento de Backend Express</h3>
-              <span class="px-2.5 py-0.5 rounded text-xs font-semibold badge-success">COMPLETADO ✅</span>
+      <!-- CANDIDATOS DETALLADOS -->
+      <section id="candidates" class="space-y-12">
+
+        <!-- FRICCIÓN CRÍTICA 1: LA FUGA DE PERSISTENCIA (JSON vs DRIZZLE) -->
+        <article class="deep-card p-8 rounded-2xl border border-red-500/30 shadow-2xl space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-2xl font-bold text-stone-100">1. La Fuga de Persistencia: Reemplazar server/data.json por Drizzle/Postgres Real</h2>
+            <div class="flex gap-2">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-red-500/20 text-red-400 border border-red-500/30">Strong (Urgente - Fricción Real)</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">ports & adapters</span>
             </div>
-            <p class="text-xs text-stone-400 leading-relaxed">
-              El monolito `server/index.js` (1313 líneas) fue dividido en enrutadores modulares de dominio limpio en <code>server/routes/</code> (tables, menu, orders, cash, inventory, print, common). El server quedó reducido a 37 líneas limpias.
-            </p>
-            <div class="mermaid">
-graph LR
-    Express[server/index.js (37 lín)] --> R_Orders[routes/orders.js]
-    Express --> R_Cash[routes/cash.js]
-    Express --> R_Inv[routes/inventory.js]
-    R_Orders --> KOBE_Domain[@kobe/domain]
-    R_Orders --> KOBE_Db[@kobe/db Client]
+          </div>
+          
+          <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
+            Archivos involucrados: <code>server/db.js</code> &bull; <code>packages/db/src/client.ts</code> &bull; <code>server/routes/orders.js</code> &bull; <code>server/data.json</code>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <!-- ANTES -->
+            <div class="bg-stone-900/50 p-5 rounded-xl border border-red-500/20">
+              <div class="text-xs font-bold tracking-wider uppercase text-red-400 mb-3 flex items-center gap-2">
+                <span>❌ Situación Actual: Fuga de Seam y Concurrencia Rota</span>
+              </div>
+              <div class="mermaid">
+graph TD
+    API[server/routes/orders.js] -->|read / write síncrono| JSON[(server/data.json)]
+    DrizzleEngine[packages/db Schema Drizzle] -.Desconectado de la API.-x API
+    classDef leak stroke:#ef4444,stroke-width:2px;
+    class JSON,API leak
+              </div>
+              <p class="text-xs text-stone-400 mt-3">
+                Los endpoints siguen leyendo y sobreescribiendo <code>data.json</code> con <code>fs.writeFileSync</code>. Si 2 mozos envían comandas al mismo tiempo, una sobreescribe a la otra. El schema Drizzle con RLS y multi-tenancy existe pero solo lo ejecutan los tests de Vitest.
+              </p>
+            </div>
+
+            <!-- DESPUÉS -->
+            <div class="bg-stone-900/50 p-5 rounded-xl border border-emerald-500/20">
+              <div class="text-xs font-bold tracking-wider uppercase text-emerald-400 mb-3 flex items-center gap-2">
+                <span>✅ Seam Profundo: Repositorio Transaccional Drizzle</span>
+              </div>
+              <div class="mermaid">
+graph TD
+    API[server/routes/orders.js] -->|OrderRepository Seam| Repo[packages/db Client]
+    Repo -->|Transacción ACID con RLS| PG[(PostgreSQL / pg-mem)]
+    Repo -->|Calcula Hash SHA-256| Audit[Audit Ledger Table]
+              </div>
+              <p class="text-xs text-stone-400 mt-3">
+                Conectar directamente <code>packages/db/src/client.ts</code> a las rutas de Express. Concurrencia ACID real, integridad referencial y multi-tenancy nativo.
+              </p>
             </div>
           </div>
 
-          <!-- CANDIDATO 2: COMPLETADO -->
-          <div class="deep-card p-6 rounded-xl border border-emerald-500/30 space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-bold text-stone-100">2. Modularización Frontend PWA & ESM</h3>
-              <span class="px-2.5 py-0.5 rounded text-xs font-semibold badge-success">COMPLETADO ✅</span>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-sm">
+            <div class="bg-stone-900/40 p-4 rounded-lg">
+              <strong class="text-stone-200 block mb-1">Problema:</strong>
+              <span class="text-stone-400 text-xs"><code>data.json</code> no tiene bloqueos, no escala y no aprovecha Drizzle en tiempo de ejecución.</span>
             </div>
-            <p class="text-xs text-stone-400 leading-relaxed">
-              Migración a <code>&lt;script type="module"&gt;</code> con extracción de helpers reutilizables: <code>modules/money.js</code> (manejo de centavos) y <code>modules/offlineQueue.js</code> (cola offline idempotente resiliente con reintento automático).
-            </p>
-            <div class="mermaid">
-graph LR
-    IndexHTML[public/index.html] --> App[public/app.js ESM]
-    App --> Mod_Money[modules/money.js]
-    App --> Mod_Queue[modules/offlineQueue.js]
-    Mod_Queue --> LocalStorage[(localStorage Offline)]
+            <div class="bg-stone-900/40 p-4 rounded-lg">
+              <strong class="text-stone-200 block mb-1">Solución:</strong>
+              <span class="text-stone-400 text-xs">Instanciar `KobeDatabaseClient` en `server/db.js` y hacer que las rutas consulten Drizzle con RLS.</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- MATT POCOCK SKILLS INTEGRATION -->
-      <section class="deep-card p-8 rounded-2xl border border-stone-800 space-y-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 class="text-2xl font-bold text-stone-100">Configuración de Skills de Matt Pocock</h2>
-            <p class="text-stone-400 text-xs mt-1">Ecosistema de 37 skills activado en <code>.agents/skills/</code> para diseño de dominio, TDD y refactor.</p>
-          </div>
-          <span class="px-2.5 py-1 text-xs font-semibold rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-            Setup Activo 🛠️
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-          <!-- SKILL 1: DOMAIN MODELING -->
-          <div class="bg-stone-900/60 p-5 rounded-xl border border-stone-800">
-            <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-2">
-              <span>📖 Domain Modeling</span>
-            </div>
-            <p class="text-xs text-stone-400 mb-3">
-              Define el lenguaje ubicuo formal del sistema y registra ADRs (Architectural Decision Records).
-            </p>
-            <ul class="text-xs text-stone-300 space-y-1 list-disc list-inside">
-              <li><code>GLOSSARY.md</code> generado en la raíz</li>
-              <li><code>docs/adr/0001-money-as-bigint-cents.md</code></li>
-              <li><code>docs/adr/0002-tamper-proof-audit-hash-chain.md</code></li>
-            </ul>
-          </div>
-
-          <!-- SKILL 2: SETUP TS DEEP MODULES -->
-          <div class="bg-stone-900/60 p-5 rounded-xl border border-stone-800">
-            <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-2">
-              <span>🔒 TS Deep Modules</span>
-            </div>
-            <p class="text-xs text-stone-400 mb-3">
-              Garantiza que cada paquete (`@kobe/domain`, `@kobe/db`) exponga únicamente sus puntos de entrada raíz, ocultando los subdirectorios internos.
-            </p>
-            <div class="text-xs font-mono bg-stone-950 p-2.5 rounded border border-stone-800 text-stone-300">
-              packages/domain/index.ts<br>
-              packages/db/src/client.ts
+            <div class="bg-stone-900/40 p-4 rounded-lg">
+              <strong class="text-stone-200 block mb-1">Beneficios:</strong>
+              <ul class="text-stone-400 text-xs list-disc list-inside space-y-0.5">
+                <li>Transacciones concurrentes seguras</li>
+                <li>Mapeo automático de `Money` BigInt</li>
+                <li>Elimina `fs.writeFileSync` bloqueante</li>
+              </ul>
             </div>
           </div>
+        </article>
 
-          <!-- SKILL 3: LOCAL ISSUE TRACKER -->
-          <div class="bg-stone-900/60 p-5 rounded-xl border border-stone-800">
-            <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-2">
-              <span>📋 Issue Tracker & Triage</span>
+        <!-- FRICCIÓN 2: EL MONOLITO FRONTEND EN PUBLIC/APP.JS -->
+        <article class="deep-card p-8 rounded-2xl border border-amber-500/30 shadow-2xl space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-2xl font-bold text-stone-100">2. Desarticular el Monolito de UI en Vistas Modulares (2380 líneas restantes)</h2>
+            <div class="flex gap-2">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/30">Strong (Mantenibilidad)</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">in-process</span>
             </div>
-            <p class="text-xs text-stone-400 mb-3">
-              Gestión local de tickets en markdown para automatización con agentes y control de prioridades.
-            </p>
-            <ul class="text-xs text-stone-300 space-y-1 list-disc list-inside">
-              <li><code>docs/agents/issue-tracker.md</code></li>
-              <li><code>docs/agents/triage-labels.md</code></li>
-              <li><code>docs/agents/domain.md</code></li>
-            </ul>
           </div>
-        </div>
-      </section>
+          
+          <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
+            Archivos involucrados: <code>public/app.js</code> &bull; <code>public/modules/views/pos.js</code> &bull; <code>public/modules/views/kds.js</code> &bull; <code>public/modules/views/cash.js</code>
+          </div>
 
-      <!-- VERIFICACIÓN Y AUDITORÍA EN VIVO -->
-      <section class="p-6 rounded-2xl bg-stone-900/50 border border-stone-800 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div>
-          <h4 class="font-bold text-stone-200 text-base">¿Cómo inspeccionar el sistema en vivo?</h4>
-          <p class="text-stone-400 text-xs mt-1">
-            Ejecuta <code>npm start</code> o <code>node server/index.js</code> y abre en tu navegador <code>http://localhost:3000</code>. Podrás probar el mapa de salón, KDS, toma de comandas offline, arqueos de caja y la pestaña <strong>KOBE Engine & Audit</strong> con la cadena SHA-256 en tiempo real.
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <!-- ANTES -->
+            <div class="bg-stone-900/50 p-5 rounded-xl border border-red-500/20">
+              <div class="text-xs font-bold tracking-wider uppercase text-red-400 mb-3">❌ Antes: Archivo Gigante con 25 Responsabilidades</div>
+              <p class="text-xs text-stone-400 leading-relaxed">
+                Aunque ya extrajimos <code>money.js</code> y <code>offlineQueue.js</code>, <code>public/app.js</code> aún contiene 2380 líneas donde conviven:
+              </p>
+              <ul class="text-xs text-stone-300 list-disc list-inside mt-2 space-y-1">
+                <li>Renderizado del plano de mesas y canvas SVG</li>
+                <li>Lógica KDS y timers de demora</li>
+                <li>Escáner de código de barras de insumos</li>
+                <li>Arqueo de caja y modal de PIN supervisor</li>
+                <li>Simulación de chat con IA y métricas</li>
+              </ul>
+            </div>
+
+            <!-- DESPUÉS -->
+            <div class="bg-stone-900/50 p-5 rounded-xl border border-emerald-500/20">
+              <div class="text-xs font-bold tracking-wider uppercase text-emerald-400 mb-3">✅ Después: Vistas Aisladas por Módulos</div>
+              <div class="mermaid">
+graph TD
+    App[public/app.js Orquestador (120 lín)]
+    App --> V_POS[modules/views/posView.js]
+    App --> V_KDS[modules/views/kdsView.js]
+    App --> V_Cash[modules/views/cashView.js]
+    App --> V_Inv[modules/views/inventoryView.js]
+    App --> V_Print[modules/views/printView.js]
+              </div>
+              <p class="text-xs text-stone-400 mt-2">
+                Cada pestaña tiene su propio ciclo de vida (`mount()`, `render()`, `cleanup()`). Cero colisiones de selectores del DOM.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- FRICCIÓN 3: FACTURACIÓN FISCAL REAL (AFIP / ARCA WSFE) -->
+        <article class="deep-card p-8 rounded-2xl border border-stone-800 shadow-2xl space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-2xl font-bold text-stone-100">3. Adaptador de Facturación Fiscal ARCA: Simulación vs WSFE Producción</h2>
+            <div class="flex gap-2">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-stone-700 text-stone-300">Worth Exploring</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">ports & adapters</span>
+            </div>
+          </div>
+          
+          <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
+            Archivos involucrados: <code>packages/domain/src/fiscalEngine.ts</code> &bull; <code>server/routes/orders.js</code>
+          </div>
+
+          <p class="text-xs text-stone-300 leading-relaxed">
+            Actualmente el cálculo matemático de IVA y categorías fiscales (A/B/C) es 100% exacto y está validado con tests, pero el CAE devuelto es un mock (`74391823901923`). Siguiendo la regla de Matt Pocock (<em>"one adapter = hypothetical seam, two adapters = real seam"</em>), debemos definir la interfaz formal <code>FiscalProvider</code> con dos adaptadores:
           </p>
-        </div>
-        <a href="http://localhost:3000" target="_blank" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs rounded-xl shadow-lg transition-colors whitespace-nowrap">
-          Abrir RESTOia POS (localhost:3000) 🌐
-        </a>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+            <div class="bg-stone-900 p-3 rounded border border-stone-800 text-amber-300">
+              MockFiscalProvider (para tests locales y demo offline)
+            </div>
+            <div class="bg-stone-900 p-3 rounded border border-stone-800 text-emerald-300">
+              ArcaWsfeClient (Soap/WSDL homologación AFIP con certificado .crt/.key)
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- TOP RECOMMENDATION -->
+      <section class="p-8 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 space-y-4">
+        <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+          🌟 Veredicto Técnico Sin Filtro: ¿Qué falta para que sea 100% Industrial?
+        </h3>
+        <p class="text-stone-300 text-sm leading-relaxed">
+          El núcleo algorítmico y matemático (BigInt, FEFO, Máquina de estados, Hash Chain SHA-256) tiene calidad nivel bancario (63 tests verdes). Pero la **persistencia en runtime de Express sigue atada a `data.json`**. 
+        </p>
+        <p class="text-stone-300 text-sm leading-relaxed">
+          Si resolvemos el <strong>Candidato 1 (Conectar Drizzle ORM a las rutas de Express)</strong> y el <strong>Candidato 2 (Separar las 2380 líneas de `app.js` en vistas limpias)</strong>, el sistema deja de tener cualquier punto débil técnico.
+        </p>
       </section>
     </main>
   </body>
