@@ -776,6 +776,10 @@ function setupAIChat() {
       const json = await res.json();
       if (json.success) {
         appendChatMessage('bot', json.data.message, json.data.title);
+        // Si la IA ejecutó una acción sobre el salón, cocina o caja, actualizar la UI al instante
+        if (json.data.action) {
+          await fetchAllData();
+        }
       }
     } catch (e) {
       appendChatMessage('bot', 'Hubo un error de conexión con el motor de IA.');

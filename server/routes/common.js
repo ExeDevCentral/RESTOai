@@ -40,13 +40,13 @@ commonRouter.post('/reservations', (req, res) => {
 });
 
 // Chat de IA
-commonRouter.post('/ai/chat', (req, res) => {
+commonRouter.post('/ai/chat', async (req, res) => {
   const { prompt, context } = req.body;
   if (!prompt) {
     return res.status(400).json({ success: false, message: 'Prompt requerido' });
   }
 
-  const aiResponse = processAIChat(prompt, context);
+  const aiResponse = await processAIChat(prompt, context);
   res.json({ success: true, data: aiResponse });
 });
 
