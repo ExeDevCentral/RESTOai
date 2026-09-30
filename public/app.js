@@ -767,11 +767,20 @@ function setupAIChat() {
     appendChatMessage('user', text);
     input.value = '';
 
+    const currentRole = document.getElementById('select-session-role')?.value || 'MANAGER';
+    const currentUserName = document.getElementById('current-user-name')?.textContent || 'Usuario';
+
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text })
+        body: JSON.stringify({ 
+          prompt: text,
+          context: {
+            role: currentRole,
+            userName: currentUserName
+          }
+        })
       });
       const json = await res.json();
       if (json.success) {
