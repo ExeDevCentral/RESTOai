@@ -627,8 +627,42 @@ app.put('/api/orders/:id/status', async (req, res) => {
   const { status, paymentMethod } = req.body;
   const data = db.getData();
 
-  const order = data.orders.find(o => o.id === parseInt(id));
+  const order = data.orders.find(o => String(o.id) === String(id) || o.id === parseInt(id));
   if (!order) return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
+
+  // Mapeo bidireccional entre estados operativos legacy de UI y estados estrictos del dominio
+  const statusToDomainState = {
+    'pendiente': 'CONFIRMED',
+    'en_cocina': 'IN_PREPARATION',
+    'listo': 'READY',
+    'servido': 'DELIVERED',
+    'cobrado': 'CLOSED',
+    'cancelado': 'CANCELLED'
+  };
+
+  const domainStateToStatus = {
+    'CONFIRMED': 'pendiente',
+    'IN_PREPARATION': 'en_cocina',
+    'READY': 'listo',
+    'DELIVERED': 'servido',
+    'CLOSED': 'cobrado',
+    'CANCELLED': 'cancelado'
+  };
+
+  const targetDomainState = statusToDomainState[status] || status;
+  const currentDomainState = statusToDomainState[order.status] || order.status || 'CONFIRMED';
+
+  try {
+    const { OrderStateMachine } = await import('../packages/domain/dist/index.js');
+    if (!OrderStateMachine.canTransition(currentDomainState, targetDomainState)) {
+      return res.status(400).json({
+        success: false,
+        message: `⛔ Transición de estado inválida: no se puede pasar una orden de ${currentDomainState} (${order.status}) a ${targetDomainState} (${status}).`
+      });
+    }
+  } catch (err) {
+    console.warn('Advertencia validando máquina de estados:', err);
+  }
 
   order.status = status;
 

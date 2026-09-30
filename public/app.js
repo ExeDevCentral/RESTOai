@@ -448,7 +448,7 @@ function renderKDS() {
         </ul>
         <div class="kds-actions">
           ${nextStatus ? `
-            <button class="btn ${btnClass} btn-block" onclick="updateOrderStatus(${order.id}, '${nextStatus}')">
+            <button class="btn ${btnClass} btn-block" onclick="updateOrderStatus('${order.id}', '${nextStatus}')">
               ${nextLabel}
             </button>
           ` : ''}
@@ -466,7 +466,7 @@ function renderKDS() {
     : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">Sin preparaciones en marcha</div>`;
 
   listListo.innerHTML = listos.length > 0
-    ? listos.map(o => renderCard(o, 'cobrado', '✅ Entregado & Finalizar', 'btn-secondary')).join('')
+    ? listos.map(o => renderCard(o, 'servido', '🍽️ Entregar a Mesa', 'btn-secondary')).join('')
     : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">Sin comandas listas</div>`;
 }
 
@@ -944,12 +944,12 @@ window.openTableModal = function(tableId) {
     footer.innerHTML = `
       <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; justify-content: space-between; align-items: center;">
         <div style="display: flex; gap: 8px;">
-          <button class="btn btn-secondary" style="border-color: #ef4444; color: #ef4444;" onclick="voidCurrentOrder(${currentOrder.id})">❌ Anular Comanda</button>
-          <button class="btn btn-secondary" style="border-color: var(--primary); color: var(--primary);" onclick="applyDiscountToOrder(${currentOrder.id})">🏷️ Descuento (%)</button>
+          <button class="btn btn-secondary" style="border-color: #ef4444; color: #ef4444;" onclick="voidCurrentOrder('${currentOrder.id}')">❌ Anular Comanda</button>
+          <button class="btn btn-secondary" style="border-color: var(--primary); color: var(--primary);" onclick="applyDiscountToOrder('${currentOrder.id}')">🏷️ Descuento (%)</button>
         </div>
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-secondary" onclick="closeTableModal()">Cerrar</button>
-          <button class="btn btn-primary" onclick="settleBillWithFiscal(${currentOrder.id})">🧾 Cobrar &amp; Facturar ARCA</button>
+          <button class="btn btn-primary" onclick="settleBillWithFiscal('${currentOrder.id}')">🧾 Cobrar &amp; Facturar ARCA</button>
         </div>
       </div>
     `;
