@@ -106,7 +106,10 @@
           <h1 id="view-title">Mapa de Salón y Mesas (POS)</h1>
           <p id="view-desc">Supervisión en tiempo real de ocupación, comandas y cuentas.</p>
         </div>
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
+          <div id="connection-status-pill" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px; background: rgba(72,169,124,0.15); color: var(--accent-green); border: 1px solid rgba(72,169,124,0.3); display: flex; align-items: center; gap: 6px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green);"></span> En línea
+          </div>
           <button class="btn btn-secondary" id="btn-refresh">🔄 Sincronizar</button>
           <button class="btn btn-primary" id="btn-quick-order">➕ Nueva Comanda</button>
         </div>

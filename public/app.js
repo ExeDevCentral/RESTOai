@@ -600,9 +600,97 @@ function renderTableSelects() {
   if (selectRes) selectRes.innerHTML = `<option value="">Asignación Automática / Al Llegar</option>` + options;
 }
 
+// ========================
+// COLA OFFLINE Y DESPACHO IDEMPOTENTE RESILIENTE
+// ========================
+const OFFLINE_QUEUE_KEY = 'restoia_offline_orders_queue_v1';
+
+function getOfflineOrdersQueue() {
+  try {
+    return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveOfflineOrdersQueue(queue) {
+  try {
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+  } catch (err) {
+    console.error('Error guardando en cola offline:', err);
+  }
+  updateOfflineQueueIndicator();
+}
+
+function updateOfflineQueueIndicator() {
+  const queue = getOfflineOrdersQueue();
+  let badge = document.getElementById('offline-queue-indicator');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'offline-queue-indicator';
+    badge.style.cssText = 'position: fixed; bottom: 18px; right: 20px; z-index: 9999; padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);';
+    document.body.appendChild(badge);
+  }
+
+  if (queue.length > 0) {
+    badge.style.display = 'flex';
+    badge.style.background = '#e76f51';
+    badge.style.color = '#fff';
+    badge.innerHTML = `<span>📡 Cola Offline: ${queue.length} comanda(s) pendiente(s) de sincronizar</span> <button onclick="flushOfflineOrdersQueue()" style="background: rgba(255,255,255,0.25); border: none; color: #fff; padding: 2px 8px; border-radius: 10px; cursor: pointer; font-size: 0.75rem;">Sincronizar</button>`;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+async function flushOfflineOrdersQueue() {
+  const queue = getOfflineOrdersQueue();
+  if (queue.length === 0) return;
+
+  const remaining = [];
+  for (const item of queue) {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+      if (!res.ok) {
+        remaining.push(item);
+      }
+    } catch {
+      remaining.push(item);
+    }
+  }
+
+  saveOfflineOrdersQueue(remaining);
+  if (remaining.length === 0) {
+    console.log('✅ Todas las comandas offline se sincronizaron con éxito.');
+    await fetchAllData();
+  }
+}
+
+// Sincronizar automáticamente al recuperar conexión
+window.addEventListener('online', () => {
+  console.log('🌐 Conexión de red restablecida. Vaciando cola offline...');
+  flushOfflineOrdersQueue();
+});
+
+function generateClientOrderId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'ord-cl-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+}
+
 function setupOrderTrayEvents() {
   const btnSend = document.getElementById('btn-send-to-kitchen');
   if (!btnSend) return;
+
+  // Revisar cola al iniciar
+  updateOfflineQueueIndicator();
+  if (navigator.onLine) {
+    flushOfflineOrdersQueue();
+  }
 
   btnSend.addEventListener('click', async () => {
     if (state.trayItems.length === 0) {
@@ -613,17 +701,24 @@ function setupOrderTrayEvents() {
     const select = document.getElementById('select-target-table');
     const tableId = select.value;
     const table = state.tables.find(t => t.id === parseInt(tableId));
+    const clientOrderId = generateClientOrderId();
+
+    const orderPayload = {
+      clientOrderId,
+      tableId,
+      tableNumber: table ? table.number : `M-${tableId}`,
+      waiter: state.selectedRole || "Facundo M.",
+      items: [...state.trayItems]
+    };
+
+    btnSend.disabled = true;
+    btnSend.textContent = 'Enviando comanda...';
 
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tableId,
-          tableNumber: table ? table.number : `M-${tableId}`,
-          waiter: "Facundo M.",
-          items: state.trayItems
-        })
+        body: JSON.stringify(orderPayload)
       });
 
       if (res.ok) {
@@ -631,10 +726,27 @@ function setupOrderTrayEvents() {
         renderTray();
         await fetchAllData();
         // Cambiar a pestaña KDS
-        document.querySelector('[data-tab="tab-kds"]').click();
+        const kdsTab = document.querySelector('[data-tab="tab-kds"]');
+        if (kdsTab) kdsTab.click();
+      } else {
+        throw new Error(`Servidor devolvió status ${res.status}`);
       }
     } catch (e) {
-      console.error('Error enviando comanda', e);
+      console.warn('⚠️ Falla de red o desconexión. Encolando comanda localmente...', e);
+      const queue = getOfflineOrdersQueue();
+      queue.push(orderPayload);
+      saveOfflineOrdersQueue(queue);
+
+      // Limpiar bandeja local y alertar al usuario
+      state.trayItems = [];
+      renderTray();
+      alert(`⚠️ Sin conexión al servidor o red inestable.\n\nLa comanda para la Mesa ${orderPayload.tableNumber} fue guardada localmente con ID seguro:\n${clientOrderId}\n\nSe enviará automáticamente apenas vuelva la conexión.`);
+      
+      const kdsTab = document.querySelector('[data-tab="tab-kds"]');
+      if (kdsTab) kdsTab.click();
+    } finally {
+      btnSend.disabled = false;
+      btnSend.textContent = '🔥 Enviar Comanda a Cocina';
     }
   });
 }

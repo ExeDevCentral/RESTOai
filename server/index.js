@@ -521,55 +521,105 @@ app.get('/api/orders', (req, res) => {
   res.json({ success: true, data: orders });
 });
 
-app.post('/api/orders', (req, res) => {
-  const { tableId, tableNumber, waiter, items } = req.body;
+app.post('/api/orders', async (req, res) => {
+  const { clientOrderId, tableId, tableNumber, waiter, items } = req.body;
   const data = db.getData();
 
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const newOrder = {
-    id: Date.now(),
-    tableId: parseInt(tableId),
-    tableNumber: tableNumber || `M-${tableId}`,
-    waiter: waiter || "Mozo Asignado",
-    status: "pendiente",
-    createdAt: new Date().toISOString(),
-    items: items.map(i => ({
-      ...i,
-      status: "pendiente"
-    })),
-    total
-  };
-
-  data.orders.push(newOrder);
-
-  // Actualizar mesa a 'ocupada' y ligar id de comanda
-  const table = data.tables.find(t => t.id === parseInt(tableId));
-  if (table) {
-    table.status = 'ocupada';
-    table.currentOrderId = newOrder.id;
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ success: false, message: 'La comanda debe contener al menos un ítem.' });
   }
 
-  db.saveData(data);
+  // Generar o utilizar el UUID provisto por el cliente/mozo
+  const effectiveClientOrderId = clientOrderId || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `ord-uuid-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
 
-  // Registrar evento en Audit Ledger Criptográfico
-  import('../packages/domain/dist/index.js').then(({ AuditLedger }) => {
-    AuditLedger.appendRecord({
+  // Mapeo seguro de estaciones de cocina válidas
+  const mapStation = (cat = '') => {
+    const c = cat.toLowerCase();
+    if (c.includes('carne') || c.includes('josper') || c.includes('grill') || c.includes('parrilla')) return 'GRILL';
+    if (c.includes('pasta') || c.includes('horno')) return 'PASTA_OVEN';
+    if (c.includes('postre') || c.includes('dulce')) return 'DESSERTS';
+    if (c.includes('bebida') || c.includes('coctel') || c.includes('vino') || c.includes('barra')) return 'BAR';
+    return 'COLD_APPETIZERS';
+  };
+
+  // Convertir a formato estricto de dominio (centavos BigInt y estaciones de cocina tipadas)
+  const domainItems = items.map(item => ({
+    menuItemId: String(item.id || item.menuItemId || 'item-custom'),
+    name: String(item.name || 'Plato'),
+    quantity: Math.max(1, Number(item.quantity) || 1),
+    unitPriceCents: BigInt(Math.round(Number(item.price || 0) * 100)),
+    station: mapStation(item.category),
+    notes: item.notes || ''
+  }));
+
+  try {
+    const { IdempotentOrderIngestor } = await import('../packages/domain/dist/index.js');
+
+    const ingestResult = IdempotentOrderIngestor.ingest({
+      clientOrderId: effectiveClientOrderId,
       organizationId: 'org-kobe-chain-arg',
       locationId: 'loc-centro-arg',
+      tableNumber: tableNumber || (tableId ? `M-${tableId}` : 'M-01'),
       actorId: waiter || 'usr-waiter-01',
-      action: 'ORDER_CONFIRMED',
-      entityType: 'ORDER',
-      entityId: String(newOrder.id),
-      requestId: `req-${Date.now()}`,
-      payload: {
-        tableNumber: newOrder.tableNumber,
-        itemCount: newOrder.items.length,
-        totalCents: (newOrder.total * 100).toString()
-      }
+      items: domainItems
     });
-  }).catch((err) => console.error('Error appendRecord:', err));
 
-  res.status(201).json({ success: true, data: newOrder });
+    const isDup = ingestResult.isDuplicate;
+    const domainOrder = ingestResult.order;
+
+    // Buscar si ya existe la orden en el storage persistente local
+    let existingOrderInDb = data.orders.find(o => o.clientOrderId === effectiveClientOrderId || String(o.id) === domainOrder.id);
+
+    if (existingOrderInDb) {
+      return res.status(200).json({
+        success: true,
+        data: existingOrderInDb,
+        isDuplicate: true,
+        message: 'Comanda ya procesada previamente (Idempotencia garantizada).'
+      });
+    }
+
+    const total = items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+
+    const newOrder = {
+      id: domainOrder.id,
+      clientOrderId: effectiveClientOrderId,
+      tableId: parseInt(tableId) || 1,
+      tableNumber: tableNumber || (tableId ? `M-${tableId}` : 'M-01'),
+      waiter: waiter || "Mozo Asignado",
+      status: "pendiente",
+      createdAt: domainOrder.createdAt,
+      items: items.map(i => ({
+        ...i,
+        status: "pendiente"
+      })),
+      total,
+      totalCents: Number(domainOrder.totalCents)
+    };
+
+    data.orders.push(newOrder);
+
+    // Actualizar mesa a 'ocupada' y ligar id de comanda
+    if (tableId) {
+      const table = data.tables.find(t => t.id === parseInt(tableId));
+      if (table) {
+        table.status = 'ocupada';
+        table.currentOrderId = newOrder.id;
+      }
+    }
+
+    db.saveData(data);
+
+    res.status(201).json({
+      success: true,
+      data: newOrder,
+      isDuplicate: false,
+      message: 'Comanda ingresada exitosamente y asentada en el Audit Ledger.'
+    });
+  } catch (err) {
+    console.error('Error al ingresar orden en el dominio:', err);
+    res.status(500).json({ success: false, message: 'Error interno en el motor transaccional de órdenes.' });
+  }
 });
 
 app.put('/api/orders/:id/status', async (req, res) => {
