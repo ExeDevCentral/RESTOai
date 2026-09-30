@@ -847,9 +847,14 @@ window.openTableModal = function(tableId) {
         ${currentOrder.items.map(i => `
           <li style="display:flex; justify-content:space-between; padding: 4px 0;">
             <span>${i.quantity}x ${i.name}</span>
-            <span>$${(i.price * i.quantity).toLocaleString('es-AR')}</span>
+            <span>${formatCurrency(i.price * i.quantity)}</span>
           </li>
         `).join('')}
+      </ul>
+      <div style="display:flex; justify-content:space-between; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08); font-size: 1.05rem;">
+        <strong>Total Comanda:</strong>
+        <strong style="color: var(--accent-gold);">${formatCurrency(currentOrder.total)}</strong>
+      </div>
       <div style="margin-top: 14px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px;">
         <label style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">Medio de Pago:</label>
         <div style="display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap;">
