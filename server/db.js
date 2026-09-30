@@ -248,7 +248,61 @@ function saveData(data) {
   }
 }
 
+let kobeDbClient = null;
+
+try {
+  const { createInMemoryKobeDb, orders, organizations, locations } = await import('../packages/db/dist/index.js');
+  kobeDbClient = createInMemoryKobeDb();
+  
+  // Inicializar tenant por defecto en el motor relacional KOBE
+  const defaultOrgId = '00000000-0000-4000-8000-000000000001';
+  const defaultLocId = '00000000-0000-4000-8000-000000000002';
+  
+  try {
+    kobeDbClient.db.insert(organizations).values({
+      id: defaultOrgId,
+      name: 'RESTOia Gastronomy Group',
+      taxId: '30-71829301-4',
+      legalName: 'RESTOia S.R.L.'
+    }).onConflictDoNothing().run();
+
+    kobeDbClient.db.insert(locations).values({
+      id: defaultLocId,
+      organizationId: defaultOrgId,
+      name: 'Salón Central Rosario',
+      address: 'Bv. Oroño 1234'
+    }).onConflictDoNothing().run();
+  } catch (e) {
+    // Si la tabla no está creada aún en pg-mem, se omite silenciosamente
+  }
+} catch (err) {
+  console.warn('Advertencia inicializando Drizzle Client:', err);
+}
+
 export const db = {
   getData: loadData,
-  saveData: saveData
+  saveData: saveData,
+  kobe: kobeDbClient,
+  async recordOrderInDrizzle(order) {
+    if (!kobeDbClient) return;
+    try {
+      const { orders: ordersTable, orderItems: orderItemsTable } = await import('../packages/db/dist/index.js');
+      const defaultOrgId = '00000000-0000-4000-8000-000000000001';
+      const defaultLocId = '00000000-0000-4000-8000-000000000002';
+      
+      const totalCents = BigInt(Math.round((order.total || 0) * 100));
+      await kobeDbClient.db.insert(ordersTable).values({
+        id: String(order.id),
+        clientOrderId: order.clientOrderId || `ord-${order.id}`,
+        organizationId: defaultOrgId,
+        locationId: defaultLocId,
+        tableNumber: String(order.tableNumber || '1'),
+        state: order.status === 'cobrado' ? 'CLOSED' : order.status === 'en_cocina' ? 'IN_PREPARATION' : 'CONFIRMED',
+        totalCents
+      });
+    } catch (e) {
+      // Log interno sin interrumpir el flujo
+      console.warn('Drizzle order sync warning:', e.message);
+    }
+  }
 };

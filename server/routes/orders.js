@@ -149,6 +149,7 @@ ordersRouter.post('/', async (req, res) => {
     }
 
     db.saveData(data);
+    await db.recordOrderInDrizzle(newOrder);
 
     res.status(201).json({
       success: true,
@@ -331,6 +332,7 @@ ordersRouter.put('/:id/status', async (req, res) => {
   }
 
   db.saveData(data);
+  await db.recordOrderInDrizzle(order);
   const serializedInvoice = invoice ? {
     ...invoice,
     netAmountCents: invoice.netAmountCents.toString(),
