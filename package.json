@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b",
     "lint": "eslint .",
+    "start": "node server/index.js",
     "resto:legacy": "node server/index.js"
   },
   "devDependencies": {
