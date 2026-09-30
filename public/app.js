@@ -8,12 +8,16 @@ import {
   generateClientOrderId, 
   setupOfflineListeners 
 } from './modules/offlineQueue.js';
+import { renderTablesGrid, renderFloorPlan, setupFloorPlanEvents, formatStatus } from './modules/views/posView.js';
+import { renderKDSView } from './modules/views/kdsView.js';
+import { renderCashView } from './modules/views/cashView.js';
 
 // Exponer a window para interactividad HTML onclick
 window.toCents = toCents;
 window.formatCurrency = formatCurrency;
 window.formatCurrencyFromCents = formatCurrencyFromCents;
 window.flushOfflineOrdersQueue = flushOfflineOrdersQueue;
+window.formatStatus = formatStatus;
 
 const state = {
   currentTab: 'tab-pos',
@@ -234,8 +238,16 @@ function updateStatsBar() {
 // VISTA: MESAS (POS)
 // ========================
 function renderTables() {
-  renderTablesGrid();
-  renderFloorPlan();
+  renderTablesGrid(state);
+  renderFloorPlan(state);
+}
+
+function renderKDS() {
+  renderKDSView(state);
+}
+
+function renderCashSession() {
+  renderCashView(state);
 }
 
 function renderTablesGrid() {

@@ -21,6 +21,7 @@ export * from './accounting/journalEntry.js';
 export * from './accounting/accountingLedger.js';
 export * from './accounting/journalAutomator.js';
 export * from './fiscal/fiscalEngine.js';
+export * from './fiscal/fiscalProvider.js';
 export * from './printing/printTypes.js';
 export * from './printing/receiptBuilder.js';
 export * from './printing/escPosRenderer.js';

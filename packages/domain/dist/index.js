@@ -25,6 +25,7 @@ export * from './accounting/journalEntry.js';
 export * from './accounting/accountingLedger.js';
 export * from './accounting/journalAutomator.js';
 export * from './fiscal/fiscalEngine.js';
+export * from './fiscal/fiscalProvider.js';
 // Phase 5: Universal Printing Architecture & Modern Receipts
 export * from './printing/printTypes.js';
 export * from './printing/receiptBuilder.js';

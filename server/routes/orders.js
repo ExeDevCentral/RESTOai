@@ -68,6 +68,58 @@ ordersRouter.get('/:id/receipt', async (req, res) => {
   }
 });
 
+ordersRouter.get('/:id/invoice', async (req, res) => {
+  const { id } = req.params;
+  const data = db.getData();
+
+  const order = data.orders.find(o => String(o.id) === String(id) || o.id === parseInt(id));
+  if (!order) return res.status(404).json({ success: false, message: 'Comanda no encontrada' });
+
+  try {
+    const { FiscalEngine, MockFiscalProvider } = await import('../../packages/domain/dist/index.js');
+    const invoiceReq = {
+      organizationId: 'org-kobe-chain-arg',
+      locationId: 'loc-centro-arg',
+      orderId: String(order.id),
+      seller: {
+        cuit: '30712345678',
+        taxCategory: 'RESPONSABLE_INSCRIPTO',
+        businessName: 'KOBE Gastronomía S.A.',
+        pointOfSale: 1
+      },
+      buyer: {
+        taxCategory: 'CONSUMIDOR_FINAL',
+        businessName: `Comensal Mesa ${order.tableNumber}`
+      },
+      totalAmountCents: BigInt(Math.round((order.total || 0) * 100))
+    };
+
+    let invoice = FiscalEngine.issueInvoice(invoiceReq);
+    const provider = new MockFiscalProvider();
+    const auth = await provider.authorizeInvoice(invoiceReq);
+    if (auth.success && auth.cae) {
+      invoice = {
+        ...invoice,
+        cae: auth.cae,
+        caeExpirationDate: auth.caeExpirationDate || invoice.caeExpirationDate,
+        invoiceNumber: auth.invoiceNumber || invoice.invoiceNumber,
+        qrPayload: auth.qrPayload
+      };
+    }
+
+    const serialized = {
+      ...invoice,
+      netAmountCents: invoice.netAmountCents.toString(),
+      vatAmountCents: invoice.vatAmountCents.toString(),
+      totalAmountCents: invoice.totalAmountCents.toString()
+    };
+
+    res.json({ success: true, data: serialized });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 ordersRouter.post('/', async (req, res) => {
   const { clientOrderId, tableId, tableNumber, waiter, items } = req.body;
   const data = db.getData();
@@ -246,9 +298,9 @@ ordersRouter.put('/:id/status', async (req, res) => {
     }
 
     try {
-      const { AuditLedger, FiscalEngine, JournalAutomator } = await import('../../packages/domain/dist/index.js');
+      const { AuditLedger, FiscalEngine, JournalAutomator, MockFiscalProvider } = await import('../../packages/domain/dist/index.js');
       
-      invoice = FiscalEngine.issueInvoice({
+      const invoiceReq = {
         organizationId: 'org-kobe-chain-arg',
         locationId: 'loc-centro-arg',
         orderId: String(order.id),
@@ -263,7 +315,22 @@ ordersRouter.put('/:id/status', async (req, res) => {
           businessName: `Comensal Mesa ${order.tableNumber}`
         },
         totalAmountCents: BigInt(order.total * 100)
-      });
+      };
+
+      invoice = FiscalEngine.issueInvoice(invoiceReq);
+
+      // Autorización con FiscalProvider (ARCA / WSFE) para obtención de QR y CAE oficial
+      const fiscalProvider = new MockFiscalProvider();
+      const authResult = await fiscalProvider.authorizeInvoice(invoiceReq);
+      if (authResult.success && authResult.cae) {
+        invoice = {
+          ...invoice,
+          cae: authResult.cae,
+          caeExpirationDate: authResult.caeExpirationDate || invoice.caeExpirationDate,
+          invoiceNumber: authResult.invoiceNumber || invoice.invoiceNumber,
+          qrPayload: authResult.qrPayload
+        };
+      }
 
       const isSplit = paymentMethod === 'SPLIT';
       const cashAmt = isSplit ? (Number(req.body.splitCashAmount) || 0) : (paymentMethod === 'CASH' ? order.total : 0);
