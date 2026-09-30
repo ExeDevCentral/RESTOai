@@ -800,6 +800,69 @@ function setupAIChat() {
     if (e.key === 'Enter') sendMessage(input.value);
   });
 
+  // ==========================================
+  // RECONOCIMIENTO Y CONTROL POR VOZ (Web Speech API)
+  // ==========================================
+  const btnVoice = document.getElementById('btn-voice-ai');
+  const voiceIndicator = document.getElementById('voice-status-indicator');
+  const voiceIcon = document.getElementById('voice-icon');
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition && btnVoice) {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-AR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    let isListening = false;
+
+    recognition.onstart = () => {
+      isListening = true;
+      if (voiceIndicator) voiceIndicator.style.display = 'block';
+      if (btnVoice) {
+        btnVoice.style.background = '#ef4444';
+        btnVoice.style.color = '#fff';
+      }
+      if (voiceIcon) voiceIcon.textContent = '🛑';
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      if (voiceIndicator) voiceIndicator.style.display = 'none';
+      if (btnVoice) {
+        btnVoice.style.background = 'transparent';
+        btnVoice.style.color = 'var(--accent-gold)';
+      }
+      if (voiceIcon) voiceIcon.textContent = '🎤';
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      if (transcript) {
+        input.value = transcript;
+        sendMessage(transcript);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.warn('Speech recognition error:', event.error);
+      if (voiceIndicator) voiceIndicator.style.display = 'none';
+      isListening = false;
+    };
+
+    btnVoice.addEventListener('click', () => {
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    });
+  } else if (btnVoice) {
+    btnVoice.addEventListener('click', () => {
+      alert('Tu navegador no soporta reconocimiento de voz nativo (Web Speech API). Recomendamos usar Google Chrome, Microsoft Edge o Safari.');
+    });
+  }
+
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
       const prompt = chip.getAttribute('data-prompt');
@@ -1149,15 +1212,46 @@ function setupNavigation() {
     });
   });
 
-  // Listener para el selector de roles de sesión
+  // Listener para el selector de roles de sesión (Multi-dispositivo y Multi-rol)
   const roleSelect = document.getElementById('select-session-role');
   const roleLabel = document.getElementById('current-user-role-label');
+  const userAvatar = document.getElementById('current-user-avatar');
+  const userName = document.getElementById('current-user-name');
+
+  const ROLE_PROFILES = {
+    OWNER: { name: 'Mariano Casares (Dueño)', avatar: '👑', label: 'Owner (Nivel 1)' },
+    ADMIN: { name: 'Admin Sistemas', avatar: '💻', label: 'Admin (Nivel 2)' },
+    MANAGER: { name: 'Facundo M. (Gerente)', avatar: '👔', label: 'Manager (Nivel 3)' },
+    AUDITOR: { name: 'Dra. Beatriz Rossi', avatar: '🔍', label: 'Auditor (Nivel 3)' },
+    CASHIER: { name: 'Lucía Fernández', avatar: '💵', label: 'Cajero / Turno (Nivel 4)' },
+    CHEF: { name: 'Chef Damián R.', avatar: '👨‍🍳', label: 'Chef Ejecutivo (Nivel 4)' },
+    COOK: { name: 'Cocina Josper #1', avatar: '🔥', label: 'Cocinero (Nivel 5)' },
+    BARTENDER: { name: 'Matias Barra', avatar: '🍸', label: 'Bartender (Nivel 5)' },
+    WAITER: { name: 'Juan Mozo (Tablet)', avatar: '📱', label: 'Mozo / Salón (Nivel 6)' },
+    RUNNER_HOST: { name: 'Hostess Entrada', avatar: '🚪', label: 'Recepción (Nivel 7)' }
+  };
+
   if (roleSelect && roleLabel) {
     roleSelect.addEventListener('change', (e) => {
       const selected = e.target.value;
-      const optionText = e.target.options[e.target.selectedIndex].text;
-      roleLabel.textContent = optionText;
+      const profile = ROLE_PROFILES[selected] || { name: 'Operador', avatar: '👤', label: selected };
+      roleLabel.textContent = profile.label;
+      if (userName) userName.textContent = profile.name;
+      if (userAvatar) userAvatar.textContent = profile.avatar;
+
+      // Guardar en sessionStorage para persistencia en este dispositivo
+      sessionStorage.setItem('restoia_device_role', selected);
     });
+
+    // Restaurar si ya estaba configurado en esta tablet o celular
+    const savedRole = sessionStorage.getItem('restoia_device_role');
+    if (savedRole && ROLE_PROFILES[savedRole]) {
+      roleSelect.value = savedRole;
+      const profile = ROLE_PROFILES[savedRole];
+      roleLabel.textContent = profile.label;
+      if (userName) userName.textContent = profile.name;
+      if (userAvatar) userAvatar.textContent = profile.avatar;
+    }
   }
 
   const btnRefresh = document.getElementById('btn-refresh');

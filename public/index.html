@@ -437,9 +437,15 @@
             </div>
           </div>
 
-          <div class="chat-input-bar">
-            <input type="text" id="ai-input" placeholder="Pregunta a la IA sobre maridaje, comandas, platos o negocio..." />
+          <div class="chat-input-bar" style="position: relative;">
+            <input type="text" id="ai-input" placeholder="Pregunta a la IA o dicta tu orden por voz..." />
+            <button type="button" class="btn btn-secondary" id="btn-voice-ai" title="Dictar por Voz (Micrófono)" style="padding: 0 16px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid var(--accent-gold); color: var(--accent-gold);">
+              <span id="voice-icon">🎤</span>
+            </button>
             <button class="btn btn-primary" id="btn-send-ai">Consultar IA ⚡</button>
+          </div>
+          <div id="voice-status-indicator" style="display: none; font-size: 0.8rem; color: #ef4444; margin-top: 6px; text-align: right; font-weight: 600;">
+            🔴 Escuchando por micrófono... Habla ahora (ej: "comanda mesa 1: 2 bifes de chorizo")
           </div>
         </div>
       </section>
