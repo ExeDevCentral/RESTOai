@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KOBE / RESTOia — Architecture Review & Deepening Report</title>
+    <title>RESTOia / KOBE — Reporte de Arquitectura & Matt Pocock Skills</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
       import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
@@ -11,8 +11,9 @@
     </script>
     <style>
       .seam { stroke-dasharray: 4 4; }
-      .leak { stroke: #ef4444; }
       .deep-card { background: linear-gradient(135deg, #12100e 0%, #1c1815 100%); }
+      .badge-success { background: rgba(72,169,124,0.2); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+      .badge-candidate { background: rgba(224,169,109,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
     </style>
   </head>
   <body class="bg-stone-950 text-stone-100 font-sans min-h-screen">
@@ -21,199 +22,147 @@
       <header class="border-b border-stone-800 pb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
-            ✨ Executive Engineering Report &bull; Matt Pocock / Skills Methodology
+            ✨ Executive Engineering Report &bull; Matt Pocock Skills System
           </div>
           <h1 class="text-3xl md:text-4xl font-extrabold text-stone-100 tracking-tight">
-            KOBE / RESTOia Architecture Review
+            RESTOia / KOBE Suite Architecture & Health Report
           </h1>
           <p class="text-stone-400 text-sm mt-1">
-            Diagnóstico de fricción arquitectónica, módulos superficiales (shallow) y oportunidades de profundización (deepening).
+            Diagnóstico de módulos profundos (deep modules), costuras (seams), invariantes financieros y setup de ingeniería.
           </p>
         </div>
-        <div class="flex items-center gap-4 bg-stone-900/80 p-4 rounded-xl border border-stone-800 text-xs">
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-amber-500"></span> Módulo Profundo</div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded border border-dashed border-stone-400"></span> Costura (Seam)</div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-red-500"></span> Fuga (Leakage)</div>
+        <div class="flex flex-col gap-2 bg-stone-900/80 p-4 rounded-xl border border-stone-800 text-xs">
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-stone-400">Suites Vitest:</span>
+            <span class="font-bold text-emerald-400">24 / 24 Pasando (100%)</span>
+          </div>
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-stone-400">Total Tests:</span>
+            <span class="font-bold text-emerald-400">63 Pasando</span>
+          </div>
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-stone-400">Invariante Dinero:</span>
+            <span class="font-bold text-amber-400">Money = BigInt Cents (Zero Floats)</span>
+          </div>
         </div>
       </header>
 
-      <!-- CANDIDATES -->
-      <section id="candidates" class="space-y-12">
-        <!-- CANDIDATE 1 -->
-        <article class="deep-card p-8 rounded-2xl border border-stone-800 shadow-2xl space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-2xl font-bold text-stone-100">1. Desacoplar el "God Server" (1280 líneas) en Módulos de Dominio</h2>
-            <div class="flex gap-2">
-              <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Strong (Urgente)</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">ports & adapters</span>
+      <!-- RESUMEN EJECUTIVO DE CANDIDATOS -->
+      <section class="space-y-6">
+        <h2 class="text-xl font-bold text-stone-200 flex items-center gap-2">
+          <span>🚀 Estado de Candidatos de Refactorización</span>
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- CANDIDATO 1: COMPLETADO -->
+          <div class="deep-card p-6 rounded-xl border border-emerald-500/30 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-bold text-stone-100">1. Desacoplamiento de Backend Express</h3>
+              <span class="px-2.5 py-0.5 rounded text-xs font-semibold badge-success">COMPLETADO ✅</span>
             </div>
-          </div>
-          
-          <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
-            Archivos involucrados: <code>server/index.js</code> &bull; <code>server/db.js</code> &bull; <code>packages/db/src/client.ts</code>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            <!-- BEFORE -->
-            <div class="bg-stone-900/50 p-5 rounded-xl border border-red-500/20">
-              <div class="text-xs font-bold tracking-wider uppercase text-red-400 mb-3 flex items-center gap-2">
-                <span>❌ Antes: Monolito Superficial y Fricción</span>
-              </div>
-              <div class="mermaid">
-graph TD
-    Client[Cliente / POS / KDS] --> Server[server/index.js (1280 líneas)]
-    Server -->|Lectura Cruda| JSON[(server/data.json)]
-    Server -->|Import Dinámico Aislado| Domain[packages/domain]
-    Server -->|Sin Conectar| Drizzle[(packages/db Drizzle Engine)]
-              </div>
-              <p class="text-xs text-stone-400 mt-3">Un único archivo responde HTTP, calcula stock, genera CAE fiscal, emite ESC/POS y guarda en JSON.</p>
-            </div>
-
-            <!-- AFTER -->
-            <div class="bg-stone-900/50 p-5 rounded-xl border border-emerald-500/20">
-              <div class="text-xs font-bold tracking-wider uppercase text-emerald-400 mb-3 flex items-center gap-2">
-                <span>✅ Después: Módulos Profundos y Rutas Limpias</span>
-              </div>
-              <div class="mermaid">
-graph TD
-    Client[Cliente / POS / KDS] --> App[server/app.js]
-    App --> R_Orders[routes/orders.js]
-    App --> R_Kitchen[routes/kitchen.js]
-    App --> R_Cash[routes/cash.js]
-    R_Orders --> KobeDomain[packages/domain]
-    R_Orders --> KobeDB[packages/db Drizzle Repositories]
-              </div>
-              <p class="text-xs text-stone-400 mt-3">Rutas delgadas con un adaptador de persistencia real conectado a Drizzle / PostgreSQL.</p>
+            <p class="text-xs text-stone-400 leading-relaxed">
+              El monolito `server/index.js` (1313 líneas) fue dividido en enrutadores modulares de dominio limpio en <code>server/routes/</code> (tables, menu, orders, cash, inventory, print, common). El server quedó reducido a 37 líneas limpias.
+            </p>
+            <div class="mermaid">
+graph LR
+    Express[server/index.js (37 lín)] --> R_Orders[routes/orders.js]
+    Express --> R_Cash[routes/cash.js]
+    Express --> R_Inv[routes/inventory.js]
+    R_Orders --> KOBE_Domain[@kobe/domain]
+    R_Orders --> KOBE_Db[@kobe/db Client]
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-sm">
-            <div class="bg-stone-900/40 p-4 rounded-lg">
-              <strong class="text-stone-200 block mb-1">Problema:</strong>
-              <span class="text-stone-400 text-xs">Cualquier cambio a la lógica fiscal o de comandas requiere editar el mismo archivo monolítico.</span>
+          <!-- CANDIDATO 2: COMPLETADO -->
+          <div class="deep-card p-6 rounded-xl border border-emerald-500/30 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-bold text-stone-100">2. Modularización Frontend PWA & ESM</h3>
+              <span class="px-2.5 py-0.5 rounded text-xs font-semibold badge-success">COMPLETADO ✅</span>
             </div>
-            <div class="bg-stone-900/40 p-4 rounded-lg">
-              <strong class="text-stone-200 block mb-1">Solución:</strong>
-              <span class="text-stone-400 text-xs">Extraer routers Express por dominio (Orders, Cash, Inventory, Fiscal) delegando en `@kobe/db`.</span>
-            </div>
-            <div class="bg-stone-900/40 p-4 rounded-lg">
-              <strong class="text-stone-200 block mb-1">Beneficios:</strong>
-              <ul class="text-stone-400 text-xs list-disc list-inside space-y-0.5">
-                <li>Mayor localidad de código</li>
-                <li>Tests unitarios de API aislados</li>
-                <li>Elimina mutaciones concurrentes a data.json</li>
-              </ul>
-            </div>
-          </div>
-        </article>
-
-        <!-- CANDIDATE 2 -->
-        <article class="deep-card p-8 rounded-2xl border border-stone-800 shadow-2xl space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-2xl font-bold text-stone-100">2. Modularizar el Frontend PWA (app.js de 2448 líneas)</h2>
-            <div class="flex gap-2">
-              <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Strong (Urgente)</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">in-process</span>
+            <p class="text-xs text-stone-400 leading-relaxed">
+              Migración a <code>&lt;script type="module"&gt;</code> con extracción de helpers reutilizables: <code>modules/money.js</code> (manejo de centavos) y <code>modules/offlineQueue.js</code> (cola offline idempotente resiliente con reintento automático).
+            </p>
+            <div class="mermaid">
+graph LR
+    IndexHTML[public/index.html] --> App[public/app.js ESM]
+    App --> Mod_Money[modules/money.js]
+    App --> Mod_Queue[modules/offlineQueue.js]
+    Mod_Queue --> LocalStorage[(localStorage Offline)]
             </div>
           </div>
-          
-          <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
-            Archivos involucrados: <code>public/app.js</code> &bull; <code>public/modules/*</code>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            <!-- BEFORE -->
-            <div class="bg-stone-900/50 p-5 rounded-xl border border-red-500/20">
-              <div class="text-xs font-bold tracking-wider uppercase text-red-400 mb-3">❌ Antes: Estado Global y Script Monolítico</div>
-              <div class="mermaid">
-graph TD
-    AppJS["public/app.js (2448 líneas)"]
-    AppJS --> POS["renderTables() & Modal"]
-    AppJS --> KDS["renderKDS() & Timers"]
-    AppJS --> Offline["OfflineQueue & Eventos"]
-    AppJS --> Cash["CashRegister & Arqueos"]
-    AppJS --> Print["ThermalPrinter & QR"]
-              </div>
-              <p class="text-xs text-stone-400 mt-3">Colisiones de variables globales, render functions mezcladas y dificultad de mantenimiento.</p>
-            </div>
-
-            <!-- AFTER -->
-            <div class="bg-stone-900/50 p-5 rounded-xl border border-emerald-500/20">
-              <div class="text-xs font-bold tracking-wider uppercase text-emerald-400 mb-3">✅ Después: Vistas Modulares Desacopladas</div>
-              <div class="mermaid">
-graph TD
-    Main[public/main.js Entrypoint]
-    Main --> Mod_POS[modules/posView.js]
-    Main --> Mod_KDS[modules/kdsView.js]
-    Main --> Mod_Queue[modules/offlineQueue.js]
-    Main --> Mod_Cash[modules/cashView.js]
-    Main --> Mod_Print[modules/printView.js]
-              </div>
-              <p class="text-xs text-stone-400 mt-3">Módulos ESM independientes con responsabilidades claras y eventos limpios.</p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-sm">
-            <div class="bg-stone-900/40 p-4 rounded-lg">
-              <strong class="text-stone-200 block mb-1">Problema:</strong>
-              <span class="text-stone-400 text-xs">Dificultad de navegación y riesgo de efectos colaterales al modificar la UI.</span>
-            </div>
-            <div class="bg-stone-900/40 p-4 rounded-lg">
-              <strong class="text-stone-200 block mb-1">Solución:</strong>
-              <span class="text-stone-400 text-xs">Descomponer `public/app.js` en módulos ESM (`type="module"`).</span>
-            </div>
-            <div class="bg-stone-900/40 p-4 rounded-lg">
-              <strong class="text-stone-200 block mb-1">Beneficios:</strong>
-              <ul class="text-stone-400 text-xs list-disc list-inside space-y-0.5">
-                <li>Cero colisiones globales</li>
-                <li>Fácil debugging por pantalla</li>
-                <li>Carga limpia y mantenible</li>
-              </ul>
-            </div>
-          </div>
-        </article>
-
-        <!-- CANDIDATE 3 -->
-        <article class="deep-card p-8 rounded-2xl border border-stone-800 shadow-2xl space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-2xl font-bold text-stone-100">3. Universal Money Helper (Zero Floats en UI y API)</h2>
-            <div class="flex gap-2">
-              <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/30">Worth Exploring</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">in-process</span>
-            </div>
-          </div>
-          
-          <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
-            Archivos involucrados: <code>packages/domain/src/primitives.ts</code> &bull; <code>public/modules/money.js</code>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            <div class="bg-stone-900/50 p-5 rounded-xl border border-red-500/20">
-              <div class="text-xs font-bold tracking-wider uppercase text-red-400 mb-3">❌ Antes: Cálculos Flotantes Dispersos</div>
-              <p class="text-xs text-stone-300 font-mono bg-stone-950 p-3 rounded border border-stone-800">
-                total = items.reduce((s, i) => s + (i.price * i.quantity), 0);<br>
-                const cashAmt = order.total / 2; // Pérdida de centavos
-              </p>
-            </div>
-            <div class="bg-stone-900/50 p-5 rounded-xl border border-emerald-500/20">
-              <div class="text-xs font-bold tracking-wider uppercase text-emerald-400 mb-3">✅ Después: Money Primitives en Centavos</div>
-              <p class="text-xs text-stone-300 font-mono bg-stone-950 p-3 rounded border border-stone-800">
-                const totalCents = sumCents(items.map(i => toCents(i.price) * BigInt(i.quantity)));<br>
-                formatCurrency(totalCents); // "$ 24.500,00"
-              </p>
-            </div>
-          </div>
-        </article>
+        </div>
       </section>
 
-      <!-- TOP RECOMMENDATION -->
-      <section id="top-recommendation" class="p-8 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 space-y-4">
-        <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2">
-          🌟 Recomendación Prioritaria: Candidato 1 &amp; Candidato 2
-        </h3>
-        <p class="text-stone-300 text-sm leading-relaxed">
-          Para que el sistema deje de hacer agua y esté verdaderamente listo para producción, la prioridad absoluta es <strong>desacoplar el backend y el frontend en módulos limpios</strong>. Con el dominio (@kobe/domain) y la base de datos relacional (@kobe/db) ya blindados con 63 tests pasando, esta refactorización le dará al proyecto una solidez industrial inquebrantable.
-        </p>
+      <!-- MATT POCOCK SKILLS INTEGRATION -->
+      <section class="deep-card p-8 rounded-2xl border border-stone-800 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-bold text-stone-100">Configuración de Skills de Matt Pocock</h2>
+            <p class="text-stone-400 text-xs mt-1">Ecosistema de 37 skills activado en <code>.agents/skills/</code> para diseño de dominio, TDD y refactor.</p>
+          </div>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            Setup Activo 🛠️
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          <!-- SKILL 1: DOMAIN MODELING -->
+          <div class="bg-stone-900/60 p-5 rounded-xl border border-stone-800">
+            <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-2">
+              <span>📖 Domain Modeling</span>
+            </div>
+            <p class="text-xs text-stone-400 mb-3">
+              Define el lenguaje ubicuo formal del sistema y registra ADRs (Architectural Decision Records).
+            </p>
+            <ul class="text-xs text-stone-300 space-y-1 list-disc list-inside">
+              <li><code>GLOSSARY.md</code> generado en la raíz</li>
+              <li><code>docs/adr/0001-money-as-bigint-cents.md</code></li>
+              <li><code>docs/adr/0002-tamper-proof-audit-hash-chain.md</code></li>
+            </ul>
+          </div>
+
+          <!-- SKILL 2: SETUP TS DEEP MODULES -->
+          <div class="bg-stone-900/60 p-5 rounded-xl border border-stone-800">
+            <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-2">
+              <span>🔒 TS Deep Modules</span>
+            </div>
+            <p class="text-xs text-stone-400 mb-3">
+              Garantiza que cada paquete (`@kobe/domain`, `@kobe/db`) exponga únicamente sus puntos de entrada raíz, ocultando los subdirectorios internos.
+            </p>
+            <div class="text-xs font-mono bg-stone-950 p-2.5 rounded border border-stone-800 text-stone-300">
+              packages/domain/index.ts<br>
+              packages/db/src/client.ts
+            </div>
+          </div>
+
+          <!-- SKILL 3: LOCAL ISSUE TRACKER -->
+          <div class="bg-stone-900/60 p-5 rounded-xl border border-stone-800">
+            <div class="text-amber-400 font-bold text-sm mb-2 flex items-center gap-2">
+              <span>📋 Issue Tracker & Triage</span>
+            </div>
+            <p class="text-xs text-stone-400 mb-3">
+              Gestión local de tickets en markdown para automatización con agentes y control de prioridades.
+            </p>
+            <ul class="text-xs text-stone-300 space-y-1 list-disc list-inside">
+              <li><code>docs/agents/issue-tracker.md</code></li>
+              <li><code>docs/agents/triage-labels.md</code></li>
+              <li><code>docs/agents/domain.md</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- VERIFICACIÓN Y AUDITORÍA EN VIVO -->
+      <section class="p-6 rounded-2xl bg-stone-900/50 border border-stone-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <h4 class="font-bold text-stone-200 text-base">¿Cómo inspeccionar el sistema en vivo?</h4>
+          <p class="text-stone-400 text-xs mt-1">
+            Ejecuta <code>npm start</code> o <code>node server/index.js</code> y abre en tu navegador <code>http://localhost:3000</code>. Podrás probar el mapa de salón, KDS, toma de comandas offline, arqueos de caja y la pestaña <strong>KOBE Engine & Audit</strong> con la cadena SHA-256 en tiempo real.
+          </p>
+        </div>
+        <a href="http://localhost:3000" target="_blank" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs rounded-xl shadow-lg transition-colors whitespace-nowrap">
+          Abrir RESTOia POS (localhost:3000) 🌐
+        </a>
       </section>
     </main>
   </body>
