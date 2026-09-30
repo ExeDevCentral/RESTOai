@@ -785,6 +785,7 @@ function setupAIChat() {
       const json = await res.json();
       if (json.success) {
         appendChatMessage('bot', json.data.message, json.data.title);
+        speakAiText(json.data.message);
         // Si la IA ejecutó una acción sobre el salón, cocina o caja, actualizar la UI al instante
         if (json.data.action) {
           await fetchAllData();
@@ -861,6 +862,74 @@ function setupAIChat() {
     btnVoice.addEventListener('click', () => {
       alert('Tu navegador no soporta reconocimiento de voz nativo (Web Speech API). Recomendamos usar Google Chrome, Microsoft Edge o Safari.');
     });
+  }
+
+  // ==========================================
+  // SÍNTESIS DE VOZ (Text-To-Speech / TTS)
+  // ==========================================
+  const btnTts = document.getElementById('btn-toggle-tts');
+  const ttsIcon = document.getElementById('tts-icon');
+  let ttsEnabled = localStorage.getItem('restoia_tts_enabled') === 'true';
+
+  const updateTtsUi = () => {
+    if (!btnTts || !ttsIcon) return;
+    if (ttsEnabled) {
+      btnTts.style.borderColor = 'var(--accent-gold)';
+      btnTts.style.color = 'var(--accent-gold)';
+      ttsIcon.textContent = '🔊';
+      btnTts.title = 'Voz del Asistente: ACTIVADA (Clic para silenciar)';
+    } else {
+      btnTts.style.borderColor = '#475569';
+      btnTts.style.color = '#64748b';
+      ttsIcon.textContent = '🔇';
+      btnTts.title = 'Voz del Asistente: SILENCIADA (Clic para activar)';
+    }
+  };
+  updateTtsUi();
+
+  if (btnTts) {
+    btnTts.addEventListener('click', () => {
+      ttsEnabled = !ttsEnabled;
+      localStorage.setItem('restoia_tts_enabled', String(ttsEnabled));
+      updateTtsUi();
+      if (!ttsEnabled && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      } else if (ttsEnabled) {
+        speakAiText('Voz activada. Estoy listo para asistirte.');
+      }
+    });
+  }
+
+  function speakAiText(rawText) {
+    if (!ttsEnabled || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel(); // Detener cualquier alocución anterior
+
+    // Limpiar markdown, asteriscos, emojis y formato para síntesis limpia
+    const clean = rawText
+      .replace(/[*_#`~]/g, '')
+      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+      .replace(/•/g, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!clean) return;
+
+    // Resumir a las primeras 2 oraciones para no saturar al personal en pleno salón
+    const sentences = clean.split(/(?<=[.!?])\s+/);
+    const shortText = sentences.slice(0, 2).join(' ');
+
+    const utterance = new SpeechSynthesisUtterance(shortText);
+    utterance.lang = 'es-AR';
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+
+    // Intentar buscar una voz en español
+    const voices = window.speechSynthesis.getVoices();
+    const esVoice = voices.find(v => v.lang.startsWith('es') || v.lang.includes('AR') || v.lang.includes('ES'));
+    if (esVoice) utterance.voice = esVoice;
+
+    window.speechSynthesis.speak(utterance);
   }
 
   chips.forEach(chip => {
