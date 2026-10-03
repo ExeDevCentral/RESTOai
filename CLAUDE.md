@@ -66,3 +66,19 @@ npm run typecheck
 # Iniciar el servidor local
 node server/index.js
 ```
+
+---
+
+## 🤖 4. Agent Skills (Matt Pocock Suite)
+
+### Issue Tracker
+
+GitHub Issues en [ExeDevCentral/RESTOai](https://github.com/ExeDevCentral/RESTOai/issues). Ver `docs/agents/issue-tracker.md`.
+
+### Triage Labels
+
+Vocabulario canónico de 5 estados (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). Ver `docs/agents/triage-labels.md`.
+
+### Domain Docs
+
+Estructura single-context basada en `GLOSSARY.md` y `docs/adr/`. Ver `docs/agents/domain.md`.
