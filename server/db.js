@@ -244,7 +244,7 @@ function saveData(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Error guardando data.json', err);
+    console.warn('[DATABASE] Almacenamiento en disco no disponible (modo Serverless/Read-only):', err.message);
   }
 }
 

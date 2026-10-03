@@ -29,10 +29,12 @@ app.use('/api/print', printRouter);
 app.use('/api', inventoryRouter);
 app.use('/api', commonRouter);
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 RESTOia Suite Server ejecutándose:`);
-  console.log(`   👉 Local:   http://localhost:${PORT}`);
-  console.log(`   📱 Red WiFi / Tablets: http://192.168.100.51:${PORT}`);
-});
+if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 RESTOia Suite Server ejecutándose:`);
+    console.log(`   👉 Local:   http://localhost:${PORT}`);
+    console.log(`   📱 Red WiFi / Tablets: http://192.168.100.51:${PORT}`);
+  });
+}
 
 export default app;
