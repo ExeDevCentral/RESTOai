@@ -401,6 +401,14 @@ ordersRouter.put('/:id/status', async (req, res) => {
     }
   }
 
+  if (db.orderRepository) {
+    try {
+      await db.orderRepository.updateOrderStatus(String(order.id), targetDomainState, req.body.actorId || 'usr-supervisor');
+    } catch (err) {
+      console.warn('[AUDIT] No se pudo asentar estado en OrderRepository:', err.message);
+    }
+  }
+
   db.saveData(data);
   await db.recordOrderInDrizzle(order);
   const serializedInvoice = invoice ? {
@@ -412,6 +420,25 @@ ordersRouter.put('/:id/status', async (req, res) => {
 
   res.json({ success: true, data: order, invoice: serializedInvoice });
 });
+
+ordersRouter.get('/:id/audit-trail', async (req, res) => {
+  const { id } = req.params;
+  if (!db.orderRepository) {
+    return res.status(503).json({ success: false, message: 'Motor relacional no disponible' });
+  }
+  try {
+    const timeline = await db.orderRepository.getOrderAuditTimeline(String(id));
+    res.json({
+      success: true,
+      orderId: id,
+      count: timeline.length,
+      timeline
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 ordersRouter.post('/:id/void', async (req, res) => {
   const { id } = req.params;

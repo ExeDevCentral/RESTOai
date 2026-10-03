@@ -6,3 +6,5 @@ packages/*/dist/
 Thumbs.db
 *.tsbuildinfo
 .superpowers/
+*.backup.json
+

@@ -29,8 +29,8 @@
       "number": "M-04",
       "area": "Terraza",
       "capacity": 4,
-      "status": "libre",
-      "currentOrderId": null
+      "status": "ocupada",
+      "currentOrderId": "ord-cli-live"
     },
     {
       "id": 5,
@@ -454,6 +454,38 @@
       "total": 39600,
       "status": "en_cocina",
       "createdAt": "2026-09-30T17:01:12.677Z"
+    },
+    {
+      "id": "ord-cli-live",
+      "clientOrderId": "cli-live-seam-001",
+      "tableId": 4,
+      "tableNumber": "M-04",
+      "waiter": "Mozo Roberto",
+      "status": "en_cocina",
+      "createdAt": "2026-10-03T22:10:13.601Z",
+      "items": [
+        {
+          "quantity": 1,
+          "price": 24500,
+          "id": 1,
+          "name": "Bife de Chorizo Madurado 400g",
+          "station": "GRILL",
+          "status": "pendiente"
+        }
+      ],
+      "total": 24500,
+      "totalCents": 2450000,
+      "statusHistory": [
+        {
+          "status": "pendiente",
+          "at": "2026-10-03T22:10:13.601Z"
+        },
+        {
+          "status": "en_cocina",
+          "at": "2026-10-03T22:10:28.888Z"
+        }
+      ],
+      "stockDeducted": true
     }
   ],
   "reservations": [

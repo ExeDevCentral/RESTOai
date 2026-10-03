@@ -4,7 +4,8 @@ Este documento establece el vocabulario ubicuo y formal del motor transaccional.
 
 ---
 
-### 1. Núcleo Financiero y Monetario
+## 1. Núcleo Financiero y Monetario
+
 - **`Money` (Dinero)**: Representación de valor monetario en número entero de centavos (`bigint`). Se prohíbe taxativamente el uso de punto flotante (`number` decimal) en cálculos acumulativos, asientos y totales de comandas.
   - *Moneda de referencia*: Centavos de Peso Argentino (ARS Cents).
 - **`Asiento de Partida Doble` (Double-entry Journal)**: Transacción contable inmutable donde la suma exacta de Débitos equivale a la suma exacta de Créditos (`Σ Débitos = Σ Créditos`).
@@ -13,7 +14,8 @@ Este documento establece el vocabulario ubicuo y formal del motor transaccional.
   - **`Cierre Z`**: Reporte fiscal y contable irreversible de fin de jornada que bloquea el período transaccional.
   - **`Cierre X`**: Arqueo informativo de auditoría intermedia durante el turno sin resetear contadores.
 
-### 2. Ciclo de Vida de Comandas (Order Lifecycle)
+## 2. Ciclo de Vida de Comandas (Order Lifecycle)
+
 - **`Comanda / Order`**: Solicitud transaccional de platos y bebidas vinculada a una mesa o mostrador.
 - **`Transición de Estados` (State Transitions)**:
   1. `DRAFT`: Comanda en edición en la bandeja del mozo.
@@ -25,17 +27,26 @@ Este documento establece el vocabulario ubicuo y formal del motor transaccional.
   7. `PAID`: Cobro procesado (efectivo, digital o mixto) con factura fiscal ARCA (A/B/C) y CAE.
   8. `VOIDED`: Anulación autorizada por supervisor mediante PIN con asiento de reversión.
 
-### 3. Cocina & Producción
+## 3. Cocina & Producción
+
 - **`KDS` (Kitchen Display System)**: Pantalla interactiva por estación de cocina (Calientes, Fríos, Fuegos/Josper, Barra/Tragos).
 - **`FEFO` (First Expired, First Out)**: Algoritmo de asignación automática de lotes de inventario que descarga primero el lote cuya fecha de caducidad sea más próxima, reduciendo desperdicios y mermas.
 - **`Escandallo / Receta`**: Lista de insumos en unidades exactas (gramos, mililitros, unidades) consumidos al despachar un plato.
 
-### 4. Fiscalidad & Normativa Argentina
+## 4. Fiscalidad & Normativa Argentina
+
 - **`ARCA / AFIP`**: Ente tributario oficial.
 - **`CAE` (Código de Autorización Electrónico)**: Identificador único criptográfico provisto por ARCA que legaliza la factura electrónica.
 - **`Factura A`**: Emitida a Responsable Inscripto con discriminación explícita de IVA (21% / 10.5%).
 - **`Factura B / C`**: Emitida a Consumidor Final o Sujeto Exento.
 
-### 5. Criptografía & Seguridad
+## 5. Criptografía & Seguridad
+
 - **`Audit Hash Chain` (Cadena de Bloques de Auditoría)**: Registro inmutable secuencial donde cada evento (`order.placed`, `cash.closed`, `stock.adjusted`) calcula su hash SHA-256 combinando el hash del bloque previo (`previousHash`), datos canónicos y timestamp.
 - **`RBAC` (Role-Based Access Control)**: Niveles de autorización jerárquicos: `WAITER` (Nivel 1), `CASHIER` (Nivel 2), `MANAGER` (Nivel 3), `OWNER` (Nivel 4).
+
+## 6. Persistencia & Costuras de Arquitectura (Deep Modules)
+
+- **`OrderRepository`**: Módulo profundo que encapsula la persistencia relacional Drizzle/Postgres, transacciones ACID atómicas con el `audit_ledger`, mapeo estricto de centavos (`Money = bigint`) y soporte multi-inquilino sin fugar abstracciones SQL a los controladores de Express.
+
+

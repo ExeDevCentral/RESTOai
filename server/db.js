@@ -249,60 +249,86 @@ function saveData(data) {
 }
 
 let kobeDbClient = null;
+let orderRepository = null;
+const defaultOrgId = '00000000-0000-4000-8000-000000000001';
+const defaultLocId = '00000000-0000-4000-8000-000000000002';
 
 try {
-  const { createInMemoryKobeDb, orders, organizations, locations } = await import('../packages/db/dist/index.js');
+  const { createInMemoryKobeDb, OrderRepository, organizations, locations } = await import('../packages/db/dist/index.js');
   kobeDbClient = createInMemoryKobeDb();
   
-  // Inicializar tenant por defecto en el motor relacional KOBE
-  const defaultOrgId = '00000000-0000-4000-8000-000000000001';
-  const defaultLocId = '00000000-0000-4000-8000-000000000002';
-  
-  try {
-    kobeDbClient.db.insert(organizations).values({
-      id: defaultOrgId,
-      name: 'RESTOia Gastronomy Group',
-      taxId: '30-71829301-4',
-      legalName: 'RESTOia S.R.L.'
-    }).onConflictDoNothing().run();
+  await kobeDbClient.db.insert(organizations).values({
+    id: defaultOrgId,
+    name: 'RESTOia Gastronomy Group',
+    taxId: '30-71829301-4',
+    legalName: 'RESTOia S.R.L.'
+  }).catch(() => {});
 
-    kobeDbClient.db.insert(locations).values({
-      id: defaultLocId,
-      organizationId: defaultOrgId,
-      name: 'Salón Central Rosario',
-      address: 'Bv. Oroño 1234'
-    }).onConflictDoNothing().run();
-  } catch (e) {
-    // Si la tabla no está creada aún en pg-mem, se omite silenciosamente
+  await kobeDbClient.db.insert(locations).values({
+    id: defaultLocId,
+    organizationId: defaultOrgId,
+    name: 'Salón Central Rosario',
+    address: 'Bv. Oroño 1234'
+  }).catch(() => {});
+
+  orderRepository = new OrderRepository(kobeDbClient.db, {
+    defaultOrganizationId: defaultOrgId,
+    defaultLocationId: defaultLocId
+  });
+
+  // Siembra inicial de las órdenes históricas en Drizzle
+  const currentData = loadData();
+  if (currentData.orders && currentData.orders.length > 0) {
+    for (const o of currentData.orders) {
+      try {
+        await orderRepository.createOrder({
+          id: String(o.id),
+          clientOrderId: o.clientOrderId || `legacy-${o.id}`,
+          tableNumber: String(o.tableNumber || (o.tableId ? `M-${o.tableId}` : 'M-01')),
+          actorId: o.waiter || 'usr-legacy-waiter',
+          items: (o.items || []).map(i => ({
+            menuItemId: String(i.id || i.name),
+            name: i.name || 'Plato',
+            quantity: Number(i.quantity) || 1,
+            unitPriceCents: BigInt(Math.round((i.price || 0) * 100)),
+            station: i.station || 'GRILL',
+            notes: i.notes || null
+          }))
+        });
+      } catch (err) {
+        // Ignorar duplicados de siembra
+      }
+    }
   }
 } catch (err) {
-  console.warn('Advertencia inicializando Drizzle Client:', err);
+  console.warn('Advertencia inicializando Drizzle Client / OrderRepository:', err);
 }
 
 export const db = {
   getData: loadData,
   saveData: saveData,
   kobe: kobeDbClient,
+  orderRepository: orderRepository,
   async recordOrderInDrizzle(order) {
-    if (!kobeDbClient) return;
+    if (!orderRepository) return;
     try {
-      const { orders: ordersTable, orderItems: orderItemsTable } = await import('../packages/db/dist/index.js');
-      const defaultOrgId = '00000000-0000-4000-8000-000000000001';
-      const defaultLocId = '00000000-0000-4000-8000-000000000002';
-      
-      const totalCents = BigInt(Math.round((order.total || 0) * 100));
-      await kobeDbClient.db.insert(ordersTable).values({
+      await orderRepository.createOrder({
         id: String(order.id),
         clientOrderId: order.clientOrderId || `ord-${order.id}`,
-        organizationId: defaultOrgId,
-        locationId: defaultLocId,
         tableNumber: String(order.tableNumber || '1'),
-        state: order.status === 'cobrado' ? 'CLOSED' : order.status === 'en_cocina' ? 'IN_PREPARATION' : 'CONFIRMED',
-        totalCents
+        actorId: order.waiter || 'usr-waiter',
+        items: (order.items || []).map(i => ({
+          menuItemId: String(i.id || i.name),
+          name: i.name || 'Ítem',
+          quantity: Number(i.quantity) || 1,
+          unitPriceCents: BigInt(Math.round((i.price || 0) * 100)),
+          station: i.station || 'GRILL',
+          notes: i.notes || null
+        }))
       });
     } catch (e) {
-      // Log interno sin interrumpir el flujo
       console.warn('Drizzle order sync warning:', e.message);
     }
   }
 };
+
