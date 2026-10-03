@@ -78,8 +78,8 @@
               <span id="current-user-role-label" style="color: var(--primary);">Manager (Nivel 3)</span>
             </div>
           </div>
-          <div style="font-size: 0.75rem; color: #94a3b8;">Cambiar Rol de Sesión:</div>
-          <select id="select-session-role" class="input-select" style="padding: 4px 8px; font-size: 0.78rem;">
+          <label for="select-session-role" style="font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 6px;">Cambiar Rol de Sesión:</label>
+          <select id="select-session-role" class="input-select" title="Seleccionar rol de sesión" aria-label="Seleccionar rol de sesión" style="padding: 4px 8px; font-size: 0.78rem;">
             <option value="OWNER">Nivel 1: Owner (Dueño)</option>
             <option value="ADMIN">Nivel 2: Admin (Sistema)</option>
             <option value="MANAGER" selected>Nivel 3: Manager (Gerente)</option>
@@ -255,7 +255,8 @@
           <div class="order-tray">
             <div class="tray-header">
               <h3>Comanda en Curso</h3>
-              <select id="select-target-table" class="input-select">
+              <label for="select-target-table" class="sr-only">Seleccionar mesa destino</label>
+              <select id="select-target-table" class="input-select" title="Seleccionar mesa destino">
                 <!-- Mesas cargadas dinámicamente -->
               </select>
             </div>
@@ -289,11 +290,11 @@
             <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
               <span style="font-size: 1.6rem;">📷</span>
               <div style="flex: 1;">
-                <label style="font-size: 0.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Escáner de Código de Barras / Lotes</label>
+                <label for="scanner-input" style="font-size: 0.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Escáner de Código de Barras / Lotes</label>
                 <div style="display: flex; gap: 8px; margin-top: 4px;">
-                  <input type="text" id="scanner-input" class="input-text" placeholder="Escanear o ingresar código (ej: 7791234567890)..." style="flex: 1;" />
-                  <button class="btn btn-primary" id="btn-scan-barcode">🔍 Buscar / Picar</button>
-                  <button class="btn btn-secondary" id="btn-simulate-camera-scan" title="Simular escaneo de cámara">📸 Simular Cámara</button>
+                  <input type="text" id="scanner-input" class="input-text" placeholder="Escanear o ingresar código (ej: 7791234567890)..." title="Escanear código de barras" style="flex: 1;">
+                  <button type="button" class="btn btn-primary" id="btn-scan-barcode">🔍 Buscar / Picar</button>
+                  <button type="button" class="btn btn-secondary" id="btn-simulate-camera-scan" title="Simular escaneo de cámara">📸 Simular Cámara</button>
                 </div>
               </div>
             </div>
@@ -377,38 +378,38 @@
               <h3>Nueva Reserva</h3>
               <form id="form-new-reservation">
                 <div class="form-group">
-                  <label>Nombre del Comensal</label>
-                  <input type="text" id="res-name" class="input-text" placeholder="Ej: Hernán Crespo" required>
+                  <label for="res-name">Nombre del Comensal</label>
+                  <input type="text" id="res-name" class="input-text" placeholder="Ej: Hernán Crespo" title="Nombre del comensal" required>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="text" id="res-phone" class="input-text" placeholder="+54 9 11..." required>
+                    <label for="res-phone">Teléfono</label>
+                    <input type="text" id="res-phone" class="input-text" placeholder="+54 9 11..." title="Teléfono del comensal" required>
                   </div>
                   <div class="form-group">
-                    <label>Comensales</label>
-                    <input type="number" id="res-guests" class="input-text" value="2" min="1" max="12">
+                    <label for="res-guests">Comensales</label>
+                    <input type="number" id="res-guests" class="input-text" value="2" min="1" max="12" title="Cantidad de comensales" placeholder="2">
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" id="res-date" class="input-text" value="2026-09-29">
+                    <label for="res-date">Fecha</label>
+                    <input type="date" id="res-date" class="input-text" value="2026-09-29" title="Fecha de reserva">
                   </div>
                   <div class="form-group">
-                    <label>Hora</label>
-                    <input type="time" id="res-time" class="input-text" value="21:00">
+                    <label for="res-time">Hora</label>
+                    <input type="time" id="res-time" class="input-text" value="21:00" title="Hora de reserva">
                   </div>
                 </div>
                 <div class="form-group">
-                  <label>Mesa Asignada</label>
-                  <select id="res-table" class="input-select">
+                  <label for="res-table">Mesa Asignada</label>
+                  <select id="res-table" class="input-select" title="Mesa asignada">
                     <option value="">Asignación Automática / Al Llegar</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Notas Especiales (Alergias, Ocasión)</label>
-                  <textarea id="res-notes" class="input-text" rows="2" placeholder="Cumpleaños, mesa cerca de la ventana..."></textarea>
+                  <label for="res-notes">Notas Especiales (Alergias, Ocasión)</label>
+                  <textarea id="res-notes" class="input-text" rows="2" placeholder="Cumpleaños, mesa cerca de la ventana..." title="Notas especiales"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Confirmar Reserva</button>
               </form>
@@ -444,14 +445,15 @@
           </div>
 
           <div class="chat-input-bar" style="position: relative;">
-            <input type="text" id="ai-input" placeholder="Pregunta a la IA o dicta tu orden por voz..." />
+            <label for="ai-input" class="sr-only">Pregunta a la IA o dicta tu orden por voz</label>
+            <input type="text" id="ai-input" placeholder="Pregunta a la IA o dicta tu orden por voz..." title="Pregunta a la IA o dicta tu orden por voz">
             <button type="button" class="btn btn-secondary" id="btn-voice-ai" title="Dictar por Voz (Micrófono)" style="padding: 0 16px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid var(--accent-gold); color: var(--accent-gold);">
               <span id="voice-icon">🎤</span>
             </button>
             <button type="button" class="btn btn-secondary" id="btn-toggle-tts" title="Voz del Asistente (Hablar respuestas)" style="padding: 0 14px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid #475569; color: #94a3b8;">
               <span id="tts-icon">🔊</span>
             </button>
-            <button class="btn btn-primary" id="btn-send-ai">Consultar IA ⚡</button>
+            <button type="button" class="btn btn-primary" id="btn-send-ai">Consultar IA ⚡</button>
           </div>
           <div id="voice-status-indicator" style="display: none; font-size: 0.8rem; color: #ef4444; margin-top: 6px; text-align: right; font-weight: 600;">
             🔴 Escuchando por micrófono... Habla ahora (ej: "comanda mesa 1: 2 bifes de chorizo")
@@ -614,12 +616,13 @@
               Formato de boleta monocromático con código corto de verificación (8 caracteres), QR de validación digital, hash SHA-256 inmutable, CAE fiscal y opción de impresión directa por Print Agent o diálogo navegador (window.print).
             </p>
             <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
-              <select id="select-receipt-order" class="form-control" style="max-width: 260px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px;">
+              <label for="select-receipt-order" class="sr-only">Seleccionar comanda a previsualizar</label>
+              <select id="select-receipt-order" class="form-control" title="Seleccionar comanda a previsualizar" style="max-width: 260px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px;">
                 <!-- Opciones dinámicas de comandas -->
               </select>
-              <button class="btn btn-primary" onclick="loadReceiptPreview();">👁️ Previsualizar Boleta</button>
-              <button class="btn btn-secondary" onclick="printReceiptBrowser();">🖨️ Imprimir (window.print)</button>
-              <button class="btn btn-secondary" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="downloadEscPosBinary();">💾 Descargar ESC/POS (.bin)</button>
+              <button type="button" class="btn btn-primary" onclick="loadReceiptPreview();">👁️ Previsualizar Boleta</button>
+              <button type="button" class="btn btn-secondary" onclick="printReceiptBrowser();">🖨️ Imprimir (window.print)</button>
+              <button type="button" class="btn btn-secondary" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="downloadEscPosBinary();">💾 Descargar ESC/POS (.bin)</button>
             </div>
             <div id="receipt-preview-container" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; justify-content: center; min-height: 250px;">
               <div style="color: var(--text-muted); font-style: italic; align-self: center;">
@@ -716,19 +719,19 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modal-dish-title">Agregar Plato a la Carta</h3>
-        <button class="close-btn" id="modal-dish-close">×</button>
+        <button type="button" class="close-btn" id="modal-dish-close">×</button>
       </div>
       <form id="form-dish">
         <div class="modal-body">
-          <input type="hidden" id="dish-id" />
+          <input type="hidden" id="dish-id">
           <div class="form-group">
-            <label>Nombre del Plato</label>
-            <input type="text" id="dish-name" class="input-text" placeholder="Ej: Risotto al Azafrán con Calamares" required />
+            <label for="dish-name">Nombre del Plato</label>
+            <input type="text" id="dish-name" class="input-text" placeholder="Ej: Risotto al Azafrán con Calamares" title="Nombre del plato" required>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Categoría</label>
-              <select id="dish-category" class="input-select">
+              <label for="dish-category">Categoría</label>
+              <select id="dish-category" class="input-select" title="Categoría del plato">
                 <option value="Entradas">Entradas</option>
                 <option value="Principales" selected>Principales</option>
                 <option value="Pastas">Pastas</option>
@@ -738,23 +741,23 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Precio de Venta ($)</label>
-              <input type="number" id="dish-price" class="input-text" placeholder="24000" min="0" required />
+              <label for="dish-price">Precio de Venta ($)</label>
+              <input type="number" id="dish-price" class="input-text" placeholder="24000" title="Precio de venta" min="0" required>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Tiempo Estimado (min)</label>
-              <input type="number" id="dish-time" class="input-text" value="15" min="1" />
+              <label for="dish-time">Tiempo Estimado (min)</label>
+              <input type="number" id="dish-time" class="input-text" value="15" min="1" title="Tiempo estimado en minutos" placeholder="15">
             </div>
             <div class="form-group">
-              <label>Alérgenos (separados por coma)</label>
-              <input type="text" id="dish-allergens" class="input-text" placeholder="Gluten, Lácteos..." />
+              <label for="dish-allergens">Alérgenos (separados por coma)</label>
+              <input type="text" id="dish-allergens" class="input-text" placeholder="Gluten, Lácteos..." title="Alérgenos">
             </div>
           </div>
           <div class="form-group">
-            <label>Descripción y Notas de Cocina</label>
-            <textarea id="dish-description" class="input-text" rows="2" placeholder="Detalle de ingredientes, preparación y presentación..."></textarea>
+            <label for="dish-description">Descripción y Notas de Cocina</label>
+            <textarea id="dish-description" class="input-text" rows="2" placeholder="Detalle de ingredientes, preparación y presentación..." title="Descripción y notas de cocina"></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -770,39 +773,39 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Recepción de Lote / Insumo</h3>
-        <button class="close-btn" id="modal-lot-close">×</button>
+        <button type="button" class="close-btn" id="modal-lot-close">×</button>
       </div>
       <form id="form-lot">
         <div class="modal-body">
           <div class="form-group">
-            <label>Nombre del Insumo / Producto</label>
-            <input type="text" id="lot-name" class="input-text" placeholder="Ej: Lomo Vacuno Envasado al Vacío" required />
+            <label for="lot-name">Nombre del Insumo / Producto</label>
+            <input type="text" id="lot-name" class="input-text" placeholder="Ej: Lomo Vacuno Envasado al Vacío" title="Nombre del insumo" required>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Código de Barras / EAN-13</label>
-              <input type="text" id="lot-barcode" class="input-text" placeholder="779..." required />
+              <label for="lot-barcode">Código de Barras / EAN-13</label>
+              <input type="text" id="lot-barcode" class="input-text" placeholder="779..." title="Código de barras EAN-13" required>
             </div>
             <div class="form-group">
-              <label>Categoría</label>
-              <select id="lot-category" class="input-select">
+              <label for="lot-category">Categoría</label>
+              <select id="lot-category" class="input-select" title="Categoría del insumo">
                 <option value="Carnes Rojas">Carnes Rojas</option>
-                <option value="Pescados & Mariscos">Pescados & Mariscos</option>
-                <option value="Vegetales & Hongos">Vegetales & Hongos</option>
-                <option value="Lácteos & Quesos">Lácteos & Quesos</option>
-                <option value="Bebidas & Bodega">Bebidas & Bodega</option>
-                <option value="Pastelería & Secos">Pastelería & Secos</option>
+                <option value="Pescados &amp; Mariscos">Pescados &amp; Mariscos</option>
+                <option value="Vegetales &amp; Hongos">Vegetales &amp; Hongos</option>
+                <option value="Lácteos &amp; Quesos">Lácteos &amp; Quesos</option>
+                <option value="Bebidas &amp; Bodega">Bebidas &amp; Bodega</option>
+                <option value="Pastelería &amp; Secos">Pastelería &amp; Secos</option>
               </select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Cantidad Inicial</label>
-              <input type="number" id="lot-quantity" class="input-text" placeholder="10000" required />
+              <label for="lot-quantity">Cantidad Inicial</label>
+              <input type="number" id="lot-quantity" class="input-text" placeholder="10000" title="Cantidad inicial" required>
             </div>
             <div class="form-group">
-              <label>Unidad de Medida</label>
-              <select id="lot-unit" class="input-select">
+              <label for="lot-unit">Unidad de Medida</label>
+              <select id="lot-unit" class="input-select" title="Unidad de medida">
                 <option value="g">Gramos (g)</option>
                 <option value="ml">Mililitros (ml)</option>
                 <option value="unidades">Unidades</option>
@@ -811,17 +814,17 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Fecha de Vencimiento (FEFO)</label>
-              <input type="date" id="lot-expiry" class="input-text" required />
+              <label for="lot-expiry">Fecha de Vencimiento (FEFO)</label>
+              <input type="date" id="lot-expiry" class="input-text" title="Fecha de vencimiento" required>
             </div>
             <div class="form-group">
-              <label>Stock Mínimo de Alerta</label>
-              <input type="number" id="lot-min-stock" class="input-text" value="3000" />
+              <label for="lot-min-stock">Stock Mínimo de Alerta</label>
+              <input type="number" id="lot-min-stock" class="input-text" value="3000" title="Stock mínimo de alerta" placeholder="3000">
             </div>
           </div>
           <div class="form-group">
-            <label>Proveedor Homologado</label>
-            <select id="lot-supplier-select" class="input-select">
+            <label for="lot-supplier-select">Proveedor Homologado</label>
+            <select id="lot-supplier-select" class="input-select" title="Proveedor homologado">
               <!-- Cargado dinámicamente -->
             </select>
           </div>
@@ -839,42 +842,42 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Registrar Nuevo Proveedor</h3>
-        <button class="close-btn" id="modal-supplier-close">×</button>
+        <button type="button" class="close-btn" id="modal-supplier-close">×</button>
       </div>
       <form id="form-supplier">
         <div class="modal-body">
           <div class="form-group">
-            <label>Razón Social / Nombre Comercial</label>
-            <input type="text" id="supp-name" class="input-text" placeholder="Ej: Distribuidora Frutas Andinas" required />
+            <label for="supp-name">Razón Social / Nombre Comercial</label>
+            <input type="text" id="supp-name" class="input-text" placeholder="Ej: Distribuidora Frutas Andinas" title="Razón social o nombre comercial" required>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>CUIT Fiscal</label>
-              <input type="text" id="supp-cuit" class="input-text" placeholder="30-..." required />
+              <label for="supp-cuit">CUIT Fiscal</label>
+              <input type="text" id="supp-cuit" class="input-text" placeholder="30-..." title="CUIT fiscal" required>
             </div>
             <div class="form-group">
-              <label>Rubro Principal</label>
-              <input type="text" id="supp-category" class="input-text" placeholder="Frutas, Verduras..." required />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Contacto / Vendedor</label>
-              <input type="text" id="supp-contact" class="input-text" placeholder="Nombre del representante" />
-            </div>
-            <div class="form-group">
-              <label>Teléfono / WhatsApp</label>
-              <input type="text" id="supp-phone" class="input-text" placeholder="+54 9 11..." required />
+              <label for="supp-category">Rubro Principal</label>
+              <input type="text" id="supp-category" class="input-text" placeholder="Frutas, Verduras..." title="Rubro principal" required>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Email de Pedidos</label>
-              <input type="email" id="supp-email" class="input-text" placeholder="pedidos@..." />
+              <label for="supp-contact">Contacto / Vendedor</label>
+              <input type="text" id="supp-contact" class="input-text" placeholder="Nombre del representante" title="Contacto o vendedor">
             </div>
             <div class="form-group">
-              <label>Frecuencia / Días de Entrega</label>
-              <input type="text" id="supp-delivery" class="input-text" placeholder="Martes y Viernes mañana" />
+              <label for="supp-phone">Teléfono / WhatsApp</label>
+              <input type="text" id="supp-phone" class="input-text" placeholder="+54 9 11..." title="Teléfono o WhatsApp" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="supp-email">Email de Pedidos</label>
+              <input type="email" id="supp-email" class="input-text" placeholder="pedidos@..." title="Email de pedidos">
+            </div>
+            <div class="form-group">
+              <label for="supp-delivery">Frecuencia / Días de Entrega</label>
+              <input type="text" id="supp-delivery" class="input-text" placeholder="Martes y Viernes mañana" title="Frecuencia o días de entrega">
             </div>
           </div>
         </div>
@@ -891,11 +894,11 @@
     <div class="modal-content" style="max-width: 580px;">
       <div class="modal-header">
         <h3 id="modal-po-title">Emitir Orden de Compra (Abastecimiento)</h3>
-        <button class="close-btn" id="modal-po-close">×</button>
+        <button type="button" class="close-btn" id="modal-po-close">×</button>
       </div>
       <form id="form-po">
         <div class="modal-body">
-          <input type="hidden" id="po-supplier-id" />
+          <input type="hidden" id="po-supplier-id">
           <div style="background: rgba(224,169,109,0.08); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(224,169,109,0.2);">
             <strong id="po-supplier-name" style="color: var(--primary); font-size: 1.05rem;">Proveedor</strong>
             <div id="po-supplier-meta" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">CUIT: 30-00000000-0 | Frecuencia: Diaria</div>
@@ -903,12 +906,12 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Fecha de Entrega Estimada</label>
-              <input type="date" id="po-delivery-date" class="input-text" required />
+              <label for="po-delivery-date">Fecha de Entrega Estimada</label>
+              <input type="date" id="po-delivery-date" class="input-text" title="Fecha de entrega estimada" required>
             </div>
             <div class="form-group">
-              <label>Condición Fiscal / Pago</label>
-              <select id="po-payment-term" class="input-select">
+              <label for="po-payment-term">Condición Fiscal / Pago</label>
+              <select id="po-payment-term" class="input-select" title="Condición fiscal y de pago">
                 <option value="CTA_CTE_15">Cuenta Corriente 15 días</option>
                 <option value="CTA_CTE_30">Cuenta Corriente 30 días</option>
                 <option value="CONTADO_CONTRA_ENTREGA">Contado contra Entrega</option>
@@ -917,25 +920,25 @@
           </div>
 
           <div class="form-group">
-            <label>Ítems del Pedido (Insumo, Cantidad y Costo Unitario)</label>
+            <label for="po-item-name-first">Ítems del Pedido (Insumo, Cantidad y Costo Unitario)</label>
             <div id="po-items-rows" style="display: flex; flex-direction: column; gap: 8px;">
               <div class="form-row" style="align-items: center;">
-                <input type="text" class="input-text po-item-name" placeholder="Ej: Lomo vacuno envasado" style="flex: 2;" required />
-                <input type="number" class="input-text po-item-qty" placeholder="Cant." style="flex: 1;" min="1" required />
-                <select class="input-select po-item-unit" style="flex: 1;">
+                <input type="text" id="po-item-name-first" class="input-text po-item-name" placeholder="Ej: Lomo vacuno envasado" title="Nombre del insumo" aria-label="Nombre del insumo" style="flex: 2;" required>
+                <input type="number" id="po-item-qty-first" class="input-text po-item-qty" placeholder="Cant." title="Cantidad" aria-label="Cantidad" style="flex: 1;" min="1" required>
+                <select id="po-item-unit-first" class="input-select po-item-unit" style="flex: 1;" title="Unidad de medida del insumo" aria-label="Unidad de medida del insumo">
                   <option value="g">Gramos (g)</option>
                   <option value="unidades">Unidades</option>
                   <option value="ml">Mililitros</option>
                 </select>
-                <input type="number" class="input-text po-item-cost" placeholder="$ Costo" style="flex: 1;" min="0" required />
+                <input type="number" id="po-item-cost-first" class="input-text po-item-cost" placeholder="$ Costo" title="Costo unitario" aria-label="Costo unitario" style="flex: 1;" min="0" required>
               </div>
             </div>
             <button type="button" class="btn btn-secondary" id="btn-po-add-row" style="margin-top: 8px; font-size: 0.78rem; padding: 4px 10px;">➕ Agregar Otro Insumo</button>
           </div>
 
           <div class="form-group">
-            <label>Instrucciones de Recepción y Control de Calidad</label>
-            <textarea id="po-notes" class="input-text" rows="2" placeholder="Exigir cadena de frío < 4°C, control de precintos y remito fiscal oficial..."></textarea>
+            <label for="po-notes">Instrucciones de Recepción y Control de Calidad</label>
+            <textarea id="po-notes" class="input-text" rows="2" placeholder="Exigir cadena de frío < 4°C, control de precintos y remito fiscal oficial..." title="Instrucciones de recepción y control de calidad"></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -951,17 +954,17 @@
     <div class="modal-content" style="max-width: 480px;">
       <div class="modal-header">
         <h3>Abrir Turno de Caja</h3>
-        <button class="close-btn" id="modal-open-cash-close">×</button>
+        <button type="button" class="close-btn" id="modal-open-cash-close">×</button>
       </div>
       <form id="form-open-cash">
         <div class="modal-body">
           <div class="form-group">
-            <label>Nombre del Cajero / Responsable</label>
-            <input type="text" id="open-cash-name" class="input-text" value="Facundo M. (Cajero)" required />
+            <label for="open-cash-name">Nombre del Cajero / Responsable</label>
+            <input type="text" id="open-cash-name" class="input-text" value="Facundo M. (Cajero)" title="Nombre del cajero" placeholder="Nombre del cajero" required>
           </div>
           <div class="form-group">
-            <label>Fondo Inicial de Gaveta en Efectivo ($)</label>
-            <input type="number" id="open-cash-float" class="input-text" placeholder="Ej: 50000" min="0" required />
+            <label for="open-cash-float">Fondo Inicial de Gaveta en Efectivo ($)</label>
+            <input type="number" id="open-cash-float" class="input-text" placeholder="Ej: 50000" title="Fondo inicial de gaveta en efectivo" min="0" required>
             <span style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; display: block;">Monto de cambio con el que se inicia la jornada.</span>
           </div>
         </div>
@@ -978,24 +981,24 @@
     <div class="modal-content" style="max-width: 480px;">
       <div class="modal-header">
         <h3>Movimiento Extraordinario de Caja</h3>
-        <button class="close-btn" id="modal-cash-movement-close">×</button>
+        <button type="button" class="close-btn" id="modal-cash-movement-close">×</button>
       </div>
       <form id="form-cash-movement">
         <div class="modal-body">
           <div class="form-group">
-            <label>Tipo de Operación</label>
-            <select id="cash-mov-type" class="input-select">
+            <label for="cash-mov-type">Tipo de Operación</label>
+            <select id="cash-mov-type" class="input-select" title="Tipo de operación de caja">
               <option value="OUT">💸 Retiro de Efectivo (Egreso / Pago Menor)</option>
               <option value="IN">💰 Ingreso de Efectivo (Aporte Extra)</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Monto ($)</label>
-            <input type="number" id="cash-mov-amount" class="input-text" placeholder="15000" min="1" required />
+            <label for="cash-mov-amount">Monto ($)</label>
+            <input type="number" id="cash-mov-amount" class="input-text" placeholder="15000" title="Monto del movimiento" min="1" required>
           </div>
           <div class="form-group">
-            <label>Motivo / Concepto Justificado</label>
-            <input type="text" id="cash-mov-reason" class="input-text" placeholder="Ej: Pago de hielo de emergencia, propinas, retiro blindado..." required />
+            <label for="cash-mov-reason">Motivo / Concepto Justificado</label>
+            <input type="text" id="cash-mov-reason" class="input-text" placeholder="Ej: Pago de hielo de emergencia, propinas, retiro blindado..." title="Motivo o concepto justificado" required>
           </div>
         </div>
         <div class="modal-footer">
@@ -1011,7 +1014,7 @@
     <div class="modal-content" style="max-width: 500px;">
       <div class="modal-header">
         <h3>Cierre Definitivo de Caja &amp; Arqueo</h3>
-        <button class="close-btn" id="modal-close-cash-close">×</button>
+        <button type="button" class="close-btn" id="modal-close-cash-close">×</button>
       </div>
       <form id="form-close-cash">
         <div class="modal-body">
@@ -1027,19 +1030,19 @@
           </div>
 
           <div class="form-group">
-            <label>Efectivo Físico Real Recontado en Gaveta ($)</label>
-            <input type="number" id="close-cash-actual" class="input-text" placeholder="Contar todos los billetes..." min="0" required />
+            <label for="close-cash-actual">Efectivo Físico Real Recontado en Gaveta ($)</label>
+            <input type="number" id="close-cash-actual" class="input-text" placeholder="Contar todos los billetes..." title="Efectivo físico real recontado" min="0" required>
           </div>
 
           <div class="form-group" id="close-cash-pin-group" style="display: none; background: rgba(239, 68, 68, 0.08); padding: 10px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
-            <label style="color: #ef4444; font-weight: 600;">🔐 PIN de Supervisor Requerido</label>
-            <input type="password" id="close-cash-pin" class="input-text" placeholder="Ingresar PIN de Supervisor (Demo: 1234)" />
+            <label for="close-cash-pin" style="color: #ef4444; font-weight: 600;">🔐 PIN de Supervisor Requerido</label>
+            <input type="password" id="close-cash-pin" class="input-text" placeholder="Ingresar PIN de Supervisor (Demo: 1234)" title="PIN de supervisor" autocomplete="current-password">
             <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">El rol Cajero exige elevación por supervisor para aprobar arqueo final.</span>
           </div>
 
           <div class="form-group">
-            <label>Observaciones de Cierre (Diferencias o Novedades)</label>
-            <textarea id="close-cash-notes" class="input-text" rows="2" placeholder="Sin novedades, arqueo exacto..."></textarea>
+            <label for="close-cash-notes">Observaciones de Cierre (Diferencias o Novedades)</label>
+            <textarea id="close-cash-notes" class="input-text" rows="2" placeholder="Sin novedades, arqueo exacto..." title="Observaciones de cierre"></textarea>
           </div>
         </div>
         <div class="modal-footer">
