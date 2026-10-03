@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import http from 'http';
 
 describe('Vercel Serverless Handler & Resilient Storage', () => {
   it('exports a default serverless handler function', async () => {
@@ -6,32 +7,19 @@ describe('Vercel Serverless Handler & Resilient Storage', () => {
     expect(typeof handler).toBe('function');
   });
 
-  it('delegates requests to express app without requiring port listening', async () => {
+  it('delegates requests to express app in an http server instance', async () => {
     const { default: handler } = await import('../api/index.js');
-    const req = {
-      method: 'GET',
-      url: '/api/tables',
-      headers: {}
-    };
-    let ended = false;
-    let statusCode = 200;
-    const res = {
-      status(code) {
-        statusCode = code;
-        return this;
-      },
-      setHeader() {
-        return this;
-      },
-      end() {
-        ended = true;
-      },
-      json() {
-        ended = true;
-      }
-    };
+    const server = http.createServer(handler);
 
-    // The handler should accept (req, res)
-    expect(() => handler(req, res)).not.toThrow();
+    await new Promise((resolve) => server.listen(0, resolve));
+    const address = server.address();
+    const port = typeof address === 'object' && address ? address.port : 0;
+
+    const res = await fetch(`http://127.0.0.1:${port}/api/logs`);
+    const json = await res.json();
+    expect(json).toHaveProperty('success', true);
+    expect(Array.isArray(json.logs)).toBe(true);
+
+    await new Promise((resolve) => server.close(resolve));
   });
 });
