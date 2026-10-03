@@ -143,42 +143,80 @@ async function handleToolCall(name, args) {
 process.stdin.setEncoding('utf8');
 
 let buffer = '';
+
+async function processMessage(raw) {
+  if (!raw.trim()) return;
+  try {
+    const msg = JSON.parse(raw);
+    const id = msg.id;
+
+    if (msg.method === 'initialize') {
+      sendResponse(id, {
+        protocolVersion: '2024-11-05',
+        capabilities: { tools: {} },
+        serverInfo: { name: 'restoia-mcp', version: '1.0.0' }
+      });
+    } else if (msg.method === 'tools/list') {
+      sendResponse(id, { tools: TOOLS });
+    } else if (msg.method === 'tools/call') {
+      const { name, arguments: args } = msg.params || {};
+      const result = await handleToolCall(name, args || {});
+      sendResponse(id, {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
+          }
+        ]
+      });
+    } else if (msg.method === 'notifications/initialized' || msg.method === 'ping') {
+      if (id !== undefined) {
+        sendResponse(id, {});
+      }
+    } else if (id !== undefined) {
+      sendResponse(id, { error: { code: -32601, message: 'Method not found' } });
+    }
+  } catch (e) {
+    console.error('[MCP] Parse error:', e.message);
+  }
+}
+
+const CONTENT_LENGTH_REGEX = /^Content-Length:\s*(\d+)\r?\n\r?\n/i;
+
 process.stdin.on('data', async (chunk) => {
   buffer += chunk;
-  const lines = buffer.split('\n');
-  buffer = lines.pop();
 
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    try {
-      const msg = JSON.parse(line);
-      const id = msg.id;
-
-      if (msg.method === 'initialize') {
-        sendResponse(id, {
-          protocolVersion: '2024-11-05',
-          capabilities: { tools: {} },
-          serverInfo: { name: 'restoia-mcp', version: '1.0.0' }
-        });
-      } else if (msg.method === 'tools/list') {
-        sendResponse(id, { tools: TOOLS });
-      } else if (msg.method === 'tools/call') {
-        const { name, arguments: args } = msg.params;
-        const result = await handleToolCall(name, args || {});
-        sendResponse(id, {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2)
-            }
-          ]
-        });
-      } else {
-        sendResponse(id, { error: { code: -32601, message: 'Method not found' } });
+  while (buffer.length > 0) {
+    // 1. Check for Content-Length header framing
+    const headerMatch = CONTENT_LENGTH_REGEX.exec(buffer);
+    if (headerMatch) {
+      const contentLength = Number.parseInt(headerMatch[1], 10);
+      const headerLength = headerMatch[0].length;
+      if (buffer.length < headerLength + contentLength) {
+        // Await remaining payload chunk
+        break;
       }
-    } catch (e) {
-      console.error('[MCP] Parse error:', e.message);
+      const jsonPayload = buffer.slice(headerLength, headerLength + contentLength);
+      buffer = buffer.slice(headerLength + contentLength);
+      await processMessage(jsonPayload);
+      continue;
     }
+
+    // 2. Check for newline-delimited JSON
+    const newlineIndex = buffer.indexOf('\n');
+    if (newlineIndex !== -1) {
+      const line = buffer.slice(0, newlineIndex).trim();
+      buffer = buffer.slice(newlineIndex + 1);
+      if (line) {
+        if (!/^Content-Length:/i.test(line)) {
+          await processMessage(line);
+        }
+      }
+      continue;
+    }
+
+    // Await more data
+    break;
   }
 });
 

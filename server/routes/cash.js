@@ -16,6 +16,18 @@ cashRouter.get('/session', (req, res) => {
   });
 });
 
+cashRouter.get('/status', (req, res) => {
+  const data = db.getData();
+  if (!data.cashSessions) data.cashSessions = [];
+  const activeSession = data.cashSessions.find(s => s.status === 'OPEN') || null;
+  res.json({
+    success: true,
+    status: activeSession ? 'OPEN' : 'CLOSED',
+    activeSession,
+    history: data.cashSessions
+  });
+});
+
 cashRouter.post('/session/open', async (req, res) => {
   const { initialFloat, cashierName } = req.body;
   const data = db.getData();

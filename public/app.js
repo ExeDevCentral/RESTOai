@@ -19,6 +19,24 @@ window.formatCurrency = formatCurrency;
 window.formatCurrencyFromCents = formatCurrencyFromCents;
 window.flushOfflineOrdersQueue = flushOfflineOrdersQueue;
 window.formatStatus = formatStatus;
+window.updateOrderStatus = updateOrderStatus;
+window.addToTray = addToTray;
+window.changeTrayQty = changeTrayQty;
+window.fetchPurchaseOrders = fetchPurchaseOrders;
+window.renderPurchaseOrders = renderPurchaseOrders;
+window.fetchAnalytics = fetchAnalytics;
+window.renderAnalytics = renderAnalytics;
+window.fetchPrinters = fetchPrinters;
+window.fetchInventory = fetchInventory;
+window.renderInventory = renderInventory;
+window.fetchTables = fetchTables;
+window.renderTables = renderTables;
+window.fetchMenu = fetchMenu;
+window.renderMenu = renderMenu;
+window.fetchOrders = fetchOrders;
+window.fetchCashSession = fetchCashSession;
+window.renderCashSession = renderCashSession;
+window.renderAll = renderAll;
 
 const state = {
   currentTab: 'tab-pos',

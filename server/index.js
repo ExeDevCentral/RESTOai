@@ -44,6 +44,7 @@ app.use('/api/menu', menuRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/cash', cashRouter);
 app.use('/api/print', printRouter);
+app.use('/api', printRouter);
 app.use('/api/integrations', integrationsRouter);
 app.use('/api', inventoryRouter);
 app.use('/api', commonRouter);
