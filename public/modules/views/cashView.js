@@ -1,24 +1,17 @@
 // Cash Register & Blind Audit View Module
 
 function updateActiveSessionUI(session) {
-  const statusBadge = document.getElementById('cash-session-status-badge');
   const statusText = document.getElementById('cash-session-status-text');
-  const metaText = document.getElementById('cash-session-meta-text');
+  const metaText = document.getElementById('cash-session-meta');
   const expectedAmount = document.getElementById('cash-expected-amount');
   const inflowOutflowSub = document.getElementById('cash-inflow-outflow-sub');
   const digitalAmount = document.getElementById('cash-digital-amount');
-  const closeExpectedDisplay = document.getElementById('close-expected-cash-display');
-  const closeDigitalDisplay = document.getElementById('close-digital-sales-display');
+  const closeExpectedDisplay = document.getElementById('close-cash-expected-display');
+  const closeDigitalDisplay = document.getElementById('close-cash-digital-display');
 
-  if (statusBadge) {
-    statusBadge.textContent = 'TURNO ABIERTO (EN CURSO)';
-    statusBadge.style.background = 'rgba(42, 157, 143, 0.2)';
-    statusBadge.style.color = '#2a9d8f';
-    statusBadge.style.border = '1px solid #2a9d8f';
-  }
   if (statusText) {
     statusText.textContent = `Turno de: ${session.cashierName}`;
-    statusText.style.color = '#fff';
+    statusText.style.color = '#2a9d8f';
   }
   if (metaText) {
     const openTime = new Date(session.openedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
@@ -38,22 +31,15 @@ function updateActiveSessionUI(session) {
 }
 
 function updateInactiveSessionUI() {
-  const statusBadge = document.getElementById('cash-session-status-badge');
   const statusText = document.getElementById('cash-session-status-text');
-  const metaText = document.getElementById('cash-session-meta-text');
+  const metaText = document.getElementById('cash-session-meta');
   const expectedAmount = document.getElementById('cash-expected-amount');
   const inflowOutflowSub = document.getElementById('cash-inflow-outflow-sub');
   const digitalAmount = document.getElementById('cash-digital-amount');
-  const closeExpectedDisplay = document.getElementById('close-expected-cash-display');
-  const closeDigitalDisplay = document.getElementById('close-digital-sales-display');
-  const movementsContainer = document.getElementById('cash-movements-container');
+  const closeExpectedDisplay = document.getElementById('close-cash-expected-display');
+  const closeDigitalDisplay = document.getElementById('close-cash-digital-display');
+  const movementsContainer = document.getElementById('cash-movements-table-container');
 
-  if (statusBadge) {
-    statusBadge.textContent = 'SIN TURNO ACTIVO';
-    statusBadge.style.background = 'rgba(239, 68, 68, 0.2)';
-    statusBadge.style.color = '#ef4444';
-    statusBadge.style.border = '1px solid #ef4444';
-  }
   if (statusText) {
     statusText.textContent = 'SIN SESIÓN ABIERTA';
     statusText.style.color = '#ef4444';
@@ -71,7 +57,7 @@ function updateInactiveSessionUI() {
 }
 
 function renderMovements(movements = []) {
-  const container = document.getElementById('cash-movements-container');
+  const container = document.getElementById('cash-movements-table-container');
   if (!container) return;
 
   if (movements.length === 0) {
@@ -120,7 +106,7 @@ function renderMovements(movements = []) {
   `;
 }
 
-function getDiscrepancyMeta(diff) {
+export function getDiscrepancyMeta(diff) {
   if (diff > 0) {
     return { color: '#457b9d', text: `+$${diff.toLocaleString('es-AR')}` };
   }
@@ -131,7 +117,7 @@ function getDiscrepancyMeta(diff) {
 }
 
 function renderHistory(history = []) {
-  const container = document.getElementById('cash-history-container');
+  const container = document.getElementById('cash-history-table-container');
   if (!container) return;
 
   const closedSessions = history.filter(s => s.status === 'CLOSED');
@@ -200,3 +186,12 @@ export function renderCashView(state) {
 
   renderHistory(state.cashSession?.history || []);
 }
+
+export const cashView = {
+  render(state) {
+    renderCashView(state);
+  },
+  mount() {},
+  cleanup() {}
+};
+

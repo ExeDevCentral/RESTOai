@@ -1,5 +1,6 @@
 // POS & Floor Plan View Module
-import { formatCurrency } from './money.js';
+import { formatCurrency } from '../money.js';
+
 
 export function renderTablesGrid(state) {
   const container = document.getElementById('tables-grid');
@@ -11,7 +12,7 @@ export function renderTablesGrid(state) {
 
   container.innerHTML = filtered.map(table => {
     const currentOrder = state.orders.find(o => o.id === table.currentOrderId);
-    const orderTotal = currentOrder ? `$${currentOrder.total.toLocaleString('es-AR')}` : '-';
+    const orderTotal = currentOrder ? formatCurrency(currentOrder.total) : '-';
 
     return `
       <div class="table-card status-${table.status}" onclick="openTableModal(${table.id})">
@@ -60,7 +61,8 @@ export function renderFloorPlan(state) {
     const pos = floorPositions[table.id] || { left: `${(table.id * 10) % 80 + 10}%`, top: '40%', shape: 'square', width: '90px', height: '90px' };
     const col = statusColors[table.status] || statusColors['libre'];
     const currentOrder = state.orders.find(o => o.id === table.currentOrderId);
-    const orderTotal = currentOrder ? `$${(currentOrder.total).toLocaleString('es-AR')}` : '';
+    const orderTotal = currentOrder ? formatCurrency(currentOrder.total) : '';
+
     const borderRadius = pos.shape === 'circle' ? '50%' : '14px';
 
     return `
@@ -100,10 +102,10 @@ export function renderFloorPlan(state) {
 
 export function formatStatus(status) {
   const map = {
-    'libre': '🟢 Libre',
-    'ocupada': '🟡 Ocupada',
-    'cuenta_pedida': '🔴 Cuenta Pedida',
-    'reservada': '🔵 Reservada'
+    'libre': 'Libre',
+    'ocupada': 'Ocupada',
+    'cuenta_pedida': 'Cuenta Pedida',
+    'reservada': 'Reservada'
   };
   return map[status] || status;
 }
@@ -147,3 +149,15 @@ export function setupFloorPlanEvents() {
     });
   }
 }
+
+export const posView = {
+  render(state) {
+    renderTablesGrid(state);
+    renderFloorPlan(state);
+  },
+  mount(state) {
+    setupFloorPlanEvents();
+  },
+  cleanup() {}
+};
+

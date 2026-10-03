@@ -112,3 +112,12 @@ export function renderKDSView(state, onStatusUpdate) {
     ? listos.map(o => renderCard(o, 'servido', '🍽️ Entregar a Mesa', 'btn-secondary')).join('')
     : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">Sin comandas listas</div>`;
 }
+
+export const kdsView = {
+  render(state) {
+    renderKDSView(state);
+  },
+  mount() {},
+  cleanup() {}
+};
+

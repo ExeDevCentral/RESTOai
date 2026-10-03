@@ -8,10 +8,19 @@ import {
   generateClientOrderId, 
   setupOfflineListeners 
 } from './modules/offlineQueue.js';
-import { renderKDSView } from './modules/views/kdsView.js';
-import { renderCashView } from './modules/views/cashView.js';
+import { posView, formatStatus } from './modules/views/posView.js';
+import { kdsView } from './modules/views/kdsView.js';
+import { cashView } from './modules/views/cashView.js';
+import { ViewRegistry } from './modules/views/viewRegistry.js';
 import { setupRoleMatrixDemo } from './modules/roleMatrix.js';
 import { normalizeSalesHistory } from './modules/analytics.js';
+
+// Inicializar orquestador de ciclo de vida de vistas
+const viewRegistry = new ViewRegistry();
+viewRegistry.register('tab-pos', posView);
+viewRegistry.register('tab-kds', kdsView);
+viewRegistry.register('tab-cash', cashView);
+
 
 // Exponer a window para interactividad HTML onclick
 window.toCents = toCents;
@@ -74,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPurchaseOrderEvents();
   setupCashSessionEvents();
   setupMenuManagementEvents();
-  setupFloorPlanEvents();
+  viewRegistry.activate('tab-pos', state);
   setupRoleMatrixDemo();
   setupOfflineListeners(fetchAllData);
 
@@ -218,6 +227,7 @@ async function fetchPrinters() {
 // RENDERIZADO GENERAL
 // ========================
 function renderAll() {
+  viewRegistry.renderActive(state);
   renderTables();
   renderKDS();
   renderMenu();
@@ -253,270 +263,23 @@ function updateStatsBar() {
 }
 
 // ========================
-// VISTA: MESAS (POS)
-// ========================
-// VISTA: MESAS (POS)
+// VISTAS MODULARES (DELEGACIÓN AL VIEW REGISTRY)
 // ========================
 function renderTables() {
-  renderTablesGrid(state);
-  renderFloorPlan(state);
+  posView.render(state);
 }
 
 function renderKDS() {
-  renderKDSView(state);
+  kdsView.render(state);
 }
 
 function renderCashSession() {
-  renderCashView(state);
+  cashView.render(state);
 }
 
-function renderTablesGrid() {
-  const container = document.getElementById('tables-grid');
-  if (!container) return;
 
-  const filtered = state.selectedArea === 'all' 
-    ? state.tables 
-    : state.tables.filter(t => t.area === state.selectedArea);
 
-  container.innerHTML = filtered.map(table => {
-    const currentOrder = state.orders.find(o => o.id === table.currentOrderId);
-    const orderTotal = currentOrder ? `$${currentOrder.total.toLocaleString('es-AR')}` : '-';
 
-    return `
-      <div class="table-card status-${table.status}" onclick="openTableModal(${table.id})">
-        <div class="table-card-top">
-          <span class="table-badge">${formatStatus(table.status)}</span>
-          <span style="font-size: 0.8rem; color: #94a3b8;">${table.capacity} Personas</span>
-        </div>
-        <div class="table-number">${table.number}</div>
-        <div class="table-details">${table.area}</div>
-        <div class="table-bill-amount">
-          <span>Cuenta:</span>
-          <strong>${orderTotal}</strong>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderFloorPlan() {
-  const canvas = document.getElementById('floor-plan-canvas');
-  if (!canvas) return;
-
-  // Mapa de posiciones espaciales (x%, y%) por ID de mesa
-  const floorPositions = {
-    1: { left: '15%', top: '25%', shape: 'square', width: '90px', height: '90px' },
-    2: { left: '32%', top: '25%', shape: 'circle', width: '80px', height: '80px' },
-    3: { left: '50%', top: '22%', shape: 'rect', width: '130px', height: '85px' },
-    4: { left: '72%', top: '25%', shape: 'square', width: '90px', height: '90px' },
-    5: { left: '72%', top: '55%', shape: 'square', width: '90px', height: '90px' },
-    6: { left: '50%', top: '60%', shape: 'circle', width: '80px', height: '80px' },
-    7: { left: '15%', top: '65%', shape: 'bar', width: '100px', height: '65px' },
-    8: { left: '30%', top: '65%', shape: 'bar', width: '100px', height: '65px' }
-  };
-
-  const statusColors = {
-    'libre': { bg: 'rgba(42, 157, 143, 0.15)', border: 'var(--accent-green)', glow: 'rgba(42, 157, 143, 0.4)' },
-    'ocupada': { bg: 'rgba(233, 196, 106, 0.18)', border: 'var(--accent-gold)', glow: 'rgba(233, 196, 106, 0.4)' },
-    'cuenta_pedida': { bg: 'rgba(231, 111, 81, 0.22)', border: 'var(--accent-red)', glow: 'rgba(231, 111, 81, 0.5)' },
-    'reservada': { bg: 'rgba(69, 123, 157, 0.18)', border: 'var(--accent-blue)', glow: 'rgba(69, 123, 157, 0.4)' }
-  };
-
-  const filtered = state.selectedArea === 'all'
-    ? state.tables
-    : state.tables.filter(t => t.area === state.selectedArea);
-
-  canvas.innerHTML = filtered.map(table => {
-    const pos = floorPositions[table.id] || { left: `${(table.id * 10) % 80 + 10}%`, top: '40%', shape: 'square', width: '90px', height: '90px' };
-    const col = statusColors[table.status] || statusColors['libre'];
-    const currentOrder = state.orders.find(o => o.id === table.currentOrderId);
-    const orderTotal = currentOrder ? `$${(currentOrder.total).toLocaleString('es-AR')}` : '';
-    const borderRadius = pos.shape === 'circle' ? '50%' : '14px';
-
-    return `
-      <div 
-        class="floor-table-node" 
-        onclick="openTableModal(${table.id})"
-        title="Mesa ${table.number} (${table.area}) - ${table.status}"
-        style="
-          position: absolute;
-          left: ${pos.left};
-          top: ${pos.top};
-          width: ${pos.width};
-          height: ${pos.height};
-          border-radius: ${borderRadius};
-          background: ${col.bg};
-          border: 2px solid ${col.border};
-          box-shadow: 0 4px 16px ${col.glow};
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          user-select: none;
-          z-index: 5;
-        "
-        onmouseenter="this.style.transform='scale(1.08)'"
-        onmouseleave="this.style.transform='scale(1)'"
-      >
-        <span style="font-weight: 700; font-size: 1rem; color: #fff;">${table.number}</span>
-        <span style="font-size: 0.68rem; color: #94a3b8;">${table.capacity}p</span>
-        ${orderTotal ? `<span style="font-size: 0.7rem; font-weight: 700; color: var(--accent-gold); margin-top: 2px;">${orderTotal}</span>` : ''}
-      </div>
-    `;
-  }).join('');
-}
-
-function setupFloorPlanEvents() {
-  const btnGrid = document.getElementById('btn-view-grid');
-  const btnFloor = document.getElementById('btn-view-floor');
-  const gridView = document.getElementById('tables-grid');
-  const floorView = document.getElementById('floor-plan-view');
-
-  if (btnGrid && btnFloor && gridView && floorView) {
-    btnGrid.addEventListener('click', () => {
-      btnGrid.classList.add('active');
-      btnGrid.style.background = 'var(--primary)';
-      btnGrid.style.color = '#12100e';
-      btnGrid.style.fontWeight = '600';
-
-      btnFloor.classList.remove('active');
-      btnFloor.style.background = 'transparent';
-      btnFloor.style.color = 'var(--text-muted)';
-      btnFloor.style.fontWeight = '500';
-
-      gridView.style.display = 'grid';
-      floorView.style.display = 'none';
-    });
-
-    btnFloor.addEventListener('click', () => {
-      btnFloor.classList.add('active');
-      btnFloor.style.background = 'var(--primary)';
-      btnFloor.style.color = '#12100e';
-      btnFloor.style.fontWeight = '600';
-
-      btnGrid.classList.remove('active');
-      btnGrid.style.background = 'transparent';
-      btnGrid.style.color = 'var(--text-muted)';
-      btnGrid.style.fontWeight = '500';
-
-      gridView.style.display = 'none';
-      floorView.style.display = 'block';
-      renderFloorPlan();
-    });
-  }
-}
-
-function formatStatus(status) {
-  const map = {
-    'libre': '🟢 Libre',
-    'ocupada': '🟡 Ocupada',
-    'cuenta_pedida': '🔴 Cuenta Pedida',
-    'reservada': '🔵 Reservada'
-  };
-  return map[status] || status;
-}
-
-// ========================
-// VISTA: COCINA KDS
-// ========================
-function renderKDSLegacy() {
-  const listPendiente = document.getElementById('kds-list-pendiente');
-  const listCocina = document.getElementById('kds-list-cocina');
-  const listListo = document.getElementById('kds-list-listo');
-
-  // Filtrado por estación: COCINA vs BARRA vs ALL
-  const station = state.selectedStation || 'all';
-
-  const filterOrderItems = (order) => {
-    if (station === 'all') return order.items;
-    return order.items.filter(item => {
-      // Buscar en el menú local para conocer la categoría
-      const menuItem = state.menu.find(m => m.id === item.menuItemId || m.name === item.name);
-      const category = menuItem ? menuItem.category : '';
-      const isBar = ['Bebidas', 'Vinos', 'Tragos', 'Cafetería'].includes(category);
-      if (station === 'BARRA') return isBar;
-      if (station === 'COCINA') return !isBar;
-      return true;
-    });
-  };
-
-  const getFilteredOrders = (status) => {
-    return state.orders
-      .filter(o => o.status === status)
-      .map(o => ({
-        ...o,
-        filteredItems: filterOrderItems(o)
-      }))
-      .filter(o => o.filteredItems.length > 0);
-  };
-
-  const pendientes = getFilteredOrders('pendiente');
-  const enCocina = getFilteredOrders('en_cocina');
-  const listos = getFilteredOrders('listo');
-
-  document.getElementById('count-pending').textContent = pendientes.length;
-  document.getElementById('count-cooking').textContent = enCocina.length;
-  document.getElementById('count-ready').textContent = listos.length;
-
-  const renderCard = (order, nextStatus, nextLabel, btnClass = 'btn-primary') => {
-    const elapsedMins = order.createdAt ? Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000) : 0;
-    const isDelayed = elapsedMins >= 20;
-    const isWarning = elapsedMins >= 10 && elapsedMins < 20;
-    const borderColor = isDelayed ? '#ef4444' : isWarning ? '#e9c46a' : 'rgba(224,169,109,0.18)';
-    const delayBadge = isDelayed 
-      ? '<span style="background: rgba(239,68,68,0.2); color: #ef4444; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #ef4444;">🚨 DEMORA CRÍTICA</span>' 
-      : isWarning 
-      ? '<span style="background: rgba(233,196,106,0.2); color: #e9c46a; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">⚠️ ALERTA TIEMPO</span>' 
-      : '';
-
-    return `
-      <div class="kds-card" style="border: 1px solid ${borderColor}; transition: transform 0.2s ease, border-color 0.2s ease;">
-        <div class="kds-card-head">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <strong>Mesa ${order.tableNumber}</strong>
-            ${delayBadge}
-          </div>
-          <span class="kds-time" style="color: ${isDelayed ? '#ef4444' : isWarning ? '#e9c46a' : 'inherit'}; font-weight: 600;">
-            ⏱️ ${elapsedMins} min
-          </span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <small style="color: #94a3b8;">Mozo: ${order.waiter}</small>
-          ${station !== 'all' ? `<span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(224,169,109,0.15); color: var(--primary);">Estación: ${station}</span>` : ''}
-        </div>
-        <ul class="kds-items">
-          ${order.filteredItems.map(i => `
-            <li>
-              <span><strong>${i.quantity}x</strong> ${i.name}</span>
-              ${i.notes ? `<div class="kds-note">Nota: ${i.notes}</div>` : ''}
-            </li>
-          `).join('')}
-        </ul>
-        <div class="kds-actions">
-          ${nextStatus ? `
-            <button class="btn ${btnClass} btn-block" onclick="updateOrderStatus('${order.id}', '${nextStatus}')">
-              ${nextLabel}
-            </button>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  };
-
-  listPendiente.innerHTML = pendientes.length > 0
-    ? pendientes.map(o => renderCard(o, 'en_cocina', '🔥 Iniciar Preparación')).join('')
-    : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">No hay comandas pendientes para ${station === 'all' ? 'ninguna estación' : station}</div>`;
-
-  listCocina.innerHTML = enCocina.length > 0
-    ? enCocina.map(o => renderCard(o, 'listo', '🛎️ Marcar Listo para Servir')).join('')
-    : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">Sin preparaciones en marcha</div>`;
-
-  listListo.innerHTML = listos.length > 0
-    ? listos.map(o => renderCard(o, 'servido', '🍽️ Entregar a Mesa', 'btn-secondary')).join('')
-    : `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 12px; text-align: center;">Sin comandas listas</div>`;
-}
 
 function formatTimeAgo(isoString) {
   if (!isoString) return '';
@@ -1302,6 +1065,9 @@ function setupNavigation() {
       const targetPane = document.getElementById(tab);
       if (targetPane) targetPane.classList.add('active');
 
+      state.currentTab = tab;
+      viewRegistry.activate(tab, state);
+
       if (tab === 'tab-kobe-engine') {
         fetchKobeAudit();
       }
@@ -2052,147 +1818,7 @@ window.deleteDish = async function(dishId) {
   }
 };
 
-// ========================
-// GESTIÓN DE CAJA & ARQUEOS DE TURNO
-// ========================
-function renderCashSessionLegacy() {
-  const session = state.cashSession?.activeSession;
-  const statusCard = document.getElementById('cash-status-card');
-  const statusText = document.getElementById('cash-session-status-text');
-  const metaText = document.getElementById('cash-session-meta');
-  const expectedAmount = document.getElementById('cash-expected-amount');
-  const inflowOutflowSub = document.getElementById('cash-inflow-outflow-sub');
-  const digitalAmount = document.getElementById('cash-digital-amount');
-  const movementsContainer = document.getElementById('cash-movements-table-container');
-  const historyContainer = document.getElementById('cash-history-table-container');
 
-  // Modal close display values
-  const closeExpectedDisplay = document.getElementById('close-cash-expected-display');
-  const closeDigitalDisplay = document.getElementById('close-cash-digital-display');
-
-  if (session && session.status === 'OPEN') {
-    if (statusText) {
-      statusText.textContent = `TURNO ABIERTO (#${session.id})`;
-      statusText.style.color = '#2a9d8f';
-    }
-    if (metaText) {
-      const openedDate = new Date(session.openedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-      metaText.textContent = `Responsable: ${session.cashierName} | Inicio: ${openedDate} hs`;
-    }
-    if (expectedAmount) expectedAmount.textContent = `$${(session.expectedCash || 0).toLocaleString('es-AR')}`;
-    if (inflowOutflowSub) {
-      inflowOutflowSub.textContent = `Fondo: $${(session.initialFloat || 0).toLocaleString('es-AR')} | Cobros Efvo: +$${(session.cashInflow || 0).toLocaleString('es-AR')} | Egresos: -$${(session.cashOutflow || 0).toLocaleString('es-AR')}`;
-    }
-    if (digitalAmount) digitalAmount.textContent = `$${(session.digitalSales || 0).toLocaleString('es-AR')}`;
-    if (closeExpectedDisplay) closeExpectedDisplay.textContent = `$${(session.expectedCash || 0).toLocaleString('es-AR')}`;
-    if (closeDigitalDisplay) closeDigitalDisplay.textContent = `$${(session.digitalSales || 0).toLocaleString('es-AR')}`;
-
-    // Render movimientos
-    if (movementsContainer) {
-      const movs = session.movements || [];
-      if (movs.length === 0) {
-        movementsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">No se han registrado movimientos extraordinarios de gaveta en este turno.</p>';
-      } else {
-        movementsContainer.innerHTML = `
-          <table class="data-table" style="width: 100%;">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Hora</th>
-                <th>Operación</th>
-                <th>Concepto / Motivo</th>
-                <th style="text-align: right;">Monto</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${movs.map(m => `
-                <tr>
-                  <td><code>${m.id}</code></td>
-                  <td>${new Date(m.timestamp).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td>
-                    <span class="badge ${m.type === 'INGRESO' ? 'badge-confirmed' : 'badge-occupied'}" style="font-size: 0.75rem;">
-                      ${m.type === 'INGRESO' ? '💰 INGRESO' : '💸 RETIRO'}
-                    </span>
-                  </td>
-                  <td>${m.reason}</td>
-                  <td style="text-align: right; font-weight: 600; color: ${m.type === 'INGRESO' ? '#2a9d8f' : '#ef4444'};">
-                    ${m.type === 'INGRESO' ? '+' : '-'}$${(m.amount || 0).toLocaleString('es-AR')}
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      }
-    }
-  } else {
-    // Sin sesión activa
-    if (statusText) {
-      statusText.textContent = 'SIN SESIÓN ABIERTA';
-      statusText.style.color = '#ef4444';
-    }
-    if (metaText) metaText.textContent = 'Abre un turno con fondo inicial para habilitar cobros en gaveta y arqueo.';
-    if (expectedAmount) expectedAmount.textContent = '$0';
-    if (inflowOutflowSub) inflowOutflowSub.textContent = 'Fondo: $0 | Ingresos: $0 | Egresos: $0';
-    if (digitalAmount) digitalAmount.textContent = '$0';
-    if (closeExpectedDisplay) closeExpectedDisplay.textContent = '$0';
-    if (closeDigitalDisplay) closeDigitalDisplay.textContent = '$0';
-
-    if (movementsContainer) {
-      movementsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">Abre un turno de caja para registrar y visualizar movimientos de gaveta en vivo.</p>';
-    }
-  }
-
-  // Render Historial de Sesiones Pasadas
-  if (historyContainer) {
-    const closedSessions = (state.cashSession?.history || []).filter(s => s.status === 'CLOSED');
-    if (closedSessions.length === 0) {
-      historyContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 8px 0;">No hay turnos cerrados registrados todavía.</p>';
-    } else {
-      historyContainer.innerHTML = `
-        <table class="data-table" style="width: 100%;">
-          <thead>
-            <tr>
-              <th>ID Turno</th>
-              <th>Cajero</th>
-              <th>Apertura</th>
-              <th>Cierre</th>
-              <th style="text-align: right;">Fondo Inicial</th>
-              <th style="text-align: right;">Esperado</th>
-              <th style="text-align: right;">Real Declarado</th>
-              <th style="text-align: right;">Diferencia</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${closedSessions.map(s => {
-              const diff = s.discrepancy || 0;
-              const diffColor = diff === 0 ? '#2a9d8f' : diff > 0 ? '#457b9d' : '#ef4444';
-              const diffText = diff === 0 ? 'Exacto' : `${diff > 0 ? '+' : ''}$${diff.toLocaleString('es-AR')}`;
-              return `
-                <tr>
-                  <td><strong>${s.id}</strong></td>
-                  <td>${s.cashierName}</td>
-                  <td>${new Date(s.openedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td>${s.closedAt ? new Date(s.closedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '-'}</td>
-                  <td style="text-align: right;">$${(s.initialFloat || 0).toLocaleString('es-AR')}</td>
-                  <td style="text-align: right;">$${(s.expectedCash || 0).toLocaleString('es-AR')}</td>
-                  <td style="text-align: right;">$${(s.actualCash || 0).toLocaleString('es-AR')}</td>
-                  <td style="text-align: right; font-weight: 600; color: ${diffColor};">${diffText}</td>
-                  <td>
-                    <span class="badge ${diff === 0 ? 'badge-confirmed' : 'badge-occupied'}" style="font-size: 0.72rem;">
-                      ${s.authorizedByPin ? '🔐 APROBADO PIN' : '✅ SUPERVISADO'}
-                    </span>
-                  </td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-  }
-}
 
 function setupCashSessionEvents() {
   // Modal Abrir Turno
