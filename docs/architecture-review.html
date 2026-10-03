@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KOBE / RESTOia — Auditoría Técnica Profunda & Oportunidades (Matt Pocock Skills)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOBE / RESTOia — Auditoría Técnica &amp; Oportunidades</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
       import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
@@ -24,7 +24,7 @@
             🔬 Auditoría Técnica Rigurosa &bull; Skill /improve-codebase-architecture &bull; Matt Pocock
           </div>
           <h1 class="text-3xl md:text-4xl font-extrabold text-stone-100 tracking-tight">
-            KOBE / RESTOia — Fricciones & Oportunidades Técnicas
+            KOBE / RESTOia — Fricciones &amp; Oportunidades Técnicas
           </h1>
           <p class="text-stone-400 text-sm mt-1">
             Revisión sin suavizantes: qué módulos siguen siendo superficiales (shallow), dónde hay fuga entre costuras (seams) y cómo alcanzar nivel bancario/industrial.
@@ -55,10 +55,10 @@
             <h2 class="text-2xl font-bold text-stone-100">1. La Fuga de Persistencia: Reemplazar server/data.json por Drizzle/Postgres Real</h2>
             <div class="flex gap-2">
               <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-red-500/20 text-red-400 border border-red-500/30">Strong (Urgente - Fricción Real)</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">ports & adapters</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">ports &amp; adapters</span>
             </div>
           </div>
-          
+
           <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
             Archivos involucrados: <code>server/db.js</code> &bull; <code>packages/db/src/client.ts</code> &bull; <code>server/routes/orders.js</code> &bull; <code>server/data.json</code>
           </div>
@@ -127,7 +127,7 @@ graph TD
               <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">in-process</span>
             </div>
           </div>
-          
+
           <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
             Archivos involucrados: <code>public/app.js</code> &bull; <code>public/modules/views/pos.js</code> &bull; <code>public/modules/views/kds.js</code> &bull; <code>public/modules/views/cash.js</code>
           </div>
@@ -173,10 +173,10 @@ graph TD
             <h2 class="text-2xl font-bold text-stone-100">3. Adaptador de Facturación Fiscal ARCA: Simulación vs WSFE Producción</h2>
             <div class="flex gap-2">
               <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-stone-700 text-stone-300">Worth Exploring</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">ports & adapters</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-stone-800 text-stone-300">ports &amp; adapters</span>
             </div>
           </div>
-          
+
           <div class="text-xs font-mono text-stone-400 bg-stone-900/60 p-3 rounded-lg border border-stone-800/80">
             Archivos involucrados: <code>packages/domain/src/fiscalEngine.ts</code> &bull; <code>server/routes/orders.js</code>
           </div>
@@ -202,7 +202,7 @@ graph TD
           🌟 Veredicto Técnico Sin Filtro: ¿Qué falta para que sea 100% Industrial?
         </h3>
         <p class="text-stone-300 text-sm leading-relaxed">
-          El núcleo algorítmico y matemático (BigInt, FEFO, Máquina de estados, Hash Chain SHA-256) tiene calidad nivel bancario (63 tests verdes). Pero la **persistencia en runtime de Express sigue atada a `data.json`**. 
+          El núcleo algorítmico y matemático (BigInt, FEFO, Máquina de estados, Hash Chain SHA-256) tiene calidad nivel bancario (63 tests verdes). Pero la **persistencia en runtime de Express sigue atada a `data.json`**.
         </p>
         <p class="text-stone-300 text-sm leading-relaxed">
           Si resolvemos el <strong>Candidato 1 (Conectar Drizzle ORM a las rutas de Express)</strong> y el <strong>Candidato 2 (Separar las 2380 líneas de `app.js` en vistas limpias)</strong>, el sistema deja de tener cualquier punto débil técnico.
