@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EXE//PAGINASWEB.COM — Exequiel Echevarría · Software &amp; Web Architect</title>
+  <title>EXE//PAGINASWEB.COM — Exequiel Echevarría</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -542,15 +542,35 @@
       .navbar-container {
         top: 8px;
       }
+      .nav-pill {
+        padding: 5px 8px 5px 12px;
+      }
+      .brand-badge {
+        width: 28px;
+        height: 28px;
+      }
+      .brand-badge svg {
+        width: 16px;
+        height: 16px;
+      }
       .brand-title {
-        font-size: 0.82rem;
+        font-size: 0.78rem;
+      }
+      .brand-title .domain {
+        display: none; /* Oculta .COM en móviles angostos para dar holgura al botón */
       }
       .btn-cta {
-        padding: 7px 12px;
-        font-size: 0.72rem;
+        padding: 6px 12px;
+        font-size: 0.68rem;
+      }
+      .btn-cta span {
+        display: none;
+      }
+      .btn-cta::before {
+        content: 'COTIZAR';
       }
       .sub-tagline {
-        font-size: 0.62rem;
+        font-size: 0.6rem;
         letter-spacing: 0.03em;
         text-align: center;
       }
@@ -681,26 +701,28 @@
           </a>
 
           <!-- ENLACES SIMPLIFICADOS (FOCO EN VALOR REAL) -->
-          <ul class="nav-links" id="desktop-links">
+          <div class="nav-links-wrapper" style="position: relative;">
             <div class="nav-spotlight" id="nav-spotlight"></div>
-            
-            <li class="has-preview">
-              <a href="#proyectos" class="nav-link-item">
-                <span>Proyectos</span>
-              </a>
-              <!-- MINI PREVIEW DE CASO REAL -->
-              <div class="project-preview-card">
-                <h4>
-                  <span>RESTOia Engine</span>
-                  <span class="live-chip">EN PRODUCCIÓN</span>
-                </h4>
-                <p>Suite gastronómica inteligente con facturación fiscal ARCA/AFIP, KDS en vivo, motor offline y protocolo MCP.</p>
-              </div>
-            </li>
+            <ul class="nav-links" id="desktop-links">
+              
+              <li class="has-preview">
+                <a href="#proyectos" class="nav-link-item">
+                  <span>Proyectos</span>
+                </a>
+                <!-- MINI PREVIEW DE CASO REAL -->
+                <div class="project-preview-card">
+                  <h4>
+                    <span>RESTOia Engine</span>
+                    <span class="live-chip">EN PRODUCCIÓN</span>
+                  </h4>
+                  <p>Suite gastronómica inteligente con facturación fiscal ARCA/AFIP, KDS en vivo, motor offline y protocolo MCP.</p>
+                </div>
+              </li>
 
-            <li><a href="#capacidades" class="nav-link-item">Capacidades</a></li>
-            <li><a href="#stack" class="nav-link-item">Stack &amp; Arquitectura</a></li>
-          </ul>
+              <li><a href="#capacidades" class="nav-link-item">Capacidades</a></li>
+              <li><a href="#stack" class="nav-link-item">Stack &amp; Arquitectura</a></li>
+            </ul>
+          </div>
 
           <!-- ACCIONES: BADGE DE DISPONIBILIDAD & BOTÓN DIRECTO -->
           <div class="nav-actions">
@@ -720,7 +742,7 @@
             </a>
 
             <!-- Botón Hamburguesa Móvil -->
-            <button class="mobile-burger-btn" id="burger-toggle" aria-label="Abrir menú de navegación">
+            <button type="button" class="mobile-burger-btn" id="burger-toggle" aria-label="Abrir menú de navegación">
               <span></span>
               <span></span>
             </button>
