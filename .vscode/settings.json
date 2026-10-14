@@ -14,5 +14,38 @@
   "[sql]": {
     "editor.defaultFormatter": "joernberkefeld.sfmc-language"
   },
-  "compilets.autoStart": true
+  "compilets.autoStart": true,
+  "idf.currentSetup": "C:\\esp\\v6.1-beta1\\esp-idf",
+  "cSpell.language": "en,es",
+  "cSpell.words": [
+    "comanda",
+    "comandas",
+    "arqueo",
+    "arqueos",
+    "cajero",
+    "cajeros",
+    "inmutable",
+    "idempotente",
+    "idempotencia",
+    "gastronómica",
+    "gastronómico",
+    "gastronomía",
+    "mozo",
+    "mozos",
+    "despacho",
+    "josper",
+    "coctel",
+    "efvo",
+    "gaveta",
+    "cierre",
+    "exequiel",
+    "echevarría",
+    "restoia",
+    "paginasweb",
+    "afip",
+    "arca",
+    "cuit",
+    "malbec",
+    "fefo"
+  ]
 }

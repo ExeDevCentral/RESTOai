@@ -48,5 +48,3 @@ Este documento establece el vocabulario ubicuo y formal del motor transaccional.
 ## 6. Persistencia & Costuras de Arquitectura (Deep Modules)
 
 - **`OrderRepository`**: Módulo profundo que encapsula la persistencia relacional Drizzle/Postgres, transacciones ACID atómicas con el `audit_ledger`, mapeo estricto de centavos (`Money = bigint`) y soporte multi-inquilino sin fugar abstracciones SQL a los controladores de Express.
-
-

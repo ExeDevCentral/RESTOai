@@ -595,13 +595,18 @@ function setupAIChat() {
         }
       }
     } catch (e) {
+      console.warn('AI Chat request failed:', e);
       appendChatMessage('bot', 'Hubo un error de conexión con el motor de IA.');
     }
   };
 
-  btnSend.addEventListener('click', () => sendMessage(input.value));
+  btnSend.addEventListener('click', () => {
+    void sendMessage(input.value);
+  });
   input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage(input.value);
+    if (e.key === 'Enter') {
+      void sendMessage(input.value);
+    }
   });
 
   // ==========================================
@@ -623,20 +628,16 @@ function setupAIChat() {
     recognition.onstart = () => {
       isListening = true;
       if (voiceIndicator) voiceIndicator.style.display = 'block';
-      if (btnVoice) {
-        btnVoice.style.background = '#ef4444';
-        btnVoice.style.color = '#fff';
-      }
+      btnVoice.style.background = '#ef4444';
+      btnVoice.style.color = '#fff';
       if (voiceIcon) voiceIcon.textContent = '🛑';
     };
 
     recognition.onend = () => {
       isListening = false;
       if (voiceIndicator) voiceIndicator.style.display = 'none';
-      if (btnVoice) {
-        btnVoice.style.background = 'transparent';
-        btnVoice.style.color = 'var(--accent-gold)';
-      }
+      btnVoice.style.background = 'transparent';
+      btnVoice.style.color = 'var(--accent-gold)';
       if (voiceIcon) voiceIcon.textContent = '🎤';
     };
 
@@ -644,7 +645,7 @@ function setupAIChat() {
       const transcript = event.results[0][0].transcript;
       if (transcript) {
         input.value = transcript;
-        sendMessage(transcript);
+        void sendMessage(transcript);
       }
     };
 
@@ -735,10 +736,10 @@ function setupAIChat() {
     window.speechSynthesis.speak(utterance);
   }
 
-  chips.forEach(chip => {
+    chips.forEach(chip => {
     chip.addEventListener('click', () => {
-      const prompt = chip.getAttribute('data-prompt');
-      sendMessage(prompt);
+      const prompt = chip.dataset.prompt || chip.getAttribute('data-prompt');
+      void sendMessage(prompt);
     });
   });
 }
@@ -750,10 +751,10 @@ function appendChatMessage(sender, text, title = '') {
 
   // Formato markdown simple a HTML
   const formattedText = text
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n/g, '<br>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+    .replaceAll('\n\n', '<br><br>')
+    .replaceAll('\n', '<br>')
+    .replaceAll(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replaceAll(/\*(.*?)\*/g, '<em>$1</em>');
 
   msgDiv.innerHTML = `
     <div class="msg-avatar">${sender === 'bot' ? '🤖' : '👤'}</div>
@@ -882,6 +883,7 @@ window.voidCurrentOrder = async function(orderId) {
       alert(json.message || 'Error al anular la comanda');
     }
   } catch (err) {
+    console.error('Error voiding order:', err);
     alert('Error de conexión al anular comanda');
   }
 };
@@ -918,6 +920,7 @@ window.applyDiscountToOrder = async function(orderId) {
       alert(json.message || 'Error al aplicar descuento');
     }
   } catch (err) {
+    console.error('Error applying discount:', err);
     alert('Error de conexión al aplicar descuento');
   }
 };
@@ -957,6 +960,7 @@ window.settleBillWithFiscal = async function(orderId) {
       showFiscalInvoiceModal(json.invoice, json.data, paymentMethod, splitCashAmount, splitDigitalAmount);
     }
   } catch (err) {
+    console.error('Error settling bill with fiscal invoice:', err);
     alert('Error al procesar cobro');
   }
 };
@@ -978,7 +982,13 @@ window.showFiscalInvoiceModal = function(invoice, order, paymentMethod, splitCas
   const caeText = document.getElementById('invoice-cae-text');
   const caeExpText = document.getElementById('invoice-cae-exp-text');
 
-  const letter = invoice.invoiceType === 'FACTURA_A' ? 'A' : invoice.invoiceType === 'FACTURA_C' ? 'C' : 'B';
+  let letter = 'B';
+  if (invoice.invoiceType === 'FACTURA_A') {
+    letter = 'A';
+  } else if (invoice.invoiceType === 'FACTURA_C') {
+    letter = 'C';
+  }
+
   if (letterBadge) letterBadge.textContent = letter;
   if (titleText) titleText.textContent = `${invoice.invoiceType.replace('_', ' ')} N° 0001-${String(invoice.invoiceNumber || 42).padStart(8, '0')}`;
   if (dateText) dateText.textContent = new Date(invoice.issuedAt || Date.now()).toLocaleString('es-AR');
@@ -1142,7 +1152,7 @@ function setupAreaFilters() {
     pill.addEventListener('click', () => {
       pills.forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
-      state.selectedArea = pill.getAttribute('data-area');
+      state.selectedArea = pill.dataset.area;
       renderTables();
     });
   });
@@ -1154,7 +1164,7 @@ function setupStationFilters() {
     pill.addEventListener('click', () => {
       pills.forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
-      state.selectedStation = pill.getAttribute('data-station') || 'all';
+      state.selectedStation = pill.dataset.station || 'all';
       renderKDS();
     });
   });
@@ -1166,7 +1176,7 @@ function setupCategoryFilters() {
     pill.addEventListener('click', () => {
       pills.forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
-      state.selectedCategory = pill.getAttribute('data-cat');
+      state.selectedCategory = pill.dataset.cat;
       renderMenu();
     });
   });
@@ -1326,8 +1336,8 @@ window.showBarcodeLabelModal = function(lotId) {
   if (linesContainer) {
     const rawBarcode = lot.barcode || '7791234567890';
     let barsHtml = '';
-    for (let i = 0; i < rawBarcode.length; i++) {
-      const digit = parseInt(rawBarcode[i], 10) || 1;
+    for (const char of rawBarcode) {
+      const digit = Number.parseInt(char, 10) || 1;
       const w1 = (digit % 3) + 1;
       const w2 = ((digit + 1) % 3) + 1;
       barsHtml += `<div style="width: ${w1}px; height: 100%; background: #000;"></div>`;
@@ -1345,7 +1355,7 @@ window.adjustStockPrompt = async function(lotId) {
   const deltaStr = prompt('Ingrese cantidad para sumar (+) o restar (-) al stock (en unidad del lote):');
   if (!deltaStr) return;
   const delta = Number(deltaStr);
-  if (isNaN(delta)) return alert('Cantidad inválida');
+  if (Number.isNaN(delta)) return alert('Cantidad inválida');
 
   const reason = prompt('Motivo del ajuste (ej: "Merma de cocina", "Ajuste de inventario", "Uso Josper"):') || 'Ajuste manual';
 
@@ -1360,6 +1370,7 @@ window.adjustStockPrompt = async function(lotId) {
       renderInventory();
     }
   } catch (err) {
+    console.error('Error adjusting stock:', err);
     alert('Error al ajustar stock');
   }
 };
@@ -1387,13 +1398,12 @@ function setupInventoryEvents() {
             <span>Stock Actual: <strong>${item.currentQuantity} ${item.unit}</strong> | Vencimiento: ${item.expiryDate} | Proveedor: ${item.supplierName}</span>
           `;
         }
-      } else {
-        if (banner) {
-          banner.style.display = 'block';
-          banner.innerHTML = `<span style="color: var(--accent-red);">❌ Código ${code} no encontrado en base de datos.</span>`;
-        }
+      } else if (banner) {
+        banner.style.display = 'block';
+        banner.innerHTML = `<span style="color: var(--accent-red);">❌ Código ${code} no encontrado en base de datos.</span>`;
       }
     } catch (e) {
+      console.warn('Error querying scanner:', e);
       if (banner) {
         banner.style.display = 'block';
         banner.innerHTML = `<span style="color: var(--accent-red);">Error al consultar escáner.</span>`;
@@ -1402,9 +1412,13 @@ function setupInventoryEvents() {
   };
 
   if (btnScan && inputScan) {
-    btnScan.addEventListener('click', () => performScan(inputScan.value.trim()));
+    btnScan.addEventListener('click', () => {
+      void performScan(inputScan.value.trim());
+    });
     inputScan.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') performScan(inputScan.value.trim());
+      if (e.key === 'Enter') {
+        void performScan(inputScan.value.trim());
+      }
     });
   }
 
@@ -1415,7 +1429,7 @@ function setupInventoryEvents() {
       if (lots.length > 0) {
         const sample = lots[Math.floor(Math.random() * lots.length)];
         if (inputScan) inputScan.value = sample.barcode;
-        performScan(sample.barcode);
+        void performScan(sample.barcode);
       } else {
         alert('No hay lotes registrados para simular');
       }
@@ -1604,6 +1618,7 @@ window.receivePurchaseOrder = async function(poId) {
       alert(json.message || 'Error al recibir mercadería');
     }
   } catch (e) {
+    console.error('Error receiving purchase order:', e);
     alert('Error de conexión al recibir orden');
   }
 };
@@ -1677,6 +1692,7 @@ function setupPurchaseOrderEvents() {
           alert(json.message || 'Error al emitir orden de compra');
         }
       } catch (err) {
+        console.error('Error creating purchase order:', err);
         alert('Error de conexión emitiendo orden de compra');
       }
     });
@@ -1724,6 +1740,7 @@ function setupSupplierEvents() {
           renderSuppliers();
         }
       } catch (err) {
+        console.error('Error registering supplier:', err);
         alert('Error al registrar proveedor');
       }
     });
@@ -1782,6 +1799,7 @@ function setupMenuManagementEvents() {
           renderMenu();
         }
       } catch (err) {
+        console.error('Error saving dish:', err);
         alert('Error al guardar plato');
       }
     });
@@ -1820,6 +1838,7 @@ window.deleteDish = async function(dishId) {
       renderMenu();
     }
   } catch (err) {
+    console.error('Error deleting dish:', err);
     alert('Error al eliminar plato');
   }
 };
@@ -1886,6 +1905,7 @@ function setupCashSessionEvents() {
           alert(json.message || 'Error al iniciar turno de caja');
         }
       } catch (err) {
+        console.error('Error opening cash session:', err);
         alert('Error de conexión al abrir turno de caja');
       }
     });
@@ -1929,6 +1949,7 @@ function setupCashSessionEvents() {
           alert(json.message || 'Error al registrar movimiento');
         }
       } catch (err) {
+        console.error('Error recording cash movement:', err);
         alert('Error de conexión al registrar movimiento');
       }
     });
@@ -1979,7 +2000,12 @@ function setupCashSessionEvents() {
         const json = await res.json();
         if (res.ok) {
           const diff = json.data.discrepancy || 0;
-          const diffMsg = diff === 0 ? 'Arqueo exacto sin diferencias.' : `Diferencia de arqueo: ${diff > 0 ? 'Sobrante +' : 'Faltante -'}$${Math.abs(diff).toLocaleString('es-AR')}`;
+          let diffMsg = 'Arqueo exacto sin diferencias.';
+          if (diff > 0) {
+            diffMsg = `Diferencia de arqueo: Sobrante +$${diff.toLocaleString('es-AR')}`;
+          } else if (diff < 0) {
+            diffMsg = `Diferencia de arqueo: Faltante -$${Math.abs(diff).toLocaleString('es-AR')}`;
+          }
           alert(`✅ ${json.message}\n${diffMsg}`);
           formClose.reset();
           closeCloseModal();
@@ -1989,6 +2015,7 @@ function setupCashSessionEvents() {
           alert(json.message || 'Error al cerrar caja');
         }
       } catch (err) {
+        console.error('Error closing cash session:', err);
         alert('Error de conexión al cerrar turno de caja');
       }
     });
@@ -2173,26 +2200,27 @@ window.loadReceiptPreview = async function() {
       const html = await res.text();
       container.innerHTML = `
         <div style="background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; max-width: 380px; width: 100%;">
-          <iframe id="receipt-iframe" srcdoc="${html.replace(/"/g, '&quot;')}" style="width: 100%; height: 560px; border: none;"></iframe>
+          <iframe id="receipt-iframe" srcdoc="${html.replaceAll('"', '&quot;')}" style="width: 100%; height: 560px; border: none;"></iframe>
         </div>
       `;
     } else {
       container.innerHTML = `<span style="color: var(--accent-red);">Error al obtener boleta.</span>`;
     }
   } catch (e) {
+    console.error('Error fetching receipt preview:', e);
     container.innerHTML = `<span style="color: var(--accent-red);">Error de conexión al generar boleta.</span>`;
   }
 };
 
 window.printReceiptBrowser = function() {
   const iframe = document.getElementById('receipt-iframe');
-  if (iframe && iframe.contentWindow) {
+  if (iframe?.contentWindow) {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
   } else {
     // Si no está cargado el iframe, cargarlo y luego imprimir
     const select = document.getElementById('select-receipt-order');
-    if (select && select.value) {
+    if (select?.value) {
       window.open(`/api/orders/${select.value}/receipt?format=html`, '_blank');
     } else {
       alert('Selecciona una comanda para imprimir.');
@@ -2202,7 +2230,7 @@ window.printReceiptBrowser = function() {
 
 window.downloadEscPosBinary = function() {
   const select = document.getElementById('select-receipt-order');
-  if (!select || !select.value) {
+  if (!select?.value) {
     alert('Selecciona una comanda primero.');
     return;
   }
@@ -2233,6 +2261,7 @@ window.testPrintPrinter = async function(printerId) {
       alert(`Error al imprimir: ${json.message}`);
     }
   } catch (e) {
+    console.error('Error sending print test job:', e);
     alert('Error enviando trabajo a la cola de impresión.');
   }
 };
