@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { recordOrderStatus } from '../operationsMetrics.js';
+import { requirePermission } from '../middleware/rbac.js';
 
 export const ordersRouter = Router();
 
@@ -121,7 +122,7 @@ ordersRouter.get('/:id/invoice', async (req, res) => {
   }
 });
 
-ordersRouter.post('/', async (req, res) => {
+ordersRouter.post('/', requirePermission('orders:create'), async (req, res) => {
   const { clientOrderId, tableId, tableNumber, waiter, items } = req.body;
   const data = db.getData();
 
@@ -236,6 +237,43 @@ ordersRouter.put('/:id/status', async (req, res) => {
 
   const targetDomainState = statusToDomainState[status] || status;
   const currentDomainState = statusToDomainState[order.status] || order.status || 'CONFIRMED';
+
+  // Si la acción es cancelar o anular la comanda (acción crítica que exige PIN o rol <= 3)
+  if (targetDomainState === 'CANCELLED') {
+    try {
+      const { RbacManager } = await import('../../packages/domain/dist/index.js');
+      const actorRole = (req.headers['x-user-role'] || req.body?.role || 'MANAGER').toString().toUpperCase();
+      const supervisorPin = req.headers['x-supervisor-pin'] || req.body?.supervisorPin;
+      const actorId = `usr-${actorRole.toLowerCase()}-session`;
+      const scope = { organizationId: 'org-kobe-chain-arg', locationId: 'loc-centro-arg' };
+
+      RbacManager.registerSupervisorPin('usr-supervisor-master', '1234');
+      RbacManager.assignRole({
+        userId: 'usr-supervisor-master',
+        roleCode: 'MANAGER',
+        scope: 'LOCATION',
+        organizationId: scope.organizationId,
+        locationId: scope.locationId
+      });
+      RbacManager.assignRole({
+        userId: actorId,
+        roleCode: actorRole,
+        scope: 'LOCATION',
+        organizationId: scope.organizationId,
+        locationId: scope.locationId
+      });
+
+      const check = RbacManager.canExecuteCriticalAction(actorId, 'orders:void', scope, supervisorPin);
+      if (!check.allowed) {
+        return res.status(403).json({
+          success: false,
+          message: `⛔ Anulación Denegada por RBAC: ${check.reason || 'Anular una comanda exige rol Manager/Owner o PIN de supervisor (1234).'}`
+        });
+      }
+    } catch (err) {
+      console.warn('Error validando RBAC en anulación de comanda:', err);
+    }
+  }
 
   try {
     const { OrderStateMachine } = await import('../../packages/domain/dist/index.js');

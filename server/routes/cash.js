@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db.js';
+import { requirePermission } from '../middleware/rbac.js';
 
 export const cashRouter = Router();
 
@@ -28,7 +29,7 @@ cashRouter.get('/status', (req, res) => {
   });
 });
 
-cashRouter.post('/session/open', async (req, res) => {
+cashRouter.post('/session/open', requirePermission('cash:open'), async (req, res) => {
   const { initialFloat, cashierName } = req.body;
   const data = db.getData();
   if (!data.cashSessions) data.cashSessions = [];
@@ -77,7 +78,7 @@ cashRouter.post('/session/open', async (req, res) => {
   res.status(201).json({ success: true, data: newSession });
 });
 
-cashRouter.post('/session/movement', async (req, res) => {
+cashRouter.post('/session/movement', requirePermission('cash:collect'), async (req, res) => {
   const { type, amount, reason } = req.body;
   const data = db.getData();
   if (!data.cashSessions) data.cashSessions = [];

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db.js';
+import { requirePermission } from '../middleware/rbac.js';
 
 export const menuRouter = Router();
 
@@ -18,7 +19,7 @@ menuRouter.get('/', (req, res) => {
   res.json({ success: true, data: menu });
 });
 
-menuRouter.post('/', (req, res) => {
+menuRouter.post('/', requirePermission('catalog:edit'), (req, res) => {
   const { name, category, price, description, allergens, timeMinutes } = req.body;
   if (!name || !price) {
     return res.status(400).json({ success: false, message: 'Nombre y precio son requeridos' });
@@ -39,11 +40,11 @@ menuRouter.post('/', (req, res) => {
   res.status(201).json({ success: true, data: newItem });
 });
 
-menuRouter.put('/:id', (req, res) => {
+menuRouter.put('/:id', requirePermission('catalog:edit'), (req, res) => {
   const { id } = req.params;
   const { name, category, price, description, allergens, timeMinutes, available } = req.body;
   const data = db.getData();
-  const item = data.menu.find(m => m.id === parseInt(id));
+  const item = data.menu.find(m => m.id === Number.parseInt(id, 10));
   if (!item) return res.status(404).json({ success: false, message: 'Plato no encontrado' });
 
   if (name !== undefined) item.name = name;
@@ -60,10 +61,10 @@ menuRouter.put('/:id', (req, res) => {
   res.json({ success: true, data: item });
 });
 
-menuRouter.delete('/:id', (req, res) => {
+menuRouter.delete('/:id', requirePermission('catalog:edit'), (req, res) => {
   const { id } = req.params;
   const data = db.getData();
-  const index = data.menu.findIndex(m => m.id === parseInt(id));
+  const index = data.menu.findIndex(m => m.id === Number.parseInt(id, 10));
   if (index === -1) return res.status(404).json({ success: false, message: 'Plato no encontrado' });
 
   data.menu.splice(index, 1);
@@ -71,10 +72,10 @@ menuRouter.delete('/:id', (req, res) => {
   res.json({ success: true, message: 'Plato eliminado' });
 });
 
-menuRouter.patch('/:id/toggle', (req, res) => {
+menuRouter.patch('/:id/toggle', requirePermission('catalog:edit'), (req, res) => {
   const { id } = req.params;
   const data = db.getData();
-  const item = data.menu.find(m => m.id === parseInt(id));
+  const item = data.menu.find(m => m.id === Number.parseInt(id, 10));
   if (!item) return res.status(404).json({ success: false, message: 'Plato no encontrado' });
 
   item.available = !item.available;

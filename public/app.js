@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnRefresh) btnRefresh.addEventListener('click', () => fetchAllData());
 
   // Cargar datos iniciales
-  fetchAllData();
+  fetchAllData().catch(err => console.error('Error inicializando datos:', err));
 
   // Polling automático cada 8 segundos para simular KDS y mesas en vivo
   setInterval(fetchOrdersAndTables, 8000);
@@ -287,7 +287,7 @@ function renderCashSession() {
 
 function formatTimeAgo(isoString) {
   if (!isoString) return '';
-  const diffMins = Math.floor((new Date() - new Date(isoString)) / 60000);
+  const diffMins = Math.floor((Date.now() - new Date(isoString).getTime()) / 60000);
   if (diffMins < 1) return 'Hace instantes';
   return `Hace ${diffMins} min`;
 }
@@ -328,7 +328,7 @@ function renderMenu() {
         </div>
       </div>
       <p style="margin-top: 6px;">${item.description}</p>
-      ${item.allergens && item.allergens.length ? `
+      ${item.allergens?.length ? `
         <div style="font-size: 0.72rem; color: #e9c46a; margin-bottom: 8px;">
           ⚠️ Alérgenos: ${item.allergens.join(', ')}
         </div>
@@ -425,7 +425,7 @@ function setupOrderTrayEvents() {
   // Revisar cola al iniciar
   updateOfflineQueueIndicator();
   if (navigator.onLine) {
-    flushOfflineOrdersQueue();
+    flushOfflineOrdersQueue().catch(err => console.error('Error sincronizando comandas offline:', err));
   }
 
   btnSend.addEventListener('click', async () => {
@@ -436,7 +436,7 @@ function setupOrderTrayEvents() {
 
     const select = document.getElementById('select-target-table');
     const tableId = select.value;
-    const table = state.tables.find(t => t.id === parseInt(tableId));
+    const table = state.tables.find(t => t.id === Number.parseInt(tableId, 10));
     const clientOrderId = generateClientOrderId();
 
     const orderPayload = {
@@ -451,9 +451,13 @@ function setupOrderTrayEvents() {
     btnSend.textContent = 'Enviando comanda...';
 
     try {
+      const currentRole = document.getElementById('select-session-role')?.value || 'WAITER';
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Role': currentRole
+        },
         body: JSON.stringify(orderPayload)
       });
 
