@@ -12,7 +12,7 @@ import { posView, formatStatus } from './modules/views/posView.js';
 import { kdsView } from './modules/views/kdsView.js';
 import { cashView } from './modules/views/cashView.js';
 import { ViewRegistry } from './modules/views/viewRegistry.js';
-import { setupRoleMatrixDemo } from './modules/roleMatrix.js';
+import { setupRoleMatrixDemo, applyRoleAccessControl, ROLE_DEFINITIONS } from './modules/roleMatrix.js';
 import { normalizeSalesHistory } from './modules/analytics.js';
 
 // Inicializar orquestador de ciclo de vida de vistas
@@ -71,6 +71,7 @@ const state = {
 // ========================
 document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
+  setupSessionRole();
   setupAreaFilters();
   setupStationFilters();
   setupCategoryFilters();
@@ -86,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
   viewRegistry.activate('tab-pos', state);
   setupRoleMatrixDemo();
   setupOfflineListeners(fetchAllData);
+
+  const btnRefresh = document.getElementById('btn-refresh');
+  if (btnRefresh) btnRefresh.addEventListener('click', () => fetchAllData());
 
   // Cargar datos iniciales
   fetchAllData();
@@ -1046,16 +1050,15 @@ function setupNavigation() {
 
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const tab = btn.getAttribute('data-tab');
+      const tab = btn.dataset.tab || btn.getAttribute('data-tab');
       const currentRole = document.getElementById('select-session-role')?.value || 'MANAGER';
+      const roleDef = ROLE_DEFINITIONS[currentRole] || ROLE_DEFINITIONS.MANAGER;
+      const allowedTabs = roleDef.allowedTabs || [];
 
-      // Regla de Negocio: La pestaña de auditoría solo es accesible para Owner, Auditor y Manager
-      if (tab === 'tab-kobe-engine') {
-        const allowedRoles = ['OWNER', 'AUDITOR', 'MANAGER'];
-        if (!allowedRoles.includes(currentRole)) {
-          alert(`⛔ Acceso Denegado por RBAC: La pestaña de Auditoría Criptográfica exige rol Owner, Auditor o Manager. Tu rol actual es ${currentRole}.`);
-          return;
-        }
+      // Control de Acceso por Matriz de Roles (RBAC)
+      if (!allowedTabs.includes(tab)) {
+        alert(`⛔ Acceso Denegado por RBAC: El rol ${roleDef.label} no tiene autorización para acceder a "${titlesMap[tab]?.title || tab}".`);
+        return;
       }
 
       buttons.forEach(b => b.classList.remove('active'));
@@ -1079,7 +1082,13 @@ function setupNavigation() {
     });
   });
 
-  // Listener para el selector de roles de sesión (Multi-dispositivo y Multi-rol)
+  const btnQuickOrder = document.getElementById('btn-quick-order');
+  if (btnQuickOrder) btnQuickOrder.addEventListener('click', () => {
+    document.querySelector('[data-tab="tab-menu"]').click();
+  });
+}
+
+function setupSessionRole() {
   const roleSelect = document.getElementById('select-session-role');
   const roleLabel = document.getElementById('current-user-role-label');
   const userAvatar = document.getElementById('current-user-avatar');
@@ -1098,36 +1107,29 @@ function setupNavigation() {
     RUNNER_HOST: { name: 'Hostess Entrada', avatar: '🚪', label: 'Recepción (Nivel 7)' }
   };
 
+  const updateProfileUI = (roleKey) => {
+    const profile = ROLE_PROFILES[roleKey] || { name: 'Operador', avatar: '👤', label: roleKey };
+    if (roleLabel) roleLabel.textContent = profile.label;
+    if (userName) userName.textContent = profile.name;
+    if (userAvatar) userAvatar.textContent = profile.avatar;
+  };
+
   if (roleSelect && roleLabel) {
     roleSelect.addEventListener('change', (e) => {
       const selected = e.target.value;
-      const profile = ROLE_PROFILES[selected] || { name: 'Operador', avatar: '👤', label: selected };
-      roleLabel.textContent = profile.label;
-      if (userName) userName.textContent = profile.name;
-      if (userAvatar) userAvatar.textContent = profile.avatar;
-
-      // Guardar en sessionStorage para persistencia en este dispositivo
+      updateProfileUI(selected);
       sessionStorage.setItem('restoia_device_role', selected);
+      applyRoleAccessControl(selected);
     });
 
-    // Restaurar si ya estaba configurado en esta tablet o celular
     const savedRole = sessionStorage.getItem('restoia_device_role');
+    const initialRole = (savedRole && ROLE_PROFILES[savedRole]) ? savedRole : (roleSelect.value || 'MANAGER');
     if (savedRole && ROLE_PROFILES[savedRole]) {
       roleSelect.value = savedRole;
-      const profile = ROLE_PROFILES[savedRole];
-      roleLabel.textContent = profile.label;
-      if (userName) userName.textContent = profile.name;
-      if (userAvatar) userAvatar.textContent = profile.avatar;
+      updateProfileUI(savedRole);
     }
+    applyRoleAccessControl(initialRole);
   }
-
-  const btnRefresh = document.getElementById('btn-refresh');
-  if (btnRefresh) btnRefresh.addEventListener('click', () => fetchAllData());
-
-  const btnQuickOrder = document.getElementById('btn-quick-order');
-  if (btnQuickOrder) btnQuickOrder.addEventListener('click', () => {
-    document.querySelector('[data-tab="tab-menu"]').click();
-  });
 }
 
 function setupAreaFilters() {

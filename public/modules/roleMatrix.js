@@ -403,16 +403,79 @@ export function renderRoleMatrixContent(selectedRoleCode, onRoleChangeCallback) 
   }
 }
 
-// Exponer a window para interactividad en HTML
-window.selectDemoRole = function(code) {
-  renderRoleMatrixContent(code);
-};
+// Exponer a window para interactividad en HTML si existe el entorno de navegador
+if (typeof window !== 'undefined') {
+  window.selectDemoRole = function(code) {
+    renderRoleMatrixContent(code);
+  };
 
-window.applyDemoRoleAndClose = function(code) {
-  const select = document.getElementById('select-session-role');
-  if (select) {
-    select.value = code;
-    select.dispatchEvent(new Event('change'));
+  window.applyDemoRoleAndClose = function(code) {
+    const select = document.getElementById('select-session-role');
+    if (select) {
+      select.value = code;
+      select.dispatchEvent(new Event('change'));
+    }
+    document.getElementById('modal-role-matrix')?.classList.remove('active');
+  };
+}
+
+function updateNavTabs(allowedTabs) {
+  const navItems = document.querySelectorAll('.nav-menu .nav-item');
+  let currentActiveTabAllowed = false;
+  let firstAllowedNavButton = null;
+
+  navItems.forEach(btn => {
+    const tabName = btn.dataset.tab;
+    if (!tabName) return;
+
+    const isAllowed = allowedTabs.includes(tabName);
+    btn.style.display = isAllowed ? 'flex' : 'none';
+
+    if (isAllowed) {
+      if (!firstAllowedNavButton) firstAllowedNavButton = btn;
+      if (btn.classList.contains('active')) currentActiveTabAllowed = true;
+    } else if (btn.classList.contains('active')) {
+      btn.classList.remove('active');
+    }
+  });
+
+  if (!currentActiveTabAllowed && firstAllowedNavButton) {
+    firstAllowedNavButton.click();
   }
-  document.getElementById('modal-role-matrix')?.classList.remove('active');
-};
+}
+
+function updateActionButtons(roleCode, permissions) {
+  const canEditMenu = ['OWNER', 'ADMIN', 'MANAGER', 'CHEF'].includes(roleCode);
+  const canOperateCash = Boolean(permissions.cashBlindAudit || permissions.settleFiscal);
+
+  const toggleDisplay = (id, condition, displayType = 'inline-block') => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = condition ? displayType : 'none';
+  };
+
+  toggleDisplay('btn-quick-order', permissions.createOrder, 'inline-flex');
+  toggleDisplay('btn-open-new-dish-modal', canEditMenu);
+  toggleDisplay('btn-open-cash-modal', canOperateCash);
+  toggleDisplay('btn-cash-movement-modal', canOperateCash);
+  toggleDisplay('btn-close-cash-modal', canOperateCash);
+  toggleDisplay('btn-open-new-lot-modal', permissions.fefoStock);
+  toggleDisplay('btn-open-new-supplier-modal', canEditMenu);
+}
+
+/**
+ * Aplica el control de acceso en la UI basado en la jerarquía y permisos del rol.
+ * - Oculta pestañas de la barra lateral no autorizadas.
+ * - Si la pestaña actual queda oculta, redirige automáticamente a la primera permitida.
+ * - Muestra u oculta botones de acción contextuales según los permisos del rol.
+ */
+export function applyRoleAccessControl(roleCode) {
+  const roleDef = ROLE_DEFINITIONS[roleCode] || ROLE_DEFINITIONS.MANAGER;
+  if (!roleDef) return;
+
+  updateNavTabs(roleDef.allowedTabs || []);
+  updateActionButtons(roleCode, roleDef.permissions || {});
+
+  if (document.body) {
+    document.body.dataset.userRole = roleCode;
+  }
+}

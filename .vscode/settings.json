@@ -13,5 +13,6 @@
   },
   "[sql]": {
     "editor.defaultFormatter": "joernberkefeld.sfmc-language"
-  }
+  },
+  "compilets.autoStart": true
 }
