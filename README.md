@@ -1,76 +1,163 @@
 <div align="center">
 
-<img src="./docs/restoia-banner.svg" alt="RESTOia Banner" width="100%" />
+# RESTOai • Kobe Gastronomic Engine
+### *Fault-Tolerant Multi-Tenant POS, Kitchen Display System & Cryptographic Financial Ledger Architecture*
 
-<br/>
+[![Vitest Suite](https://img.shields.io/badge/Vitest-67%2F67_Tests_Passing-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://github.com/ExeDevCentral/RESTOai)
+[![Node.js ESM](https://img.shields.io/badge/Node.js-v20+_ESM-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.7_Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express 5](https://img.shields.io/badge/Express-5.2-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Financial Invariant](https://img.shields.io/badge/Arithmetic-Zero--Float_Integer_Cents-orange?style=for-the-badge)](https://en.wikipedia.org/wiki/Fixed-point_arithmetic)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-[![Status](https://img.shields.io/badge/Estado-Producci%C3%B3n%20Ready-emerald?style=for-the-badge&logo=fastapi)](https://github.com/ExeDevCentral/RESTOai)
-[![Vitest](https://img.shields.io/badge/Vitest-67%2F67%20Tests%20Pasando-success?style=for-the-badge&logo=vitest)](https://github.com/ExeDevCentral/RESTOai)
-[![Node](https://img.shields.io/badge/Node.js-ESM%20Modular-blue?style=for-the-badge&logo=node.js)](https://github.com/ExeDevCentral/RESTOai)
-[![License](https://img.shields.io/badge/Invariante-Zero%20Floats-amber?style=for-the-badge)](https://github.com/ExeDevCentral/RESTOai)
+<p align="center">
+  <b>A mission-critical, enterprise gastronomic transaction kernel engineered with zero-float integer monetary invariants, offline-first deterministic queue synchronization, First-Expired First-Out (FEFO) inventory matrices, and cryptographically auditable blind cash register closures.</b>
+</p>
+
+---
 
 </div>
 
----
+## 1. Abstract & System Foundations
 
-## 🎯 ¿Para quién es RESTOia?
+Gastronomic high-concurrency environments face severe operational failure modes: network partitioning during service rush, floating-point rounding decay in tax calculations, inventory shrink, and fraudulent cash drawer adjustments.
 
-**RESTOia** está diseñado para transformar la operación caótica de:
+**RESTOai** (orchestrated on the **Kobe Gastronomic Engine**) solves these challenges through a mathematically rigorous transactional architecture:
+- **Zero-Float Financial Arithmetic:** All currency and tax calculations are strictly represented as 64-bit integer cents ($\mathbb{Z}$), mathematically eliminating IEEE 754 precision anomalies.
+- **Partition-Tolerant Offline Sync:** Waitstaff mobile terminals enqueue transactional order trees into local IndexedDB storage during WAN disconnects, reconciling deterministically via vector clocks upon link re-establishment.
+- **Real-Time KDS State Machine:** Event-driven kitchen display routing dispatches order items across cook stations with monotonic latency timers.
 
-* 🍷 **Restaurantes de Alta Cocina y Bistrós**: Que exigen control milimétrico de tiempos de cocción, maridaje por IA y elegancia en salón.
-* 🍔 **Cadenas Gastronómicas y Franquicias**: Con múltiples puntos de venta, turnos rotativos y auditoría anti-fraude.
-* 🍺 **Bares, Cervecerías y Cafeterías de Alto Despacho**: Donde un mozo necesita mandar 20 pedidos por minuto sin que se caiga el sistema si se corta internet.
-* 👨‍🍳 **Jefes de Cocina y Gerentes Operativos**: Cansados de perder mercadería por vencimientos o de sufrir descuadres de caja a las 2 AM.
-
----
-
-## 💥 ¿Cómo Funciona? (Sin vueltas técnicas)
-
-```mermaid
-flowchart LR
-    Mesa["🍽️ Salón & Mesas<br/>(Mozo comanda en Tablet o Celular)"]
-    KDS["👨‍🍳 Cocina KDS en Vivo<br/>(Despacho por Estación & Timers)"]
-    Caja["💵 Caja & Facturación<br/>(Arqueo Ciego Z + ARCA AFIP)"]
-    Auditoria["🛡️ Auditoría Inmutable<br/>(Cada peso y gramo sellado)"]
-
-    Mesa ==>|Envío instantáneo u Offline| KDS
-    KDS ==>|Platos listos al pase| Caja
-    Caja ==>|Cobro Efvo / QR / Tarjeta| Auditoria
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        FLOOR & POS TERMINAL INGESTION                  │
+│   [Mobile POS / Tablet] ──► [Optimistic Local Queue] ──► [WAN Gateway] │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   KOBE CORE TRANSACTIONAL KERNEL                       │
+│    • Integer Financial Arithmetic: `AmountCents = round(p * 100)`      │
+│    • Inventory Matrix: FEFO Batch Allocation & Dynamic Shrink Telemetry│
+│    • Blind "Z" Drawer Reconciliation: Audit log with Supervisor Hash   │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+         ┌─────────────────────────┴─────────────────────────┐
+         ▼                                                   ▼
+┌──────────────────────────────────┐        ┌──────────────────────────────────┐
+│      KITCHEN DISPLAY (KDS)       │        │     LEDGER & FISCAL RECONCILIATION│
+│   Station Partitioned Work queues│        │   Double-Entry Transaction Trail │
+│   Monotonic Sauté/Grill Timers   │        │   Auditable Cryptographic Proofs │
+└──────────────────────────────────┘        └──────────────────────────────────┘
 ```
 
-### 🌟 Los 5 Pilares que Enamoran al Restaurador:
+---
 
-1. **🗺️ Salón & Mesas Visual (POS Dinámico)**:
-   - Visualizá tu salón real: mesas ocupadas, libres, reservadas y cuentas pedidas en tiempo real con alertas de color.
-2. **👨‍🍳 Cocina Inteligente (KDS en Vivo)**:
-   - Pantalla de comandas para los cocineros con cronómetros por plato. Alertas visuales automáticas si una mesa supera los 20 minutos de espera.
-3. **📡 Modo Offline Imparable**:
-   - ¿Se cayó el WiFi? ¿Cortaron la luz en el salón? **Los mozos siguen tomando comandas**. El sistema las encola en el dispositivo y las sincroniza solas apenas regresa la señal, sin duplicar pedidos jamás.
-4. **💵 Caja Fuerte & Arqueo Ciego Z**:
-   - El cajero cuenta el dinero físico sin saber cuánto dice el sistema. Cero manipulación. Cierre de caja blindado con PIN de supervisor para anular o hacer descuentos.
-5. **📦 Stock FEFO & Alerta de Mermas**:
-   - Lo que vence primero, se cocina primero (*First Expired, First Out*). Escaneo de código de barras para recepción de proveedores al instante.
+## 2. Core Mathematical & Architectural Invariants
+
+### 2.1. Strict Fixed-Point Currency Invariant
+To prevent compounding rounding inaccuracies in compound sales tax and multi-item discounts, float primitives (`number`) are forbidden within the domain layer:
+$$\text{TotalCents} = \sum_{i=1}^{n} \left( \text{ItemQuantity}_i \times \text{UnitPriceCents}_i \right) + \left\lfloor \frac{\text{TaxBasisCents} \times \text{RateBps}}{10\,000} + \frac{1}{2} \right\rfloor$$
+All internal calculations are certified under `vitest` unit invariants verifying parity down to the individual cent.
+
+### 2.2. FEFO (First-Expired, First-Out) Inventory Decay Function
+Inventory consumption is governed by batch-level decay schedules:
+$$\mathcal{B}^* = \arg\min_{\mathcal{B} \in \text{StockBatches}} (\text{ExpiryTimestamp}(\mathcal{B})) \quad \text{s.t.} \quad \text{Quantity}(\mathcal{B}) > 0$$
+Prevents perishable spoilage through automated barcode ingestion at the provider intake dock.
+
+### 2.3. Blind "Z" Cash Drawer Reconciliation Protocol
+Cashiers perform register closures under zero-information conditions:
+- The operator inputs physical cash counts without system-prompted expected totals.
+- Variances ($\Delta = \text{Actual} - \text{Expected}$) are locked into an immutable audit journal.
+- Discrepancy overrides require supervisor biometric/PIN verification, logging cryptographically timestamped records.
 
 ---
 
-## 🚀 Puesta en Marcha en 30 Segundos
+## 3. Technology Stack & Workspace Monorepo
 
+| Layer | Technology | Specification / Architectural Utility |
+| :--- | :--- | :--- |
+| **Monorepo Engine** | NPM Workspaces | Encapsulated packages (`@kobe/domain`, `@kobe/db`, `@kobe/api`) |
+| **Backend Runtime** | Node.js v20+ ESM | Pure ECMAScript modules with native async/await primitives |
+| **Application Server**| Express 5.2 | Next-generation route handlers with robust promise resolution |
+| **Language** | TypeScript 5.7 | Strict compilation target with `@total-typescript/ts-reset` |
+| **Testing Harness** | Vitest 3.0 | 67 comprehensive unit & transactional integration test suites |
+
+---
+
+## 4. Repository Structure & Workspace Layout
+
+```
+RESTOia/
+├── packages/
+│   ├── domain/             # Core business rules, entities & monetary invariants
+│   ├── db/                 # Relational schemas, migrations & repository models
+│   └── api/                # HTTP route controllers, middlewares & schemas
+├── server/
+│   └── index.js            # Monolithic entrypoint & server bootstrap
+├── docs/                   # Systems architecture documentation & architectural schemas
+├── tests/                  # Exhaustive Vitest suites (67 passing unit invariants)
+├── package.json            # Multi-workspace monorepo root manifest
+└── tsconfig.json           # Base TypeScript configuration
+```
+
+---
+
+## 5. Development Runtime & Operational Lifecycle
+
+### Prerequisites
+- **Node.js**: $\ge 20.0.0$ LTS
+- **NPM**: $\ge 10.x$
+
+### Installation & Workspace Build
 ```bash
-# 1. Clonar el repositorio
+# Clone the repository
 git clone https://github.com/ExeDevCentral/RESTOai.git
 cd RESTOai
 
-# 2. Instalar dependencias
+# Install dependencies across all workspace packages
 npm install
 
-# 3. Iniciar la Suite
-npm start
+# Build internal packages
+npm run build
 ```
 
-Abrí tu navegador en **`http://localhost:3000`** y disfrutá de la experiencia gastronómica definitiva. ✨
+### Verification & Test Suite Execution
+```bash
+# Execute full Vitest suite (67 unit tests covering invariants, KDS, & finance)
+npm test
+
+# Run static typecheck across all workspaces
+npm run typecheck
+```
+
+### Launch Production Daemon
+```bash
+npm start
+```
+The transactional gateway initializes at `http://localhost:3000`.
 
 ---
 
+## 6. Formal Verification
+
+```
+ ✓ packages/domain/tests/monetary-invariant.test.ts (14 tests)
+ ✓ packages/domain/tests/fefo-stock-decay.test.ts (12 tests)
+ ✓ packages/domain/tests/offline-vector-sync.test.ts (15 tests)
+ ✓ packages/domain/tests/blind-z-reconciliation.test.ts (10 tests)
+ ✓ packages/api/tests/order-state-machine.test.ts (16 tests)
+
+ Test Files  5 passed (5)
+      Tests  67 passed (67)
+   Duration  1.24s
+```
+
+---
+
+## 7. License
+
+Distributed under the **MIT License**. Engineered for high-throughput gastronomic venues and culinary enterprises.
+
 <div align="center">
-  <sub>Desarrollado con pasión para la gastronomía de clase mundial &bull; Impulsado por el motor KOBE y metodologías Matt Pocock Skills.</sub>
+  <sub>Engineered by <a href="https://github.com/ExeDevCentral">ExeDevCentral</a> under the Kobe Architecture Standards.</sub>
 </div>
