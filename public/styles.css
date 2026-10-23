@@ -1152,3 +1152,26 @@ body {
   gap: 12px;
   justify-content: flex-end;
 }
+
+/* Mobile POS & Order Dashboard Ergonomics */
+@media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .sidebar-nav {
+    display: flex !important;
+    overflow-x: auto !important;
+    padding: 8px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .order-card {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+  .btn, .action-btn {
+    min-height: 46px !important;
+    font-size: 0.95rem !important;
+  }
+}

@@ -477,3 +477,23 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+/* Mobile Compact Dish View & Touch Optimization */
+@media (max-width: 600px) {
+  .menu-hero-copy h1 {
+    font-size: clamp(2rem, 8vw, 2.8rem) !important;
+  }
+  .dish-card {
+    padding: 14px 12px !important;
+    border-radius: 14px !important;
+    margin-bottom: 12px !important;
+  }
+  .dish-card img {
+    height: 140px !important;
+    object-fit: cover !important;
+  }
+  .add-to-cart-btn, .order-btn {
+    min-height: 48px !important;
+    width: 100% !important;
+    font-size: 1rem !important;
+  }
+}
