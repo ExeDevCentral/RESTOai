@@ -21,6 +21,6 @@
     "@types/pg": "^8.11.11",
     "drizzle-pgmem": "^0.6.2",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.7"
+    "vitest": "^5.0.5"
   }
 }
