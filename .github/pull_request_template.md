@@ -1,13 +1,8 @@
-## Summary
-Brief explanation of the changes introduced in this pull request.
+## Summary of Changes
 
-## Type of Change
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Code refactoring / documentation update
-- [ ] Breaking change
+- Brief bullet points describing what changed and why.
 
-## Checklist
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my code
-- [ ] Local tests / builds pass without errors
+## Verification
+
+- [ ] Local build and tests pass.
+- [ ] Responsive UI verified on mobile and desktop.
