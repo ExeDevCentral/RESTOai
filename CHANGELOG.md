@@ -1,11 +1,8 @@
-# Changelog
+# Changelog — RESTOai
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-### Added
-- Standardized open-source community health guidelines and templates.
-- Automated security policies and dependency maintenance setup.
+## [v2.4.0] - 2026-11-05
+- Enhanced component accessibility and responsive layout flow.
+- Updated dependencies to current stable patch versions.
+- Standardized documentation and continuous delivery workflows.
