@@ -1,8 +1,5 @@
-## Summary of Changes
+## Description
 
-- Brief bullet points describing what changed and why.
-
-## Verification
-
-- [ ] Local build and tests pass.
-- [ ] Responsive UI verified on mobile and desktop.
+- [ ] Code compiles without warnings
+- [ ] Tests executed
+- [ ] Documentation updated
