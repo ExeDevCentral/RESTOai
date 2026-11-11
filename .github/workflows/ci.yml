@@ -18,5 +18,9 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci || npm install
+      - name: Build workspaces
+        run: npm run build
       - name: Typecheck
         run: npm run typecheck --if-present
+      - name: Run Test Suite
+        run: npm run test
