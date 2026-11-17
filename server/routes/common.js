@@ -12,17 +12,36 @@ commonRouter.get('/reservations', (req, res) => {
 });
 
 commonRouter.post('/reservations', (req, res) => {
-  const { customerName, phone, date, time, guests, tableId, notes } = req.body;
+  const { customerName, phone, date, time, guests, tableId, notes } = req.body ?? {};
+  const trimmedName = typeof customerName === 'string' ? customerName.trim() : '';
+  const trimmedDate = typeof date === 'string' ? date.trim() : '';
+  const trimmedTime = typeof time === 'string' ? time.trim() : '';
+
+  if (!trimmedName || !trimmedDate || !trimmedTime) {
+    return res.status(400).json({
+      success: false,
+      message: 'customerName, date y time son requeridos para crear una reserva',
+    });
+  }
+
+  const parsedGuests = Number.parseInt(guests, 10);
+  if (guests !== undefined && (!Number.isFinite(parsedGuests) || parsedGuests < 1)) {
+    return res.status(400).json({
+      success: false,
+      message: 'guests debe ser un entero positivo',
+    });
+  }
+
   const data = db.getData();
 
   const newRes = {
     id: Date.now(),
-    customerName,
-    phone,
-    date,
-    time,
-    guests: parseInt(guests) || 2,
-    tableId: tableId ? parseInt(tableId) : null,
+    customerName: trimmedName,
+    phone: typeof phone === 'string' ? phone.trim() : '',
+    date: trimmedDate,
+    time: trimmedTime,
+    guests: Number.isFinite(parsedGuests) ? parsedGuests : 2,
+    tableId: tableId ? parseInt(tableId, 10) : null,
     notes: notes || "",
     status: "confirmada"
   };
