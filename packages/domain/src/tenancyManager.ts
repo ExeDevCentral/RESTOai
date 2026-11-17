@@ -15,6 +15,10 @@ export class TenancyManager {
     return this.contextStorage.get(sessionId);
   }
 
+  static clearContext(sessionId: string): boolean {
+    return this.contextStorage.delete(sessionId);
+  }
+
   static applyTenantFilter<T extends { organizationId: string }>(
     sessionId: string,
     records: T[]
