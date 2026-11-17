@@ -138,19 +138,17 @@ The transactional gateway initializes at `http://localhost:3000`.
 
 ---
 
-## 6. Formal Verification
+## 6. Formal Verification & Health Telemetry
 
-```
- ✓ packages/domain/tests/monetary-invariant.test.ts (14 tests)
- ✓ packages/domain/tests/fefo-stock-decay.test.ts (12 tests)
- ✓ packages/domain/tests/offline-vector-sync.test.ts (15 tests)
- ✓ packages/domain/tests/blind-z-reconciliation.test.ts (10 tests)
- ✓ packages/api/tests/order-state-machine.test.ts (16 tests)
+- **Health Endpoint**: `GET /api/health` returns service status, `uptimeSeconds`, and UTC timestamp.
+- **Verification Commands**:
 
- Test Files  5 passed (5)
-      Tests  67 passed (67)
-   Duration  1.24s
+```bash
+npm run typecheck
+npm test
 ```
+
+Latest verified suite: `42` test files passed (`108` tests passed).
 
 ---
 
