@@ -50,6 +50,26 @@ describe('calculateServiceMetrics', () => {
       readyToServed: { sampleSize: 0, medianMinutes: null, p90Minutes: null }
     });
   });
+
+  it('handles empty order lists and odd sample sizes', () => {
+    expect(calculateServiceMetrics([])).toEqual({
+      orderToReady: { sampleSize: 0, medianMinutes: null, p90Minutes: null },
+      readyToServed: { sampleSize: 0, medianMinutes: null, p90Minutes: null }
+    });
+
+    const oddOrders = [5, 10, 20].map((mins) => ({
+      statusHistory: [
+        { status: 'pendiente', at: '2026-09-30T12:00:00.000Z' },
+        { status: 'listo', at: new Date(Date.parse('2026-09-30T12:00:00.000Z') + mins * 60_000).toISOString() },
+      ],
+    }));
+
+    expect(calculateServiceMetrics(oddOrders).orderToReady).toEqual({
+      sampleSize: 3,
+      medianMinutes: 10,
+      p90Minutes: 20,
+    });
+  });
 });
 
 describe('recordOrderStatus', () => {
