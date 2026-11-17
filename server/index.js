@@ -32,6 +32,17 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Endpoint de Salud del Sistema
+app.get('/api/health', (_req, res) => {
+  res.json({
+    success: true,
+    status: 'ok',
+    service: 'kobe-gastronomic-engine',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Endpoint de Consulta de Logs del Sistema (para IA, MCP y Panel de Control)
 app.get('/api/logs', (req, res) => {
   const tag = req.query.tag;
