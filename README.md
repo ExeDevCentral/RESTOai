@@ -150,6 +150,9 @@ npm test
 
 Latest verified suite: `42` test files passed (`108` tests passed).
 
+### Mobile POS & KDS Ergonomics (`< 768px`)
+- **Minimalist Mobile Bottom Dock**: Thumb-zone 5-action dock (`Salón`, `Cocina`, `+ Comanda`, `Caja`, `IA`) dynamically synchronized with the 10-level RBAC matrix, compact header bar, and `104px` safe bottom clearance so no floating controls ever overlap active table cards or tickets.
+
 ---
 
 ## 7. License
@@ -160,4 +163,4 @@ Distributed under the **MIT License**. Engineered for high-throughput gastronomi
   <sub>Engineered by <a href="https://github.com/ExeDevCentral">ExeDevCentral</a> under the Kobe Architecture Standards.</sub>
 </div>
 
-<!-- ExeDevCentral Audit & Quality Stamp: 2026-11-14 (Phase 10/10) -->
+<!-- ExeDevCentral Audit & Quality Stamp: 2026-11-19 (Mobile UX & Zero-Overlap Verification) -->
