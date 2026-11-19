@@ -442,6 +442,14 @@ function updateNavTabs(allowedTabs) {
   if (!currentActiveTabAllowed && firstAllowedNavButton) {
     firstAllowedNavButton.click();
   }
+
+  const mobileBtns = document.querySelectorAll('.mobile-bottom-nav .mobile-bottom-btn');
+  mobileBtns.forEach(mb => {
+    const tabName = mb.dataset?.mobileTab || mb.getAttribute?.('data-mobile-tab');
+    if (!tabName) return;
+    const isAllowed = allowedTabs.includes(tabName);
+    mb.style.display = isAllowed ? 'flex' : 'none';
+  });
 }
 
 function updateActionButtons(roleCode, permissions) {

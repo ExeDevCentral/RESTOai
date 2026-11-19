@@ -1093,6 +1093,18 @@ function setupNavigation() {
         viewTitle.textContent = titlesMap[tab].title;
         viewDesc.textContent = titlesMap[tab].desc;
       }
+
+      document.querySelectorAll('.mobile-bottom-btn[data-mobile-tab]').forEach(mb => {
+        mb.classList.toggle('active', mb.getAttribute('data-mobile-tab') === tab);
+      });
+    });
+  });
+
+  document.querySelectorAll('.mobile-bottom-btn[data-mobile-tab]').forEach(mb => {
+    mb.addEventListener('click', () => {
+      const targetTab = mb.getAttribute('data-mobile-tab');
+      const sideBtn = document.querySelector(`.nav-item[data-tab="${targetTab}"]`);
+      if (sideBtn) sideBtn.click();
     });
   });
 
