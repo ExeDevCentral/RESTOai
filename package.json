@@ -27,5 +27,11 @@
     "cors": "^2.8.6",
     "dotenv": "^18.0.4",
     "express": "^5.2.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExeDevCentral/RESTOai.git"
+  },
+  "homepage": "https://kobe-sand.vercel.app",
+  "license": "MIT"
 }

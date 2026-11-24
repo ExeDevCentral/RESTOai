@@ -8,3 +8,9 @@ Thumbs.db
 .superpowers/
 *.backup.json
 
+
+# Local environment and build artifacts
+.env.local
+*.log
+coverage/
+.vercel/
