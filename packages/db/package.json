@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.6.1",
-    "@types/node": "^22.13.5",
+    "@types/node": "^26.6.6",
     "@types/pg": "^8.11.11",
     "drizzle-pgmem": "^0.6.2",
     "typescript": "^5.7.3",
